@@ -53,14 +53,14 @@ export default function ComponentTestPage() {
                 </div>
             </header>
             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-8 space-y-8">
-                {/* Botones */}
+                {/* Buttons */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Botones</CardTitle>
                         <CardDescription>Diferentes tamaños y variantes</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
-                        {/* Botones Primary */}
+                        {/* Primary Buttons */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-semibold text-muted-foreground">Primary</h3>
                             <div className="flex flex-wrap gap-2 items-center">
@@ -93,7 +93,7 @@ export default function ComponentTestPage() {
                             </div>
                         </div>
 
-                        {/* Botones Secondary */}
+                        {/* Secondary Buttons */}
                         <div className="space-y-2">
                             <h3 className="text-sm font-semibold text-muted-foreground">Secondary</h3>
                             <div className="flex flex-wrap gap-2 items-center">
@@ -216,7 +216,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Perfil de Usuario */}
+                {/* User Profile Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -249,7 +249,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Estadísticas */}
+                {/* Statistics Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Estadísticas</CardTitle>
@@ -283,7 +283,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Inputs */}
+                {/* Text Inputs */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Campos de Texto</CardTitle>
@@ -340,6 +340,7 @@ export default function ComponentTestPage() {
                         </form>
                     </CardContent>
                 </Card>
+                {/* Icon Buttons */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Botones con Iconos</CardTitle>
@@ -371,7 +372,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Notificaciones */}
+                {/* Notifications Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle className="flex items-center justify-between">
@@ -411,7 +412,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Métricas */}
+                {/* Metrics Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Métricas Clave</CardTitle>
@@ -457,7 +458,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Acciones Rápidas */}
+                {/* Quick Actions Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Acciones Rápidas</CardTitle>
@@ -485,7 +486,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Lista de Tareas */}
+                {/* Task List Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Lista de Tareas</CardTitle>
@@ -527,7 +528,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Estados de Alerta */}
+                {/* Alert States */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Estados de Alerta</CardTitle>
@@ -565,7 +566,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Input con Toggle Password */}
+                {/* Advanced Inputs */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Input Avanzados</CardTitle>
@@ -615,7 +616,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Actividad Reciente */}
+                {/* Recent Activity Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -663,7 +664,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Interacciones Sociales */}
+                {/* Social Interactions Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Publicación</CardTitle>
@@ -693,7 +694,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Card de Navegación */}
+                {/* Navigation Card */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Menú de Navegación</CardTitle>
@@ -723,7 +724,7 @@ export default function ComponentTestPage() {
                     </CardContent>
                 </Card>
 
-                {/* Badges Especiales */}
+                {/* Special Badges */}
                 <Card className="w-full max-w-[350px] break-inside-avoid">
                     <CardHeader>
                         <CardTitle>Badges con Iconos</CardTitle>
