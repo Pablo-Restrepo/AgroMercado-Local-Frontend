@@ -38,7 +38,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
     }
 
     return (
-        <Card className={`flex flex-col min-w-[235px] max-w-[313px] w-full h-[519px] p-5 rounded-xl border border-zinc-200 bg-white shadow-sm hover:shadow-md transition-shadow ${className}`}>
+        <Card className="flex flex-col min-w-[235px] max-w-[313px] w-full h-[519px] p-5">
             <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0">
                 <img
                     src={product.image}
