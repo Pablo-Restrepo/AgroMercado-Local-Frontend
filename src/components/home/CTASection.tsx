@@ -17,7 +17,7 @@ export function CTASection() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <Button size="lg" variant="secondary" className="w-full sm:w-auto" asChild>
-                            <Link to="/register">
+                            <Link to="/registro">
                                 Crear Cuenta
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>
@@ -28,7 +28,7 @@ export function CTASection() {
                             className="w-full sm:w-auto bg-transparent border-white text-white hover:bg-white/10"
                             asChild
                         >
-                            <Link to="/contact">
+                            <Link to="/contacto">
                                 Contactar
                             </Link>
                         </Button>
