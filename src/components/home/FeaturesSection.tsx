@@ -29,7 +29,7 @@ export function FeaturesSection() {
     return (
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-20">
             <div className="text-center space-y-4 mb-12 sm:mb-16">
-                <Badge variant="outline" className="mb-4">Características</Badge>
+                <Badge variant="success" className="mb-4">Características</Badge>
                 <h2 className="text-3xl sm:text-4xl font-bold px-4">¿Por qué elegir AgroMercado?</h2>
                 <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
                     Una plataforma diseñada para revolucionar la forma en que compras alimentos frescos en Popayán

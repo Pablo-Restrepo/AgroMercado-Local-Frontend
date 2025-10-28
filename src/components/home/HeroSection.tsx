@@ -1,11 +1,43 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, ArrowRight, Star, Package, MapPin } from "lucide-react";
+import { Leaf, ArrowRight, Star, MapPin } from "lucide-react";
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import { useRef } from "react";
 
 export function HeroSection() {
+    const plugin = useRef(
+        Autoplay({ delay: 3000, stopOnInteraction: true })
+    );
+
+    const farmImages = [
+        {
+            url: "https://images.unsplash.com/photo-1518843875459-f738682238a6?q=80&w=2071&auto=format&fit=crop",
+            alt: "Verduras frescas del campo"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?q=80&w=2070&auto=format&fit=crop",
+            alt: "Productos del agricultor local"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=2070&auto=format&fit=crop",
+            alt: "Canasta de vegetales frescos"
+        },
+        {
+            url: "https://images.unsplash.com/photo-1595855759920-86582396756a?q=80&w=2064&auto=format&fit=crop",
+            alt: "Tomates frescos cosechados"
+        }
+    ];
+
     return (
-        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <section className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-10">
             <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div className="space-y-6 sm:space-y-8 order-2 lg:order-1">
                     <Badge variant='success'>
@@ -47,12 +79,30 @@ export function HeroSection() {
                 <div className="relative order-1 lg:order-2">
                     <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-blue-500 rounded-3xl blur-3xl opacity-20" />
                     <div className="relative bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-2xl">
-                        <div className="aspect-[4/3] bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 rounded-2xl flex items-center justify-center">
-                            <div className="text-center space-y-4">
-                                <Package className="h-24 w-24 sm:h-32 sm:w-32 text-green-600 mx-auto" />
-                                <p className="text-lg font-semibold text-green-600">Próximamente</p>
-                            </div>
-                        </div>
+                        <Carousel
+                            opts={{
+                                align: "start",
+                                loop: true,
+                            }}
+                            plugins={[plugin.current]}
+                            className="w-full"
+                        >
+                            <CarouselContent>
+                                {farmImages.map((image, index) => (
+                                    <CarouselItem key={index}>
+                                        <div className="aspect-[4/3] rounded-2xl overflow-hidden">
+                                            <img
+                                                src={image.url}
+                                                alt={image.alt}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    </CarouselItem>
+                                ))}
+                            </CarouselContent>
+                            <CarouselPrevious className="left-2" />
+                            <CarouselNext className="right-2" />
+                        </Carousel>
                         <div className="absolute -bottom-2 -left-2 sm:-bottom-6 sm:-left-6 bg-white dark:bg-gray-800 rounded-2xl p-3 sm:p-4 shadow-xl">
                             <div className="flex items-center gap-2 sm:gap-3">
                                 <MapPin className="h-8 w-8 sm:h-10 sm:w-10 text-green-600" />
