@@ -10,7 +10,7 @@ export default function NotFound() {
                     <span className="text-9xl md:text-[12rem] font-bold text-primary/40 select-none">
                         4
                     </span>
-                    <img src="/logo.svg" alt="AgroMercado" className="h-24 w-24 md:h-40 md:w-40 opacity-4   0" />
+                    <img src="/logo.svg" alt="AgroMercado" className="h-24 w-24 md:h-40 md:w-40 opacity-40" />
                     <span className="text-9xl md:text-[12rem] font-bold text-primary/40 select-none">
                         4
                     </span>
