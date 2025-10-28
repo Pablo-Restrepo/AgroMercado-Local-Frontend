@@ -23,7 +23,7 @@ export function BenefitsSection() {
                             Agricultura Sostenible para un Futuro Mejor
                         </h2>
                         <p className="text-base sm:text-lg text-muted-foreground">
-                            En AgroMercado Local, creemos en un sistema alimentario más justo y sostenible.
+                            En AgroMercado, creemos en un sistema alimentario más justo y sostenible.
                             Conectamos a productores locales del Cauca con consumidores conscientes de Popayán.
                         </p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">

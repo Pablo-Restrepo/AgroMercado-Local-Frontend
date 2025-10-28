@@ -51,8 +51,8 @@ export function Navbar() {
             <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
                 {/* Logo */}
                 <a href="/" className="flex items-center gap-2">
-                    <img src="/logo.svg" alt="AgroMercado Local" className="h-8 w-8" />
-                    <span className="text-xl font-bold hidden sm:inline-block">AgroMercado Local</span>
+                    <img src="/logo.svg" alt="AgroMercado" className="h-8 w-8" />
+                    <span className="text-xl font-bold hidden sm:inline-block">AgroMercado</span>
                     <span className="text-xl font-bold sm:hidden">AgroMercado</span>
                 </a>
 
@@ -177,10 +177,10 @@ export function Navbar() {
                                 {/* Logo Section */}
                                 <div className="flex items-center gap-3 px-4 py-4 border-b">
                                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/10 flex-shrink-0">
-                                        <img src="/logo.svg" alt="AgroMercado Local" className="h-8 w-8" />
+                                        <img src="/logo.svg" alt="AgroMercado" className="h-8 w-8" />
                                     </div>
                                     <div className="flex flex-col justify-center">
-                                        <span className="text-lg font-bold leading-tight">AgroMercado Local</span>
+                                        <span className="text-lg font-bold leading-tight">AgroMercado</span>
                                         <span className="text-xs text-muted-foreground leading-tight">Tu mercado directo</span>
                                     </div>
                                 </div>

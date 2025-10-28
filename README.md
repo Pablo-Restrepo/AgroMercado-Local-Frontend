@@ -1,6 +1,6 @@
-# AgroMercado Local - Frontend
+# AgroMercado - Frontend
 
-Frontend del proyecto AgroMercado Local construido con React, TypeScript, Vite y shadcn/ui.
+Frontend del proyecto AgroMercado construido con React, TypeScript, Vite y shadcn/ui.
 
 ## 🚀 Requisitos Previos
 

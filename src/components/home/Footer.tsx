@@ -8,7 +8,7 @@ export function Footer() {
                     {/* Logo y descripción */}
                     <div className="col-span-2 space-y-3 md:col-span-1">
                         <Link to="/" className="inline-flex items-center gap-2 transition-opacity hover:opacity-80">
-                            <img src="/logo.svg" alt="AgroMercado Local" className="h-8 w-8" />
+                            <img src="/logo.svg" alt="AgroMercado" className="h-8 w-8" />
                             <span className="text-lg font-bold tracking-tight">AgroMercado</span>
                         </Link>
                         <p className="text-sm leading-relaxed text-muted-foreground max-w-xs">
@@ -105,7 +105,7 @@ export function Footer() {
                 {/* Copyright */}
                 <div className="mt-12 border-t pt-8">
                     <p className="text-center text-xs text-muted-foreground sm:text-sm">
-                        © 2025 AgroMercado Local - Popayán, Cauca. Todos los derechos reservados.
+                        © 2025 AgroMercado - Popayán, Cauca. Todos los derechos reservados.
                     </p>
                 </div>
             </div>
