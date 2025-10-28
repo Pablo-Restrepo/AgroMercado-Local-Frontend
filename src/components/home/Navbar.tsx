@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import {
     NavigationMenu,
@@ -50,11 +51,11 @@ export function Navbar() {
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div className="flex h-16 items-center justify-between px-4 md:px-6 lg:px-8">
                 {/* Logo */}
-                <a href="/" className="flex items-center gap-2">
+                <Link to="/" className="flex items-center gap-2">
                     <img src="/logo.svg" alt="AgroMercado" className="h-8 w-8" />
                     <span className="text-xl font-bold hidden sm:inline-block">AgroMercado</span>
                     <span className="text-xl font-bold sm:hidden">AgroMercado</span>
-                </a>
+                </Link>
 
                 {/* Desktop Navigation */}
                 <NavigationMenu className="hidden lg:flex">
@@ -73,9 +74,9 @@ export function Navbar() {
                                 <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                                     <li className="row-span-3">
                                         <NavigationMenuLink asChild>
-                                            <a
+                                            <Link
                                                 className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
-                                                href="/productos"
+                                                to="/productos"
                                             >
                                                 <Package className="h-6 w-6 mb-2" />
                                                 <div className="mb-2 mt-4 text-lg font-medium">
@@ -84,46 +85,46 @@ export function Navbar() {
                                                 <p className="text-sm leading-tight text-muted-foreground">
                                                     Descubre productos orgánicos directo de la granja
                                                 </p>
-                                            </a>
+                                            </Link>
                                         </NavigationMenuLink>
                                     </li>
                                     <li>
                                         <NavigationMenuLink asChild>
-                                            <a
+                                            <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                href="/productos/frutas"
+                                                to="/productos/frutas"
                                             >
                                                 <div className="text-sm font-medium leading-none">Frutas</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                                                     Frutas de temporada
                                                 </p>
-                                            </a>
+                                            </Link>
                                         </NavigationMenuLink>
                                     </li>
                                     <li>
                                         <NavigationMenuLink asChild>
-                                            <a
+                                            <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                href="/productos/verduras"
+                                                to="/productos/verduras"
                                             >
                                                 <div className="text-sm font-medium leading-none">Verduras</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                                                     Verduras orgánicas
                                                 </p>
-                                            </a>
+                                            </Link>
                                         </NavigationMenuLink>
                                     </li>
                                     <li>
                                         <NavigationMenuLink asChild>
-                                            <a
+                                            <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                href="/productos/lacteos"
+                                                to="/productos/lacteos"
                                             >
                                                 <div className="text-sm font-medium leading-none">Lácteos</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                                                     Productos lácteos frescos
                                                 </p>
-                                            </a>
+                                            </Link>
                                         </NavigationMenuLink>
                                     </li>
                                 </ul>
@@ -152,10 +153,10 @@ export function Navbar() {
                 <div className="hidden lg:flex items-center gap-3">
                     <ModeToggle />
                     <Button variant="ghost" asChild>
-                        <a href="/login">Iniciar Sesión</a>
+                        <Link to="/login">Iniciar Sesión</Link>
                     </Button>
                     <Button asChild>
-                        <a href="/registro">Registrarse</a>
+                        <Link to="/registro">Registrarse</Link>
                     </Button>
                 </div>
 
@@ -196,7 +197,7 @@ export function Navbar() {
                                                 onClick={() => setIsOpen(false)}
                                                 asChild
                                             >
-                                                <a href={item.href}>
+                                                <Link to={item.href}>
                                                     <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors flex-shrink-0">
                                                         <item.icon className="h-5 w-5" />
                                                     </div>
@@ -210,7 +211,7 @@ export function Navbar() {
                                                             </span>
                                                         )}
                                                     </div>
-                                                </a>
+                                                </Link>
                                             </Button>
                                         ))}
                                     </div>
@@ -225,14 +226,14 @@ export function Navbar() {
                                             onClick={() => setIsOpen(false)}
                                             asChild
                                         >
-                                            <a href="/login">Iniciar Sesión</a>
+                                            <Link to="/login">Iniciar Sesión</Link>
                                         </Button>
                                         <Button
                                             className="w-full h-10 font-semibold shadow-sm"
                                             onClick={() => setIsOpen(false)}
                                             asChild
                                         >
-                                            <a href="/registro">Registrarse</a>
+                                            <Link to="/registro">Registrarse</Link>
                                         </Button>
                                     </div>
                                 </div>
