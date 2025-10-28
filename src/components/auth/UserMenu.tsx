@@ -11,7 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 
-export function UserMenu() {
+interface UserMenuProps {
+    isMobile?: boolean;
+}
+
+export function UserMenu({ isMobile = false }: UserMenuProps) {
     const { user, logout, isAuthenticated } = useAuth();
 
     if (!isAuthenticated || !user) {
@@ -38,6 +42,18 @@ export function UserMenu() {
     };
 
     const roleBadge = getRoleBadge(user.u_rol);
+
+    if (isMobile) {
+        return (
+            <Button
+                variant="destructive"
+                className="w-full h-10 font-semibold"
+                onClick={logout}
+            >
+                Cerrar Sesión
+            </Button>
+        );
+    }
 
     return (
         <DropdownMenu>

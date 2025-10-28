@@ -68,18 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isAuthenticated: true,
             });
 
-            switch (response.u_rol) {
-                case 'admin':
-                    navigate('/admin/dashboard');
-                    break;
-                case 'productor':
-                    navigate('/productor/dashboard');
-                    break;
-                case 'cliente':
-                default:
-                    navigate('/');
-                    break;
-            }
+            navigate('/dashboard');
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : 'Error al iniciar sesión';
             setError(errorMessage);

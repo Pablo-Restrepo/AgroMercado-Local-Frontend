@@ -54,13 +54,13 @@ export function HeroSection() {
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4">
                         <Button size="lg" asChild>
-                            <Link to="/products">
+                            <Link to="/productos">
                                 Explorar Productos
                                 <ArrowRight className="ml-2 h-5 w-5" />
                             </Link>
                         </Button>
                         <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                            <Link to="/register-producer">
+                            <Link to="/registro-productor">
                                 Soy Productor
                             </Link>
                         </Button>

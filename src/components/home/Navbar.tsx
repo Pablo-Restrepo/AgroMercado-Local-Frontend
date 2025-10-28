@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/sheet"
 import { Menu, ShoppingBag, Users, Package, Home } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
+import { useAuth } from "@/hooks/auth/useAuth"
+import { UserMenu } from "@/components/auth/UserMenu"
 
 const navigationItems = [
     {
@@ -46,6 +48,7 @@ const navigationItems = [
 
 export function Navbar() {
     const [isOpen, setIsOpen] = useState(false)
+    const { isAuthenticated } = useAuth()
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -152,12 +155,23 @@ export function Navbar() {
                 {/* Desktop CTA Buttons & Theme Toggle */}
                 <div className="hidden lg:flex items-center gap-3">
                     <ModeToggle />
-                    <Button variant="ghost" asChild>
-                        <Link to="/login">Iniciar Sesión</Link>
-                    </Button>
-                    <Button asChild>
-                        <Link to="/registro">Registrarse</Link>
-                    </Button>
+                    {isAuthenticated ? (
+                        <>
+                            <Button variant="ghost" asChild>
+                                <Link to="/dashboard">Dashboard</Link>
+                            </Button>
+                            <UserMenu />
+                        </>
+                    ) : (
+                        <>
+                            <Button variant="ghost" asChild>
+                                <Link to="/login">Iniciar Sesión</Link>
+                            </Button>
+                            <Button asChild>
+                                <Link to="/registro">Registrarse</Link>
+                            </Button>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile/Tablet Actions */}
@@ -219,23 +233,37 @@ export function Navbar() {
 
                                 {/* CTA Buttons */}
                                 <div className="px-4 py-4 border-t bg-muted/30">
-                                    <div className="space-y-2.5">
-                                        <Button
-                                            variant="outline"
-                                            className="w-full h-10 font-semibold"
-                                            onClick={() => setIsOpen(false)}
-                                            asChild
-                                        >
-                                            <Link to="/login">Iniciar Sesión</Link>
-                                        </Button>
-                                        <Button
-                                            className="w-full h-10 font-semibold shadow-sm"
-                                            onClick={() => setIsOpen(false)}
-                                            asChild
-                                        >
-                                            <Link to="/registro">Registrarse</Link>
-                                        </Button>
-                                    </div>
+                                    {isAuthenticated ? (
+                                        <div className="space-y-2.5">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full h-10 font-semibold"
+                                                onClick={() => setIsOpen(false)}
+                                                asChild
+                                            >
+                                                <Link to="/dashboard">Dashboard</Link>
+                                            </Button>
+                                            <UserMenu isMobile />
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2.5">
+                                            <Button
+                                                variant="outline"
+                                                className="w-full h-10 font-semibold"
+                                                onClick={() => setIsOpen(false)}
+                                                asChild
+                                            >
+                                                <Link to="/login">Iniciar Sesión</Link>
+                                            </Button>
+                                            <Button
+                                                className="w-full h-10 font-semibold shadow-sm"
+                                                onClick={() => setIsOpen(false)}
+                                                asChild
+                                            >
+                                                <Link to="/registro">Registrarse</Link>
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             </nav>
                         </SheetContent>

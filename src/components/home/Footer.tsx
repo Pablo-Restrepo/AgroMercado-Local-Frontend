@@ -24,7 +24,7 @@ export function Footer() {
                             <ul className="space-y-2.5">
                                 <li>
                                     <Link
-                                        to="/products"
+                                        to="/productos"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Explorar
@@ -32,7 +32,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/categories"
+                                        to="/categorias"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Categorías
@@ -40,7 +40,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/offers"
+                                        to="/ofertas"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Ofertas
@@ -55,7 +55,7 @@ export function Footer() {
                             <ul className="space-y-2.5">
                                 <li>
                                     <Link
-                                        to="/about"
+                                        to="/nosotros"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Nosotros
@@ -63,7 +63,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/contact"
+                                        to="/contacto"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Contacto
@@ -86,7 +86,7 @@ export function Footer() {
                             <ul className="space-y-2.5">
                                 <li>
                                     <Link
-                                        to="/privacy"
+                                        to="/privacidad"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Privacidad
@@ -94,7 +94,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/terms"
+                                        to="/terminos"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Términos
@@ -109,7 +109,7 @@ export function Footer() {
                             <ul className="space-y-2.5">
                                 <li>
                                     <Link
-                                        to="/help"
+                                        to="/ayuda"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Ayuda
@@ -117,7 +117,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/shipping"
+                                        to="/envios"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Envíos
@@ -125,7 +125,7 @@ export function Footer() {
                                 </li>
                                 <li>
                                     <Link
-                                        to="/returns"
+                                        to="/devoluciones"
                                         className="text-sm text-muted-foreground transition-colors hover:text-green-600 dark:hover:text-green-500"
                                     >
                                         Devoluciones

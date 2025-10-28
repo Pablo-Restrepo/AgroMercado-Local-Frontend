@@ -1,7 +1,14 @@
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import { LoginForm } from "@/components/auth/LoginForm"
+import { useAuth } from "@/hooks/auth/useAuth"
 
 export default function LoginPage() {
+  const { isAuthenticated } = useAuth()
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="bg-muted relative hidden lg:block">
