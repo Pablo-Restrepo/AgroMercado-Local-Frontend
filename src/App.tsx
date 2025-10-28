@@ -1,15 +1,18 @@
 import './App.css'
-import ComponentTestPage from "@/pages/component-test";
-import { ThemeProvider } from "@/components/theme-provider";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import HomePage from "@/pages/home/HomePage"
+import NotFound from "@/pages/NotFound"
+import { ThemeProvider } from "@/components/theme-provider"
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="min-h-screen">
-        <main className="p-6">
-          <ComponentTestPage />
-        </main>
-      </div>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <Router>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   )
 }
