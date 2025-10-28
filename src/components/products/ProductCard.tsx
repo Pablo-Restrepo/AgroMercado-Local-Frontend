@@ -18,10 +18,9 @@ export interface Product {
 
 interface ProductCardProps {
     product: Product
-    className?: string
 }
 
-export function ProductCard({ product, className }: ProductCardProps) {
+export function ProductCard({ product }: ProductCardProps) {
     const getCategoryBadge = (category: string) => {
         const categoryLabels: Record<string, string> = {
             verduras: "Verduras",

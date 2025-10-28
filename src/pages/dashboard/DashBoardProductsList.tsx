@@ -5,8 +5,6 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Navigate } from "react-router-dom"
-import { useAuth } from "@/hooks/auth/useAuth"
 import { ProductCard, type Product } from "@/components/products/ProductCard"
 import { useState } from "react"
 import { type FilterState } from "@/components/products/ProductFilters"
@@ -224,7 +222,7 @@ export default function DashBoardProductsList() {
                 <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
                     <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
                         {filteredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} className="h-full w-full" />
+                            <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
                     {filteredProducts.length === 0 && (
