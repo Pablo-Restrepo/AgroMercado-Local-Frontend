@@ -51,20 +51,20 @@ export function ProductCard({ product }: ProductCardProps) {
                     <h3 className="font-semibold text-lg leading-tight">{product.name}</h3>
                     <div className="text-right flex-shrink-0 ml-2">
                         <p className="font-bold text-2xl">${product.price.toLocaleString()}</p>
-                        <p className="text-sm text-zinc-500">por {product.unit}</p>
+                        <p className="text-sm text-zinc-400">por {product.unit}</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-1.5 text-sm text-zinc-600">
                     <MapPin className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{product.location}</span>
+                    <span className="truncate text-zinc-500">{product.location}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                         <span className="font-semibold text-sm">{product.rating}</span>
-                        <span className="text-sm text-zinc-500">
+                        <span className="text-sm text-zinc-400">
                             ({product.reviews} reseñas)
                         </span>
                     </div>
@@ -79,9 +79,9 @@ export function ProductCard({ product }: ProductCardProps) {
                     <Button
                         size="icon"
                         variant="outline"
-                        className="h-10 w-10 rounded-lg border-zinc-200"
+                        className="h-10 w-10 rounded-lg"
                     >
-                        <Heart className="h-4 w-4 text-zinc-600" />
+                        <Heart className="h-4 w-4 text-zinc-500" />
                     </Button>
                 </div>
             </div>

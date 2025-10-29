@@ -78,14 +78,14 @@ export function Navbar() {
                                     <li className="row-span-3">
                                         <NavigationMenuLink asChild>
                                             <Link
-                                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-primary/70 to-primary/30 p-6 no-underline outline-none focus:shadow-md hover:from-primary/80 hover:to-primary/40"
                                                 to="/productos"
                                             >
-                                                <Package className="h-6 w-6 mb-2" />
-                                                <div className="mb-2 mt-4 text-lg font-medium">
+                                                <Package className="h-10 w-10 mb-2 text-primary-foreground" />
+                                                <div className="mb-2 mt-4 text-lg font-medium text-primary-foreground">
                                                     Productos Frescos
                                                 </div>
-                                                <p className="text-sm leading-tight text-muted-foreground">
+                                                <p className="text-sm leading-tight text-primary-foreground/80">
                                                     Descubre productos orgánicos directo de la granja
                                                 </p>
                                             </Link>

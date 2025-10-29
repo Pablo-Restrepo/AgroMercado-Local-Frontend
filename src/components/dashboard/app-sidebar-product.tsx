@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { Separator } from "@/components/ui/separator"
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   onFilterChange?: (filters: FilterState) => void
@@ -33,6 +34,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
+      <Separator orientation="horizontal" className="px-4" />
       <SidebarContent className="px-4">
         <div className="py-4">
           <h2 className="mb-4 text-lg font-semibold">Filtros</h2>
