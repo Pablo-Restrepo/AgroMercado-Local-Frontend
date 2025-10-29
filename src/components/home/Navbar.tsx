@@ -66,7 +66,7 @@ export function Navbar() {
                         <NavigationMenuItem>
                             <NavigationMenuLink
                                 href="/"
-                                className="group inline-flex h-10 items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50">
+                                className="group inline-flex h-10 items-center justify-center px-4 py-2">
                                 Inicio
                             </NavigationMenuLink>
                         </NavigationMenuItem>
@@ -207,7 +207,7 @@ export function Navbar() {
                                             <Button
                                                 key={item.href}
                                                 variant="ghost"
-                                                className="group w-full justify-start gap-3 rounded-xl h-auto px-0 py-3 text-sm font-medium bg-transparent border-0 hover:bg-accent hover:px-3 transition-all duration-200"
+                                                className="group w-full justify-start gap-3 rounded-xl h-auto px-0 py-3 text-sm font-medium bg-transparent border-0 hover:bg-accent hover:px-3 transition-all duration-200 dark:hover:bg-accent/50"
                                                 onClick={() => setIsOpen(false)}
                                                 asChild
                                             >
