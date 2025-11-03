@@ -29,6 +29,14 @@ import { Slider } from "@/components/ui/slider"
 
 import { getCurrentUser } from "@/services/api/userApi"
 import { authStorage } from "@/services/storage/authStorage"
+import type { User } from "@/types/auth" 
+
+type SidebarUser = {
+  name: string
+  email: string
+  avatar: string
+  role?: User["u_rol"]
+}
 
 const data = {
   user: {
@@ -84,28 +92,63 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
 
-  // usuario que se pasa a NavUser (inicial con valor "quemado")
-  const [currentUser, setCurrentUser] = React.useState(() => ({
-    name: data.user.name,
-    email: data.user.email,
-    avatar: data.user.avatar,
-  }))
+  // usar user guardado en localStorage como inicial (si existe), sino fallback quemado
+  const initialUser = React.useMemo(() => {
+    const stored = authStorage.getUser()
+    if (stored) {
+      return {
+        name: stored.u_nombre_usuario,
+        email: stored.u_email,
+        avatar: `/avatars/${stored.u_id}.jpg`,
+        role: stored.u_rol, // <-- ahora guardamos rol si existe en storage
+      } as SidebarUser
+    }
+    return {
+      name: data.user.name,
+      email: data.user.email,
+      avatar: data.user.avatar,
+    } as SidebarUser
+  }, [])
+
+  const [currentUser, setCurrentUser] = React.useState<SidebarUser>(() => initialUser)
 
   React.useEffect(() => {
     const token = authStorage?.getAccessToken?.()
     if (!token) return
 
     let mounted = true
-    getCurrentUser(token)
+
+    // normalizar rol del backend a los enums usados en frontend
+    function normalizeRole(role?: string): User["u_rol"] {
+      if (!role) return "cliente"
+      if (role.includes("admin")) return "admin"
+      if (role.includes("productor")) return "productor"
+      return "cliente"
+    }
+
+    getCurrentUser()
       .then((u) => {
         if (!mounted) return
-        // mapear respuesta del backend al shape que espera NavUser
-        setCurrentUser({
+        const mapped: SidebarUser = {
           name: `${u.nombres} ${u.apellidos}`,
           email: u.email,
-          // puedes cambiar la lógica de avatar cuando tengas la ruta real
-          avatar: `/avatars/${u.u_id}.jpg`,
-        })
+          avatar: `/avatars/${u.u_id}.jpg`, // placeholder; cambia cuando tengas ruta real
+          role: normalizeRole(u.rol), // <-- guardo rol aquí pero no lo muestro en NavUser
+        }
+        setCurrentUser(mapped)
+
+        // guardar usuario normalizado en authStorage para uso en otras partes
+        try {
+          const userToStore: User = {
+            u_id: u.u_id,
+            u_nombre_usuario: mapped.name,
+            u_email: u.email,
+            u_rol: mapped.role ?? "cliente",
+          }
+          authStorage.setUser(userToStore)
+        } catch {
+          // no bloquear si falla el guardado
+        }
       })
       .catch(() => {
         // mantener usuario quemado si falla

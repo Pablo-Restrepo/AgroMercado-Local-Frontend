@@ -1,24 +1,14 @@
 import type { MeResponse, LoggedUser } from "@/types/userLogged";
+import { authFetch } from "@/services/api/authFetch"; // usar authFetch que añade Authorization
 
 const API_BASE_URL = "http://127.0.0.1:8001";
 
 /**
- * Obtiene el usuario autenticado desde /usuarios/me.
- * Si pasas `token`, se incluye en Authorization; si no, la petición se hace sin token.
+ * Obtiene el usuario autenticado desde /usuarios/me usando authFetch
  */
-export async function getCurrentUser(token?: string): Promise<LoggedUser> {
-  const headers: Record<string, string> = {
-    accept: "application/json",
-    "Content-Type": "application/json",
-  };
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE_URL}/usuarios/me`, {
+export async function getCurrentUser(): Promise<LoggedUser> {
+  const res = await authFetch(`${API_BASE_URL}/usuarios/me`, {
     method: "GET",
-    headers,
   });
 
   if (!res.ok) {
