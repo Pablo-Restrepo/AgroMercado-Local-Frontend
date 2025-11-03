@@ -7,6 +7,8 @@ import LoginPage from "@/pages/auth/LoginPage"
 import NotFound from "@/pages/NotFound"
 import DashBoardProductsList from '@/pages/dashboard/DashBoardProductsList'
 import DashBoardPage from '@/pages/dashboard/DashBoardPage'
+import ProductsPage from '@/pages/products/ProductsPage'
+import CreateProduct from '@/pages/products/CreateProduct'
 import { RequireAuth } from "./components/auth/RequireAuth"
 
 function App() {
@@ -15,15 +17,20 @@ function App() {
       <Router>
         <AuthProvider>
           <Routes>
+            {/* Páginas sin sidebar */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            
+            {/* Páginas con sidebar (públicas) */}
+            <Route path="/productos" element={<ProductsPage />} />
 
-            {/* Rutas protegidas */}
+            {/* Rutas protegidas con sidebar */}
             <Route path="/dashboard/*" element={<RequireAuth />}>
               <Route path="*" element={<DashBoardPage />} />
+              <Route path="crear-producto" element={<CreateProduct />} />
             </Route>
 
-            <Route path="/productos" element={<DashBoardProductsList />} />
+            <Route path="/dashboard/productos" element={<DashBoardProductsList />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
