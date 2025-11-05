@@ -4,7 +4,7 @@ const API_BASE_URL = 'http://127.0.0.1:8001';
 
 export const authApi = {
     async login(credentials: LoginRequest): Promise<LoginResponse> {
-        const response = await fetch(`${API_BASE_URL}/usuarios/login`, {
+        const response = await fetch(`${API_BASE_URL}/api/usuarios/login`, {
             method: 'POST',
             headers: {
                 'accept': 'application/json',
