@@ -1,4 +1,3 @@
-import React from "react"
 import { Filter } from "lucide-react"
 
 export type Option = { value: string; label: string }
@@ -15,7 +14,7 @@ export default function Select({
   value,
   onValueChange,
   options = [],
-  className = ""}: SelectProps) {
+  className = "" }: SelectProps) {
   return (
     <div className={className}>
       <div className="relative">
