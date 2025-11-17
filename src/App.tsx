@@ -10,7 +10,7 @@ import DashBoardPage from '@/pages/dashboard/DashBoardPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
 import { RequireAuth } from "./components/auth/RequireAuth"
-
+import RegisterPage from '@/pages/auth/RegisterPage'
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
@@ -20,7 +20,7 @@ function App() {
             {/* Páginas sin sidebar */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-            
+            <Route path="/registro" element={<RegisterPage />} />
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 

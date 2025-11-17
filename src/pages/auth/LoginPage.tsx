@@ -29,6 +29,12 @@ export default function LoginPage() {
             <LoginForm />
           </div>
         </div>
+        <div className="text-center text-sm">
+          <span className="text-gray-600">¿No tienes una cuenta? </span>
+          <Link to="/registro" className="text-green-600 hover:underline font-medium">
+            Regístrate aquí
+          </Link>
+        </div>
       </div>
     </div>
   )
