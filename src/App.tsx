@@ -6,11 +6,12 @@ import HomePage from "@/pages/home/HomePage"
 import LoginPage from "@/pages/auth/LoginPage"
 import NotFound from "@/pages/NotFound"
 import DashBoardProductsList from '@/pages/dashboard/DashBoardProductsList'
-import DashBoardPage from '@/pages/dashboard/DashBoardPage'
+import DashBoardShoppingPage from '@/pages/dashboard/DashBoardShoppingPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
+
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
@@ -21,16 +22,17 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterPage />} />
-            {/* Páginas con sidebar (públicas) */}
+            
+            {/* Páginas públicas con sidebar */}
             <Route path="/productos" element={<ProductsPage />} />
 
-            {/* Rutas protegidas con sidebar */}
+            {/* Rutas protegidas con sidebar de dashboard */}
             <Route path="/dashboard/*" element={<RequireAuth />}>
-              <Route path="*" element={<DashBoardPage />} />
+              <Route path="" element={<DashBoardShoppingPage />} />
+              <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
             </Route>
 
-            <Route path="/dashboard/productos" element={<DashBoardProductsList />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

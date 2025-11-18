@@ -47,7 +47,7 @@ const data = {
   navMain: [
     {
       title: "Mis productos",
-      url: "/dashboard/productos",
+      url: "/dashboard/mis-productos",
       icon: Package,
     },
     {
@@ -88,7 +88,11 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
+}
+
+export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
 
@@ -100,7 +104,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         name: stored.u_nombre_usuario,
         email: stored.u_email,
         avatar: `/avatars/${stored.u_id}.jpg`,
-        role: stored.u_rol, // <-- ahora guardamos rol si existe en storage
+        role: stored.u_rol,
       } as SidebarUser
     }
     return {
@@ -111,6 +115,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, [])
 
   const [currentUser, setCurrentUser] = React.useState<SidebarUser>(() => initialUser)
+
+  // Notificar cambios de filtros - usar useCallback para evitar re-renders
+  const notifyFilterChange = React.useCallback(() => {
+    onFilterChange?.({
+      selectedCategory,
+      priceRange
+    })
+  }, [selectedCategory, priceRange, onFilterChange])
+
+  React.useEffect(() => {
+    notifyFilterChange()
+  }, [notifyFilterChange])
 
   React.useEffect(() => {
     const token = authStorage?.getAccessToken?.()
@@ -132,12 +148,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const mapped: SidebarUser = {
           name: `${u.nombres} ${u.apellidos}`,
           email: u.email,
-          avatar: `/avatars/${u.u_id}.jpg`, // placeholder; cambia cuando tengas ruta real
-          role: normalizeRole(u.rol), // <-- guardo rol aquí pero no lo muestro en NavUser
+          avatar: `/avatars/${u.u_id}.jpg`,
+          role: normalizeRole(u.rol),
         }
         setCurrentUser(mapped)
 
-        // guardar usuario normalizado en authStorage para uso en otras partes
         try {
           const userToStore: User = {
             u_id: u.u_id,

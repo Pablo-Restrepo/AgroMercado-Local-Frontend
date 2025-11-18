@@ -17,8 +17,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const res = await authApi.login(credentials); // retorna LoginResponse
-      // guardar tokens y user
-      authStorage.setTokens(res.access_token, res.refresh_token);
+
+      // guardar tokens y user (usar setTokens que existe en authStorage)
+      if (res.access_token || res.refresh_token) {
+        authStorage.setTokens(res.access_token ?? "", res.refresh_token ?? "");
+      }
+
       const userToStore: User = {
         u_id: res.u_id,
         u_nombre_usuario: res.u_nombre_usuario,

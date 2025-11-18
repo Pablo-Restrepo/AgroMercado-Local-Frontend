@@ -1,19 +1,19 @@
 import { authStorage } from '@/services/storage/authStorage';
-
 export async function authFetch(
     url: string,
     options: RequestInit = {}
 ): Promise<Response> {
     const token = authStorage.getAccessToken();
 
+    // No forzar content-type para GET, construir headers base
     const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
         'accept': 'application/json',
     };
 
+    // Si se pasa Content-Type en options.headers respetarlo
     if (options.headers) {
-        const optionsHeaders = new Headers(options.headers);
-        optionsHeaders.forEach((value, key) => {
+        const optHeaders = new Headers(options.headers);
+        optHeaders.forEach((value, key) => {
             headers[key] = value;
         });
     }
@@ -27,9 +27,11 @@ export async function authFetch(
         headers,
     });
 
+    // No redirigir desde aquí. Devolver error para que el authProvider gestione refresh/clear.
     if (response.status === 401) {
+        // limpiar storage para evitar bucles, pero no forzar location.href
         authStorage.clear();
-        window.location.href = '/login';
+        throw new Error('Unauthorized');
     }
 
     return response;

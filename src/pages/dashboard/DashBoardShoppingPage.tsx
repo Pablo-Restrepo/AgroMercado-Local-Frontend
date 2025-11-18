@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -17,7 +17,6 @@ import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
 
-// Datos placeholder - después conectarás con tu servicio
 const mockProducts = [
   {
     id: "1",
@@ -27,7 +26,7 @@ const mockProducts = [
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
-    category: "Verduras",
+    category: "verduras",
     image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   },
@@ -39,7 +38,7 @@ const mockProducts = [
     location: "Finca La Esperanza • Popayán", 
     rating: 4.8,
     reviews: 24,
-    category: "Verduras",
+    category: "verduras",
     image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   },
@@ -51,7 +50,7 @@ const mockProducts = [
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
-    category: "Verduras",
+    category: "verduras",
     image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   },
@@ -63,7 +62,7 @@ const mockProducts = [
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
-    category: "Verduras",
+    category: "tuberculos",
     image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   },
@@ -75,7 +74,7 @@ const mockProducts = [
     location: "Finca Los Robles • Popayán", 
     rating: 4.8,
     reviews: 24,
-    category: "Frutas",
+    category: "frutas",
     image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   },
@@ -87,22 +86,66 @@ const mockProducts = [
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
-    category: "Verduras", 
+    category: "verduras", 
     image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    available: true
+  },
+  {
+    id: "7",
+    name: "Mango Tommy",
+    price: 8000,
+    unit: "kg",
+    location: "Finca San José • Popayán", 
+    rating: 4.7,
+    reviews: 38,
+    category: "frutas",
+    image: "https://images.unsplash.com/photo-1553279768-865429fa0078?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    available: true
+  },
+  {
+    id: "8",
+    name: "Cilantro fresco",
+    price: 2000,
+    unit: "manojo",
+    location: "Finca El Paraíso • Popayán", 
+    rating: 4.4,
+    reviews: 15,
+    category: "hierbas",
+    image: "https://images.unsplash.com/photo-1607305387299-a3d9611cd469?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+    available: true
+  },
+  {
+    id: "9",
+    name: "Hierba Medicinal",
+    price: 12000,
+    unit: "kg",
+    location: "Finca Verde • Popayán", 
+    rating: 4.6,
+    reviews: 22,
+    category: "medicinales",
+    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   }
 ]
 
-export default function ProductsPage() {
+export default function DashBoardShoppingPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
+  // Estado para los filtros que vienen de la sidebar
+  const [sidebarFilters, setSidebarFilters] = useState({
+    selectedCategory: "todo",
+    priceRange: [0]
+  })
+  
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
-  console.log("Product selected:", selectedProduct)
-  console.log("Modal open:", isModalOpen)
-  console.log("Cart state:", cart)
+
+  // Función que recibe los filtros de la sidebar - usar useCallback
+  const handleFilterChange = useCallback((filters: { selectedCategory: string; priceRange: number[] }) => {
+    setSidebarFilters(filters)
+  }, [])
+
   const handleAddToCart = (productId: string) => {
     const product = mockProducts.find(p => p.id === productId)
     if (product) {
@@ -122,21 +165,49 @@ export default function ProductsPage() {
     }, quantity)
   }
 
+  // Aplicar filtros de búsqueda y sidebar
   const filteredProducts = mockProducts.filter(product => {
+    // Filtro por búsqueda
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || product.category.toLowerCase() === selectedCategory.toLowerCase()
-    return matchesSearch && matchesCategory
+    
+    // Filtro por categoría de la sidebar
+    const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
+                                   product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
+    
+    // Filtro por rango de precio de la sidebar
+    const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
+                               product.price <= sidebarFilters.priceRange[0]
+    
+    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
   })
 
   return (
     <>
-      <DashboardLayout title="Productos">
+      <DashboardLayout 
+        title="Productos Disponibles"
+        onFilterChange={handleFilterChange}
+      >
         <div className="flex-1 bg-gray-50">
-          {/* Search and Filters - Ahora dentro del layout */}
+          {/* Search and Filters */}
           <div className="bg-white border-b">
             <div className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex-1" />
+                <div className="flex items-center gap-4">
+                  {/* Mostrar filtros activos */}
+                  {sidebarFilters.selectedCategory !== "todo" && (
+                    <Badge variant="outline" className="capitalize">
+                      {sidebarFilters.selectedCategory}
+                    </Badge>
+                  )}
+                  {sidebarFilters.priceRange[0] > 0 && (
+                    <Badge variant="outline">
+                      Hasta ${sidebarFilters.priceRange[0].toLocaleString()}
+                    </Badge>
+                  )}
+                  <span className="text-sm text-gray-600">
+                    {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
                 <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
                   <ShoppingBag className="h-4 w-4" />
                   Carrito de compras
@@ -148,7 +219,7 @@ export default function ProductsPage() {
                 </Button>
               </div>
 
-              {/* Search and Filters */}
+              {/* Search Bar */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -159,18 +230,6 @@ export default function ProductsPage() {
                     className="pl-10"
                   />
                 </div>
-                
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full sm:w-[200px] border rounded px-3 py-2 bg-white"
-                >
-                  <option value="all">Todas las categorías</option>
-                  <option value="verduras">Verduras</option>
-                  <option value="frutas">Frutas</option>
-                  <option value="tuberculos">Tubérculos</option>
-                  <option value="hierbas">Hierbas</option>
-                </select>
               </div>
             </div>
           </div>
@@ -202,7 +261,7 @@ export default function ProductsPage() {
                       <h3 className="font-semibold text-lg text-gray-900 leading-tight">
                         {product.name}
                       </h3>
-                      <Badge variant="outline" className="ml-2 flex-shrink-0">
+                      <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
                         {product.category}
                       </Badge>
                     </div>
@@ -249,7 +308,7 @@ export default function ProductsPage() {
                 <div className="text-gray-500">
                   <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
-                  <p>Intenta con otros términos de búsqueda o categorías</p>
+                  <p>Intenta cambiar los filtros o términos de búsqueda</p>
                 </div>
               </div>
             )}
@@ -257,7 +316,7 @@ export default function ProductsPage() {
         </div>
       </DashboardLayout>
 
-      {/* Modal para añadir al carrito */}
+      {/* Modales */}
       <AddToCartModal
         product={selectedProduct}
         isOpen={isModalOpen}
@@ -265,7 +324,6 @@ export default function ProductsPage() {
         onAddToCart={handleConfirmAddToCart}
       />
 
-      {/* Carrito flotante */}
       <FloatingCart
         cart={cart}
         onUpdateQuantity={updateQuantity}

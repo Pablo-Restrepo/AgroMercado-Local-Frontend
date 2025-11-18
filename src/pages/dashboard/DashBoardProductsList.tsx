@@ -1,13 +1,6 @@
-import { AppSidebar } from "@/components/dashboard/app-sidebar-product"
-import { Separator } from "@/components/ui/separator"
-import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { ProductCard, type Product } from "@/components/products/ProductCard"
 import { useState } from "react"
-import { type FilterState } from "@/components/products/ProductFilters"
+import { ProductCard, type Product } from "@/components/products/ProductCard"
+import { DashboardLayout } from "@/components/layout/DashboardLayout"
 
 const mockProducts: Product[] = [
 
@@ -194,44 +187,37 @@ const mockProducts: Product[] = [
 ]
 
 export default function DashBoardProductsList() {
-    const [filters, setFilters] = useState<FilterState>({
-        category: "todo",
+    const [filters, setFilters] = useState({
+        selectedCategory: "todo",
         priceRange: [0]
     })
 
     const filteredProducts = mockProducts.filter(product => {
-        const categoryMatch = filters.category === "todo" || product.category === filters.category
-        const priceMatch = filters.priceRange[0] === 0 || product.price <= filters.priceRange[0]
+        const categoryMatch = filters.selectedCategory === "todo" || 
+                             product.category === filters.selectedCategory
+        const priceMatch = filters.priceRange[0] === 0 || 
+                          product.price <= filters.priceRange[0]
+        
         return categoryMatch && priceMatch
     })
 
     return (
-        <SidebarProvider>
-            <AppSidebar onFilterChange={setFilters} />
-            <SidebarInset>
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-                    <div className="flex items-center gap-2 px-4">
-                        <SidebarTrigger className="-ml-1" />
-                        <Separator
-                            orientation="vertical"
-                            className="mr-2 data-[orientation=vertical]:h-4"
-                        />
-                        <h1 className="text-xl font-semibold">Productos</h1>
-                    </div>
-                </header>
-                <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                    <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
-                        {filteredProducts.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
-                    {filteredProducts.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12">
-                            <p className="text-muted-foreground">No se encontraron productos</p>
-                        </div>
-                    )}
+        <DashboardLayout 
+            title="Mis Productos"
+            onFilterChange={setFilters}
+        >
+            <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+                <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
+                    {filteredProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                    ))}
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+                {filteredProducts.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <p className="text-muted-foreground">No se encontraron productos</p>
+                    </div>
+                )}
+            </div>
+        </DashboardLayout>
     )
 }

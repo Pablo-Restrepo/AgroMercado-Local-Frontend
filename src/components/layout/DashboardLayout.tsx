@@ -1,5 +1,4 @@
-import { type ReactNode } from "react"
-import { useNavigate } from "react-router-dom"
+import { ReactNode } from "react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import {
   SidebarInset,
@@ -9,19 +8,22 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
 interface DashboardLayoutProps {
   children: ReactNode
   title?: string
   showBackButton?: boolean
   backUrl?: string
+  onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
 }
 
 export function DashboardLayout({
   children,
   title,
   showBackButton = false,
-  backUrl
+  backUrl,
+  onFilterChange
 }: DashboardLayoutProps) {
   const navigate = useNavigate()
 
@@ -35,7 +37,7 @@ export function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar onFilterChange={onFilterChange} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b">
           <div className="flex items-center gap-2 px-4">
@@ -44,11 +46,11 @@ export function DashboardLayout({
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-
+            
             {showBackButton && (
               <>
-                <Button
-                  variant="ghost"
+                <Button 
+                  variant="ghost" 
                   size="sm"
                   onClick={handleBack}
                   className="gap-2"
@@ -62,7 +64,7 @@ export function DashboardLayout({
                 />
               </>
             )}
-
+            
             {title && (
               <h1 className="text-xl font-semibold">{title}</h1>
             )}
