@@ -16,9 +16,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await authApi.login(credentials); // retorna LoginResponse
+      const res = await authApi.login(credentials);
 
-      // guardar tokens y user (usar setTokens que existe en authStorage)
       if (res.access_token || res.refresh_token) {
         authStorage.setTokens(res.access_token ?? "", res.refresh_token ?? "");
       }
@@ -48,12 +47,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
   }
 
+  // Función para verificar si la sesión sigue siendo válida
+  const checkSession = React.useCallback(async () => {
+    const token = authStorage.getAccessToken();
+    const storedUser = authStorage.getUser();
+    
+    if (!token || !storedUser) {
+      setIsAuthenticated(false);
+      setUser(null);
+      return;
+    }
+
+    // Verificar si el token sigue siendo válido
+    try {
+      // Solo hacer la verificación si hay token
+      setUser(storedUser);
+      setIsAuthenticated(true);
+    } catch {
+      // Si hay error, limpiar la sesión
+      logout();
+    }
+  }, []);
+
   React.useEffect(() => {
-    // sincronizar con storage en cambios externos
+    checkSession();
+  }, [checkSession]);
+
+  React.useEffect(() => {
+    // Sincronizar con storage en cambios externos
     const onStorage = () => {
-      setUser(authStorage.getUser());
-      setIsAuthenticated(authStorage.hasSession());
+      const hasSession = authStorage.hasSession();
+      const storedUser = authStorage.getUser();
+      
+      setUser(storedUser);
+      setIsAuthenticated(hasSession);
     };
+    
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
   }, []);
