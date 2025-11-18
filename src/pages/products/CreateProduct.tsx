@@ -5,42 +5,62 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textArea"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
-import { X, ImagePlus } from "lucide-react"
+import { X, ImagePlus, Loader2 } from "lucide-react"
 import Select from "@/components/ui/select"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
+import { createProduct } from "@/services/api/productoApi"
+import { useAuth } from "@/hooks/auth/useAuth"
 
 interface ProductForm {
   name: string
   description: string
   price: string
   category: string
+  unit: string
   images: File[]
 }
 
 export default function CreateProduct() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   
   const [form, setForm] = useState<ProductForm>({
     name: "",
     description: "",
     price: "",
     category: "",
+    unit: "kg",
     images: []
   })
 
   const [dragActive, setDragActive] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleInputChange = (field: keyof ProductForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))
+    if (error) setError(null) // Limpiar error al hacer cambios
   }
 
   const handleFileSelect = (files: FileList | null) => {
     if (!files) return
 
-    const newFiles = Array.from(files).filter(file => 
-      file.type.startsWith('image/')
-    )
+    const newFiles = Array.from(files).filter(file => {
+      // Validar tipo de archivo
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name} no es una imagen válida`)
+        return false
+      }
+      
+      // Validar tamaño (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`${file.name} es muy grande (máximo 5MB)`)
+        return false
+      }
+      
+      return true
+    })
 
     if (newFiles.length === 0) return
 
@@ -89,33 +109,86 @@ export default function CreateProduct() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Función para subir imagen (placeholder - necesitarás implementar según tu API de imágenes)
+  const uploadImage = async (file: File): Promise<string> => {
+    // Por ahora, retornar un placeholder URL
+    // TODO: Implementar subida real de imágenes
+    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(file.name)}`
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError(null)
     
-    // Validaciones básicas
+    // Validaciones
     if (!form.name.trim()) {
-      alert("El nombre del producto es requerido")
+      setError("El nombre del producto es requerido")
       return
     }
     
     if (!form.description.trim()) {
-      alert("La descripción es requerida")
+      setError("La descripción es requerida")
       return
     }
     
     if (!form.price || parseFloat(form.price) <= 0) {
-      alert("El precio debe ser mayor a 0")
+      setError("El precio debe ser mayor a 0")
       return
     }
     
     if (!form.category) {
-      alert("Selecciona una categoría")
+      setError("Selecciona una categoría")
       return
     }
 
-    console.log("Formulario a enviar:", form)
-    // Aquí conectarás con tu servicio
-    alert("Producto creado exitosamente (placeholder)")
+    if (!form.unit) {
+      setError("Selecciona una unidad")
+      return
+    }
+
+    if (!user?.u_id) {
+      setError("No se pudo obtener la información del usuario")
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      // Subir la primera imagen (o usar placeholder si no hay)
+      let imageUrl = ""
+      if (form.images.length > 0) {
+        imageUrl = await uploadImage(form.images[0])
+      }
+
+      // Crear producto
+      const productData = {
+        p_nombre: form.name.trim(),
+        p_tipo: form.category,
+        p_unidad: form.unit,
+        prod_id: user.u_id,
+        img: imageUrl,
+        p_precio: parseFloat(form.price)
+      }
+
+      const productId = await createProduct(productData)
+      
+      console.log("Producto creado con ID:", productId)
+      
+      // Limpiar formulario
+      previewUrls.forEach(url => URL.revokeObjectURL(url))
+      
+      // Redirigir a la lista de productos
+      navigate("/dashboard/mis-productos", { 
+        replace: true,
+        state: { message: "Producto creado exitosamente" }
+      })
+      
+    } catch (err) {
+      console.error("Error creando producto:", err)
+      setError(err instanceof Error ? err.message : "Error al crear el producto")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancel = () => {
@@ -127,6 +200,7 @@ export default function CreateProduct() {
       description: "",
       price: "",
       category: "",
+      unit: "kg",
       images: []
     })
     setPreviewUrls([])
@@ -150,6 +224,12 @@ export default function CreateProduct() {
             </CardHeader>
             
             <CardContent className="space-y-6">
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Nombre del producto */}
                 <div className="space-y-2">
@@ -163,6 +243,7 @@ export default function CreateProduct() {
                     value={form.name}
                     onChange={(e) => handleInputChange("name", e.target.value)}
                     className="w-full"
+                    disabled={isSubmitting}
                   />
                 </div>
 
@@ -178,24 +259,48 @@ export default function CreateProduct() {
                     onChange={(e) => handleInputChange("description", e.target.value)}
                     rows={4}
                     className="w-full resize-none"
+                    disabled={isSubmitting}
                   />
                 </div>
 
-                {/* Precio */}
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-sm font-medium text-gray-700">
-                    Precio (por kg) <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    placeholder="0.00"
-                    value={form.price}
-                    onChange={(e) => handleInputChange("price", e.target.value)}
-                    min="0"
-                    step="0.01"
-                    className="w-full"
-                  />
+                {/* Precio y Unidad */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-sm font-medium text-gray-700">
+                      Precio <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      placeholder="0.00"
+                      value={form.price}
+                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      min="0"
+                      step="0.01"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium text-gray-700">
+                      Unidad <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={form.unit}
+                      onValueChange={(value) => handleInputChange("unit", value)}
+                      className="w-full"
+                      options={[
+                        { value: "kg", label: "Kilogramo (kg)" },
+                        { value: "g", label: "Gramo (g)" },
+                        { value: "lb", label: "Libra (lb)" },
+                        { value: "unidad", label: "Unidad" },
+                        { value: "manojo", label: "Manojo" },
+                        { value: "docena", label: "Docena" },
+                      ]}
+                      disabled={isSubmitting}
+                    />
+                  </div>
                 </div>
 
                 {/* Categoría */}
@@ -212,16 +317,17 @@ export default function CreateProduct() {
                       { value: "frutas", label: "Frutas" },
                       { value: "verduras", label: "Verduras" },
                       { value: "tuberculos", label: "Tubérculos" },
-                      { value: "hierbas", label: "Hierbas" },
-                      { value: "medicinales", label: "Medicinales" },
+                      { value: "hierbas", label: "Hierbas aromáticas" },
+                      { value: "medicinales", label: "Plantas medicinales" },
                     ]}
+                    disabled={isSubmitting}
                   />
                 </div>
 
                 {/* Imágenes */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
-                    Imágenes del producto <span className="text-red-500">*</span>
+                    Imágenes del producto
                   </Label>
                   
                   {/* Zona de carga */}
@@ -230,7 +336,7 @@ export default function CreateProduct() {
                       dragActive
                         ? "border-green-500 bg-green-50"
                         : "border-gray-300 hover:border-gray-400"
-                    }`}
+                    } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -242,6 +348,7 @@ export default function CreateProduct() {
                       accept="image/*"
                       onChange={(e) => handleFileSelect(e.target.files)}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={isSubmitting}
                     />
                     
                     <div className="flex flex-col items-center gap-2">
@@ -266,13 +373,15 @@ export default function CreateProduct() {
                             alt={`Preview ${index + 1}`}
                             className="w-full h-20 object-cover rounded-lg border"
                           />
-                          <button
-                            type="button"
-                            onClick={() => removeImage(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
+                          {!isSubmitting && (
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -286,14 +395,23 @@ export default function CreateProduct() {
                     variant="outline"
                     onClick={handleCancel}
                     className="w-full sm:w-auto"
+                    disabled={isSubmitting}
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                    disabled={isSubmitting}
                   >
-                    Crear
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creando...
+                      </>
+                    ) : (
+                      "Crear Producto"
+                    )}
                   </Button>
                 </div>
               </form>

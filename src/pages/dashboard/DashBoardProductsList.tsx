@@ -1,205 +1,97 @@
-import { useState } from "react"
-import { ProductCard, type Product } from "@/components/products/ProductCard"
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-
-const mockProducts: Product[] = [
-
-    {
-        "id": "1",
-        "name": "Zanahorias",
-        "price": 7000,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.5,
-        "reviews": 30,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "2",
-        "name": "Lechuga fresca",
-        "price": 4000,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.2,
-        "reviews": 18,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "3",
-        "name": "Tomates orgánicos",
-        "price": 5000,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.7,
-        "reviews": 28,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "4",
-        "name": "Papas criollas",
-        "price": 6000,
-        "unit": "kg",
-        "location": "Finca El Descanso • Popayán",
-        "rating": 4.6,
-        "reviews": 45,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "5",
-        "name": "Aguacate hass",
-        "price": 12000,
-        "unit": "kg",
-        "location": "Finca San José • Popayán",
-        "rating": 4.8,
-        "reviews": 52,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "6",
-        "name": "Fresas frescas",
-        "price": 15000,
-        "unit": "kg",
-        "location": "Finca La Esperanza • Popayán",
-        "rating": 4.9,
-        "reviews": 67,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1464965911861-746a04b4bca6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "7",
-        "name": "Plátano verde",
-        "price": 4500,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.3,
-        "reviews": 22,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "8",
-        "name": "Cilantro fresco",
-        "price": 2000,
-        "unit": "manojo",
-        "location": "Finca El Paraíso • Popayán",
-        "rating": 4.4,
-        "reviews": 15,
-        "category": "hierbas",
-        "image": "https://images.unsplash.com/photo-1607305387299-a3d9611cd469?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "9",
-        "name": "Mango tommy",
-        "price": 8000,
-        "unit": "kg",
-        "location": "Finca San José • Popayán",
-        "rating": 4.7,
-        "reviews": 38,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1553279768-865429fa0078?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "10",
-        "name": "Pimentón",
-        "price": 9000,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.5,
-        "reviews": 25,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "11",
-        "name": "Limón tahití",
-        "price": 5500,
-        "unit": "kg",
-        "location": "Finca La Esperanza • Popayán",
-        "rating": 4.6,
-        "reviews": 33,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1590502593747-42a996133562?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "12",
-        "name": "Brócoli",
-        "price": 10000,
-        "unit": "kg",
-        "location": "Finca El Descanso • Popayán",
-        "rating": 4.4,
-        "reviews": 19,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "13",
-        "name": "Naranja valencia",
-        "price": 6500,
-        "unit": "kg",
-        "location": "Finca San José • Popayán",
-        "rating": 4.5,
-        "reviews": 41,
-        "category": "frutas",
-        "image": "https://images.unsplash.com/photo-1547514701-42782101795e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "14",
-        "name": "Cebolla cabezona",
-        "price": 5000,
-        "unit": "kg",
-        "location": "Finca El Paraíso • Popayán",
-        "rating": 4.3,
-        "reviews": 27,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    },
-    {
-        "id": "15",
-        "name": "Espinaca fresca",
-        "price": 7500,
-        "unit": "kg",
-        "location": "Finca Los Robles • Popayán",
-        "rating": 4.6,
-        "reviews": 24,
-        "category": "verduras",
-        "image": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80",
-        "stock": "disponible"
-    }
-]
+import { getProductsByProductor, type ProductorProduct } from "@/services/api/productoApi"
+import { useAuth } from "@/hooks/auth/useAuth"
+import { ProductManagementCard } from "@/components/products/ProductManagementCard"
 
 export default function DashBoardProductsList() {
+    const [products, setProducts] = useState<ProductorProduct[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+    const { user, isAuthenticated } = useAuth()
+    
     const [filters, setFilters] = useState({
         selectedCategory: "todo",
         priceRange: [0]
     })
 
-    const filteredProducts = mockProducts.filter(product => {
+    // Cargar productos del backend
+    useEffect(() => {
+        const loadProducts = async () => {
+            if (!isAuthenticated || !user) {
+                setLoading(false)
+                return
+            }
+
+            try {
+                setLoading(true)
+                setError(null)
+                const productsData = await getProductsByProductor(user.u_id)
+                setProducts(productsData)
+            } catch (err) {
+                console.error("Error loading products:", err)
+                setError(err instanceof Error ? err.message : "Error al cargar productos")
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        loadProducts()
+    }, [user, isAuthenticated])
+
+    // Función para mapear categoría de backend a categorías del filtro
+    const mapCategoryToFilter = (p_tipo: string): string => {
+        const tipo = p_tipo.toLowerCase()
+        if (tipo.includes('fruta')) return 'frutas'
+        if (tipo.includes('verdura') || tipo.includes('hortaliza')) return 'verduras'
+        if (tipo.includes('medicinal') || tipo.includes('medicina')) return 'medicinales'
+        if (tipo.includes('tuberculo') || tipo.includes('tubérculo')) return 'tuberculos'
+        if (tipo.includes('hierba') || tipo.includes('aromática')) return 'hierbas'
+        return 'otros'
+    }
+
+    // Filtrar productos
+    const filteredProducts = products.filter(product => {
         const categoryMatch = filters.selectedCategory === "todo" || 
-                             product.category === filters.selectedCategory
+                             mapCategoryToFilter(product.p_tipo) === filters.selectedCategory
         const priceMatch = filters.priceRange[0] === 0 || 
-                          product.price <= filters.priceRange[0]
+                          product.p_precio <= filters.priceRange[0]
         
         return categoryMatch && priceMatch
     })
+
+    // Función para manejar edición de producto
+    const handleEditProduct = (product: ProductorProduct) => {
+        console.log("Editar producto:", product)
+        // TODO: Implementar navegación a página de edición
+        // navigate(`/dashboard/editar-producto/${product.id}`)
+    }
+
+    // Función para manejar eliminación de producto
+    const handleDeleteProduct = async (product: ProductorProduct) => {
+        if (window.confirm(`¿Estás seguro de que quieres eliminar "${product.p_nombre}"?`)) {
+            try {
+                // TODO: Implementar llamada al API para eliminar
+                console.log("Eliminar producto:", product)
+                // await deleteProduct(product.id)
+                // Actualizar lista después de eliminar
+                // setProducts(prev => prev.filter(p => p.id !== product.id))
+            } catch (err) {
+                console.error("Error deleting product:", err)
+                alert("Error al eliminar el producto")
+            }
+        }
+    }
+
+    if (!isAuthenticated) {
+        return (
+            <DashboardLayout title="Mis Productos">
+                <div className="flex flex-1 flex-col items-center justify-center p-4">
+                    <p className="text-muted-foreground">Debes iniciar sesión para ver tus productos</p>
+                </div>
+            </DashboardLayout>
+        )
+    }
 
     return (
         <DashboardLayout 
@@ -207,15 +99,70 @@ export default function DashBoardProductsList() {
             onFilterChange={setFilters}
         >
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
-                <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
-                    {filteredProducts.map((product) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
-                {filteredProducts.length === 0 && (
-                    <div className="flex flex-col items-center justify-center py-12">
-                        <p className="text-muted-foreground">No se encontraron productos</p>
+                {/* Loading State */}
+                {loading && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+                            <p className="mt-2 text-muted-foreground">Cargando productos...</p>
+                        </div>
                     </div>
+                )}
+
+                {/* Error State */}
+                {error && (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <p className="text-red-600 mb-4">Error: {error}</p>
+                            <button 
+                                onClick={() => window.location.reload()}
+                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                            >
+                                Reintentar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Products Grid */}
+                {!loading && !error && (
+                    <>
+                        <div className="flex justify-between items-center">
+                            <p className="text-sm text-muted-foreground">
+                                {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                            </p>
+                        </div>
+
+                        <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
+                            {filteredProducts.map((product, index) => (
+                                <ProductManagementCard 
+                                    key={`${product.p_nombre}-${index}`}
+                                    product={product} 
+                                    onEdit={handleEditProduct}
+                                    onDelete={handleDeleteProduct}
+                                />
+                            ))}
+                        </div>
+
+                        {filteredProducts.length === 0 && !loading && (
+                            <div className="flex flex-col items-center justify-center py-12">
+                                <p className="text-muted-foreground mb-4">
+                                    {products.length === 0 
+                                        ? "No tienes productos registrados" 
+                                        : "No se encontraron productos con los filtros seleccionados"
+                                    }
+                                </p>
+                                {products.length === 0 && (
+                                    <a 
+                                        href="/dashboard/crear-producto"
+                                        className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                    >
+                                        Crear mi primer producto
+                                    </a>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         </DashboardLayout>

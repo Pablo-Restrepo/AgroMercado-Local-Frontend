@@ -16,23 +16,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(true);
     setError(null);
     try {
+      console.log('Iniciando login...');
       const res = await authApi.login(credentials);
+      console.log('Login response:', res);
 
-      if (res.access_token || res.refresh_token) {
-        authStorage.setTokens(res.access_token ?? "", res.refresh_token ?? "");
+      // Guardar tokens
+      if (res.access_token && res.refresh_token) {
+        console.log('Guardando tokens...');
+        authStorage.setTokens(res.access_token, res.refresh_token);
+        console.log('Token guardado:', res.access_token.substring(0, 20) + '...');
+      } else {
+        console.error('No se recibieron tokens en la respuesta:', res);
       }
 
+      // Guardar usuario
       const userToStore: User = {
         u_id: res.u_id,
         u_nombre_usuario: res.u_nombre_usuario,
         u_email: res.u_email,
         u_rol: res.u_rol,
       };
+      
+      console.log('Guardando usuario:', userToStore);
       authStorage.setUser(userToStore);
       setUser(userToStore);
       setIsAuthenticated(true);
+      
+      console.log('Login exitoso');
       return res;
     } catch (e: any) {
+      console.error('Error en login:', e);
       setError(e?.message || "Error en login");
       setIsAuthenticated(false);
       throw e;
@@ -42,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   function logout() {
+    console.log('Cerrando sesión...');
     authStorage.clear();
     setUser(null);
     setIsAuthenticated(false);
@@ -52,19 +66,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = authStorage.getAccessToken();
     const storedUser = authStorage.getUser();
     
+    console.log('Verificando sesión - Token:', !!token, 'User:', !!storedUser);
+    
     if (!token || !storedUser) {
       setIsAuthenticated(false);
       setUser(null);
       return;
     }
 
-    // Verificar si el token sigue siendo válido
     try {
-      // Solo hacer la verificación si hay token
       setUser(storedUser);
       setIsAuthenticated(true);
     } catch {
-      // Si hay error, limpiar la sesión
+      console.log('Error verificando sesión, limpiando...');
       logout();
     }
   }, []);
@@ -78,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const onStorage = () => {
       const hasSession = authStorage.hasSession();
       const storedUser = authStorage.getUser();
+      
+      console.log('Storage changed - Session:', hasSession, 'User:', !!storedUser);
       
       setUser(storedUser);
       setIsAuthenticated(hasSession);

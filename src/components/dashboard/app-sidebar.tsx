@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import {
   Package,
@@ -30,8 +28,10 @@ import { Slider } from "@/components/ui/slider"
 import { Button } from "@/components/ui/button"
 
 import { getCurrentUser } from "@/services/api/userApi"
+import { AuthError } from "@/services/api/authFetch"
 import { authStorage } from "@/services/storage/authStorage"
 import { useAuth } from "@/hooks/auth/useAuth"
+import { useSessionHandler } from "@/hooks/auth/useSessionHandler"
 import type { User } from "@/types/auth" 
 
 type SidebarUser = {
@@ -94,6 +94,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
   const { isAuthenticated, user: authUser } = useAuth()
+  const { handleSessionExpired } = useSessionHandler()
 
   // Usar usuario del contexto de auth si existe, sino valores por defecto
   const initialUser = React.useMemo((): SidebarUser => {
@@ -181,13 +182,20 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
       })
       .catch((error) => {
         console.warn("Error fetching user data:", error)
-        // No limpiar tokens aquí, solo mantener usuario actual
+        
+        // Si es un error de autenticación, manejar sesión expirada
+        if (error instanceof AuthError) {
+          console.log("Token expirado, cerrando sesión...")
+          handleSessionExpired()
+        }
+        
+        // Para otros errores, mantener usuario actual sin hacer nada drástico
       })
 
     return () => {
       mounted = false
     }
-  }, [isAuthenticated, initialUser])
+  }, [isAuthenticated, initialUser, handleSessionExpired])
 
   // Componente para mostrar cuando no está autenticado
   const LoginPrompt = () => (
@@ -307,7 +315,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           </div>
         )}
       </SidebarContent>
-      
+
       <SidebarFooter>
         {isAuthenticated ? (
           <NavUser user={currentUser} />
