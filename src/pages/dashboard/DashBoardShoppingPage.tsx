@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
@@ -16,123 +16,47 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
+import * as productoApi from "@/services/api/productoApi"
+import type { ProductSummary } from "@/services/api/productoApi"
 
-const mockProducts = [
-  {
-    id: "1",
-    name: "Tomates orgánicos",
-    price: 5000,
-    unit: "kg",
-    location: "Finca Los Robles • Popayán",
-    rating: 4.8,
-    reviews: 24,
-    category: "verduras",
-    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "2", 
-    name: "Lechuga fresca",
-    price: 4000,
-    unit: "kg",
-    location: "Finca La Esperanza • Popayán", 
-    rating: 4.8,
-    reviews: 24,
-    category: "verduras",
-    image: "https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "3",
-    name: "Zanahorias",
-    price: 7000,
-    unit: "kg", 
-    location: "Finca Los Robles • Popayán",
-    rating: 4.8,
-    reviews: 24,
-    category: "verduras",
-    image: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "4",
-    name: "Papa Pastusa", 
-    price: 18000,
-    unit: "kg",
-    location: "Finca Los Robles • Popayán",
-    rating: 4.8,
-    reviews: 24,
-    category: "tuberculos",
-    image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "5",
-    name: "Banano Maduro",
-    price: 3290,
-    unit: "kg",
-    location: "Finca Los Robles • Popayán", 
-    rating: 4.8,
-    reviews: 24,
-    category: "frutas",
-    image: "https://images.unsplash.com/photo-1603833665858-e61d17a86224?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "6",
-    name: "Cebolla Roja",
-    price: 5500, 
-    unit: "kg",
-    location: "Finca Los Robles • Popayán",
-    rating: 4.8,
-    reviews: 24,
-    category: "verduras", 
-    image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "7",
-    name: "Mango Tommy",
-    price: 8000,
-    unit: "kg",
-    location: "Finca San José • Popayán", 
-    rating: 4.7,
-    reviews: 38,
-    category: "frutas",
-    image: "https://images.unsplash.com/photo-1553279768-865429fa0078?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "8",
-    name: "Cilantro fresco",
-    price: 2000,
-    unit: "manojo",
-    location: "Finca El Paraíso • Popayán", 
-    rating: 4.4,
-    reviews: 15,
-    category: "hierbas",
-    image: "https://images.unsplash.com/photo-1607305387299-a3d9611cd469?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
-  },
-  {
-    id: "9",
-    name: "Hierba Medicinal",
-    price: 12000,
-    unit: "kg",
-    location: "Finca Verde • Popayán", 
-    rating: 4.6,
-    reviews: 22,
-    category: "medicinales",
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
-    available: true
+// Lista dinámica obtenida del API
+type ViewProduct = {
+  id: string
+  name: string
+  price: number
+  unit: string
+  location: string
+  rating: number
+  reviews: number
+  category: string
+  image: string
+  available: boolean
+}
+
+// Mapear la respuesta del API al formato de visualización
+function mapApiToViewItem(item: ProductSummary, index: number): ViewProduct {
+  return {
+    id: `${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
+    name: item.p_nombre,
+    price: item.p_precio ?? 0,
+    unit: item.p_unidad ?? "unidad",
+    location: item.gre_nombre ?? "Gremio",
+    rating: 4.6, // valor por defecto (el API no incluye rating)
+    reviews: 0,
+    category: (item.p_tipo ?? "otro").toLowerCase(),
+    image: item.img || "/images/default-product.jpg",
+    available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
   }
-]
+}
 
 export default function DashBoardShoppingPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+  const [isLoading, setIsLoading] = useState(false)
+  const [products, setProducts] = useState<ViewProduct[]>([])
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  console.log(fetchError);
   // Estado para los filtros que vienen de la sidebar
   const [sidebarFilters, setSidebarFilters] = useState({
     selectedCategory: "todo",
@@ -140,12 +64,12 @@ export default function DashBoardShoppingPage() {
   })
   
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
-
+ 
   // Función que recibe los filtros de la sidebar - usar useCallback
   const handleFilterChange = useCallback((filters: { selectedCategory: string; priceRange: number[] }) => {
     setSidebarFilters(filters)
   }, [])
-
+ 
   const handleAddToCart = (productId: string) => {
     const product = mockProducts.find(p => p.id === productId)
     if (product) {
@@ -153,7 +77,7 @@ export default function DashBoardShoppingPage() {
       setIsModalOpen(true)
     }
   }
-
+ 
   const handleConfirmAddToCart = (product: any, quantity: number) => {
     addToCart({
       id: product.id,
@@ -164,78 +88,101 @@ export default function DashBoardShoppingPage() {
       location: product.location
     }, quantity)
   }
+ 
+  // Cargar productos desde el API al montar el componente
+  useEffect(() => {
+    let mounted = true
+    setIsLoading(true)
+    setFetchError(null)
 
-  // Aplicar filtros de búsqueda y sidebar
-  const filteredProducts = mockProducts.filter(product => {
-    // Filtro por búsqueda
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    // Filtro por categoría de la sidebar
-    const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
-                                   product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
-    
-    // Filtro por rango de precio de la sidebar
-    const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
-                               product.price <= sidebarFilters.priceRange[0]
-    
-    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
-  })
+    productoApi.getAllProducts()
+      .then((items) => {
+        if (!mounted) return
+        const mapped = items.map((it, idx) => mapApiToViewItem(it, idx))
+        setProducts(mapped)
+      })
+      .catch((err) => {
+        console.error("Error fetching products:", err)
+        if (mounted) setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos"))
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false)
+      })
 
-  return (
-    <>
-      <DashboardLayout 
-        title="Productos Disponibles"
-        onFilterChange={handleFilterChange}
-      >
-        <div className="flex-1 bg-gray-50">
-          {/* Search and Filters */}
-          <div className="bg-white border-b">
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  {/* Mostrar filtros activos */}
-                  {sidebarFilters.selectedCategory !== "todo" && (
-                    <Badge variant="outline" className="capitalize">
-                      {sidebarFilters.selectedCategory}
-                    </Badge>
-                  )}
-                  {sidebarFilters.priceRange[0] > 0 && (
-                    <Badge variant="outline">
-                      Hasta ${sidebarFilters.priceRange[0].toLocaleString()}
-                    </Badge>
-                  )}
+    return () => { mounted = false }
+  }, [])
+ 
+   // Aplicar filtros de búsqueda y sidebar
+  const filteredProducts = products.filter(product => {
+     // Filtro por búsqueda
+     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+     
+     // Filtro por categoría de la sidebar
+     const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
+                                    product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
+     
+     // Filtro por rango de precio de la sidebar
+     const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
+                                product.price <= sidebarFilters.priceRange[0]
+     
+     return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
+   })
+ 
+   return (
+     <>
+       <DashboardLayout 
+         title="Productos Disponibles"
+         onFilterChange={handleFilterChange}
+       >
+         <div className="flex-1 bg-gray-50">
+           {/* Search and Filters */}
+           <div className="bg-white border-b">
+             <div className="container mx-auto px-4 py-4">
+               <div className="flex items-center justify-between mb-4">
+                 <div className="flex items-center gap-4">
+                   {/* Mostrar filtros activos */}
+                   {sidebarFilters.selectedCategory !== "todo" && (
+                     <Badge variant="outline" className="capitalize">
+                       {sidebarFilters.selectedCategory}
+                     </Badge>
+                   )}
+                   {sidebarFilters.priceRange[0] > 0 && (
+                     <Badge variant="outline">
+                       Hasta ${sidebarFilters.priceRange[0].toLocaleString()}
+                     </Badge>
+                   )}
                   <span className="text-sm text-gray-600">
-                    {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                    {isLoading ? "Cargando productos..." : `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} encontrado${filteredProducts.length !== 1 ? 's' : ''}`}
                   </span>
-                </div>
-                <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
-                  <ShoppingBag className="h-4 w-4" />
-                  Carrito de compras
-                  {cart.itemCount > 0 && (
-                    <Badge variant="secondary" className="ml-1">
-                      {cart.itemCount}
-                    </Badge>
-                  )}
-                </Button>
-              </div>
-
-              {/* Search Bar */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar productos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Products Grid */}
-          <div className="container mx-auto px-4 py-8">
+                 </div>
+                 <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                   <ShoppingBag className="h-4 w-4" />
+                   Carrito de compras
+                   {cart.itemCount > 0 && (
+                     <Badge variant="secondary" className="ml-1">
+                       {cart.itemCount}
+                     </Badge>
+                   )}
+                 </Button>
+               </div>
+ 
+               {/* Search Bar */}
+               <div className="flex flex-col sm:flex-row gap-4">
+                 <div className="flex-1 relative">
+                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                   <Input
+                     placeholder="Buscar productos..."
+                     value={searchQuery}
+                     onChange={(e) => setSearchQuery(e.target.value)}
+                     className="pl-10"
+                   />
+                 </div>
+               </div>
+             </div>
+           </div>
+ 
+           {/* Products Grid */}
+           <div className="container mx-auto px-4 py-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
                 <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -254,7 +201,7 @@ export default function DashBoardShoppingPage() {
                       <Heart className="h-4 w-4 text-gray-600" />
                     </Button>
                   </div>
-
+ 
                   {/* Product Info */}
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between">
@@ -265,12 +212,12 @@ export default function DashBoardShoppingPage() {
                         {product.category}
                       </Badge>
                     </div>
-
+ 
                     <div className="flex items-center gap-1 text-sm text-gray-600">
                       <MapPin className="h-4 w-4" />
                       <span className="truncate">{product.location}</span>
                     </div>
-
+ 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
@@ -280,7 +227,7 @@ export default function DashBoardShoppingPage() {
                         </span>
                       </div>
                     </div>
-
+ 
                     <div className="flex items-end justify-between">
                       <div>
                         <div className="text-2xl font-bold text-gray-900">
@@ -289,9 +236,12 @@ export default function DashBoardShoppingPage() {
                         <div className="text-sm text-gray-500">por {product.unit}</div>
                       </div>
                     </div>
-
+ 
                     <Button 
-                      onClick={() => handleAddToCart(product.id)}
+                      onClick={() => {
+                        setSelectedProduct(product)
+                        setIsModalOpen(true)
+                      }}
                       className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
                     >
                       <ShoppingCart className="h-4 w-4" />
@@ -301,35 +251,37 @@ export default function DashBoardShoppingPage() {
                 </Card>
               ))}
             </div>
-
-            {/* Empty State */}
-            {filteredProducts.length === 0 && (
-              <div className="text-center py-12">
-                <div className="text-gray-500">
-                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
-                  <p>Intenta cambiar los filtros o términos de búsqueda</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </DashboardLayout>
-
-      {/* Modales */}
-      <AddToCartModal
-        product={selectedProduct}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onAddToCart={handleConfirmAddToCart}
-      />
-
-      <FloatingCart
-        cart={cart}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
-        onClearCart={clearCart}
-      />
-    </>
-  )
-}
+ 
+             {/* Empty State */}
+            {isLoading ? (
+              <div className="text-center py-12">Cargando productos...</div>
+            ) : filteredProducts.length === 0 ? (
+               <div className="text-center py-12">
+                 <div className="text-gray-500">
+                   <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                   <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
+                   <p>Intenta cambiar los filtros o términos de búsqueda</p>
+                 </div>
+               </div>
+            ) : null}
+           </div>
+         </div>
+       </DashboardLayout>
+ 
+       {/* Modales */}
+       <AddToCartModal
+         product={selectedProduct}
+         isOpen={isModalOpen}
+         onClose={() => setIsModalOpen(false)}
+         onAddToCart={handleConfirmAddToCart}
+       />
+ 
+       <FloatingCart
+         cart={cart}
+         onUpdateQuantity={updateQuantity}
+         onRemoveItem={removeFromCart}
+         onClearCart={clearCart}
+       />
+     </>
+   )
+ }

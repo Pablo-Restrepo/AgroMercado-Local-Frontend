@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { getProductsByProductor, type ProductorProduct } from "@/services/api/productoApi"
+import * as productoApi from "@/services/api/productoApi"
+import type { ProductorProduct } from "@/services/api/productoApi"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { ProductManagementCard } from "@/components/products/ProductManagementCard"
 
@@ -26,7 +27,7 @@ export default function DashBoardProductsList() {
             try {
                 setLoading(true)
                 setError(null)
-                const productsData = await getProductsByProductor(user.u_id)
+                const productsData = await productoApi.getProductsByProductor(user.u_id)
                 setProducts(productsData)
             } catch (err) {
                 console.error("Error loading products:", err)

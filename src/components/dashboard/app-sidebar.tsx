@@ -96,6 +96,22 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const { isAuthenticated, user: authUser } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
 
+  // Determinar rol efectivo (preferir contexto, luego storage)
+  const effectiveRole: User["u_rol"] =
+    authUser?.u_rol ?? authStorage.getUser()?.u_rol ?? "cliente"
+
+  // Menús por rol
+  const clienteNav = [
+    { title: "Home", url: "/dashboard", icon: Package },
+    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
+  ]
+
+  const productorNav = data.navMain // mantiene el conjunto existente para productor/admin
+
+  const navMainForRole = (effectiveRole === "productor-admin" || effectiveRole === "admin")
+    ? productorNav
+    : clienteNav
+
   // Usar usuario del contexto de auth si existe, sino valores por defecto
   const initialUser = React.useMemo((): SidebarUser => {
     if (authUser) {
@@ -238,7 +254,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           <>
             {/* Navigation Main */}
             <div className="space-y-1 py-2">
-              {data.navMain.map((item) => (
+              {navMainForRole.map((item) => (
                 <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
                   <a href={item.url} className="flex items-center gap-3">
                     <item.icon className="size-4" />

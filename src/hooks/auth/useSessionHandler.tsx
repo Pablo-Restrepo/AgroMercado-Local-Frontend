@@ -8,8 +8,9 @@ export function useSessionHandler() {
 
   const handleSessionExpired = useCallback(() => {
     console.log('Sesión expirada, cerrando sesión...')
-    logout()
-    navigate('/login', { replace: true })
+    //logout()
+    //navigate('/login', { replace: true })
+    console.log(logout, navigate)
   }, [logout, navigate])
 
   return { handleSessionExpired }

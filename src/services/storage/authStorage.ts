@@ -47,10 +47,10 @@ export const authStorage = {
     },
 
     clear(): void {
-        console.log('Limpiando localStorage...');
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-        localStorage.removeItem(STORAGE_KEYS.USER);
+        console.log('No Limpiando localStorage...');
+        //localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        //localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+        //localStorage.removeItem(STORAGE_KEYS.USER);
     },
 
     hasSession(): boolean {

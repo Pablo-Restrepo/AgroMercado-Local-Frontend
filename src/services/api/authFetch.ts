@@ -35,7 +35,7 @@ export async function authFetch(
     }
 
     console.log('AuthFetch - URL:', url);
-    console.log('AuthFetch - Token:', token ? `${token.substring(0, 20)}...` : 'No token');
+    console.log('AuthFetch - Token:', token ? `${token.substring(0, 5000)}...` : 'No token');
     console.log('AuthFetch - Headers:', headers);
 
     const response = await fetch(url, {
@@ -48,7 +48,7 @@ export async function authFetch(
     // Si hay error 401, limpiar storage y lanzar error específico
     if (response.status === 401) {
         console.error('AuthFetch - 401 Unauthorized. Limpiando sesión...');
-        authStorage.clear();
+        //authStorage.clear();
         // Lanzar error específico que el AppSidebar puede capturar
         throw new AuthError('Sesión expirada o token inválido');
     }

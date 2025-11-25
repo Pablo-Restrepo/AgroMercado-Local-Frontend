@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -8,7 +9,7 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
 import { X, ImagePlus, Loader2 } from "lucide-react"
 import Select from "@/components/ui/select"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
-import { createProduct } from "@/services/api/productoApi"
+import * as productoApi from "@/services/api/productoApi"
 import { useAuth } from "@/hooks/auth/useAuth"
 
 interface ProductForm {
@@ -17,6 +18,7 @@ interface ProductForm {
   price: string
   category: string
   unit: string
+  stock: string
   images: File[]
 }
 
@@ -30,6 +32,7 @@ export default function CreateProduct() {
     price: "",
     category: "",
     unit: "kg",
+    stock: "0",
     images: []
   })
 
@@ -136,6 +139,12 @@ export default function CreateProduct() {
       return
     }
     
+    const stockNum = Number.parseInt(form.stock, 10)
+    if (Number.isNaN(stockNum) || stockNum < 0) {
+      setError("El stock debe ser 0 o un número entero positivo")
+      return
+    }
+
     if (!form.category) {
       setError("Selecciona una categoría")
       return
@@ -161,17 +170,32 @@ export default function CreateProduct() {
       }
 
       // Crear producto
+      // Determinar prod_id: preferir campo explícito de productor si existe en user
+      const producerId = Number((user as any).prod_id ?? (user as any).p_id ?? (user as any).prodId ?? user?.u_id)
+      if (!Number.isInteger(producerId)) {
+        setIsSubmitting(false)
+        setError("No se encontró el identificador de productor en el perfil. Completa tu perfil de productor antes de crear productos.")
+        return
+      }
+
       const productData = {
         p_nombre: form.name.trim(),
         p_tipo: form.category,
         p_unidad: form.unit,
-        prod_id: user.u_id,
+        prod_id: producerId,
         img: imageUrl,
-        p_precio: parseFloat(form.price)
+        p_precio: parseFloat(form.price),
+        p_stock: stockNum,
       }
 
-      const productId = await createProduct(productData)
-      
+      // Llamada al API
+      const createFn = (productoApi as any).createProduct ?? (productoApi as any).default?.createProduct
+      if (typeof createFn !== "function") {
+        throw new Error("createProduct no disponible en productoApi. Reinicia el dev server.")
+      }
+
+      const productId = await createFn(productData)
+ 
       console.log("Producto creado con ID:", productId)
       
       // Limpiar formulario
@@ -185,10 +209,16 @@ export default function CreateProduct() {
       
     } catch (err) {
       console.error("Error creando producto:", err)
-      setError(err instanceof Error ? err.message : "Error al crear el producto")
-    } finally {
-      setIsSubmitting(false)
-    }
+      // Detectar violación de FK (mensaje del backend / código 1452) y mostrar mensaje útil
+      const msg = err instanceof Error ? err.message : String(err)
+      if (/1452/.test(msg) || /foreign key/i.test(msg) || /Cannot add or update a child row/i.test(msg)) {
+        setError("No existe un productor con el id enviado. Verifica tu perfil de productor o contacta soporte.")
+      } else {
+        setError(msg || "Error al crear el producto")
+      }
+     } finally {
+       setIsSubmitting(false)
+     }
   }
 
   const handleCancel = () => {
@@ -201,6 +231,7 @@ export default function CreateProduct() {
       price: "",
       category: "",
       unit: "kg",
+      stock: "0",
       images: []
     })
     setPreviewUrls([])
@@ -264,7 +295,7 @@ export default function CreateProduct() {
                 </div>
 
                 {/* Precio y Unidad */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="price" className="text-sm font-medium text-gray-700">
                       Precio <span className="text-red-500">*</span>
@@ -277,6 +308,23 @@ export default function CreateProduct() {
                       onChange={(e) => handleInputChange("price", e.target.value)}
                       min="0"
                       step="0.01"
+                      className="w-full"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="stock" className="text-sm font-medium text-gray-700">
+                      Stock (cantidad) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="stock"
+                      type="number"
+                      placeholder="0"
+                      value={form.stock}
+                      onChange={(e) => handleInputChange("stock", e.target.value)}
+                      min="0"
+                      step="1"
                       className="w-full"
                       disabled={isSubmitting}
                     />

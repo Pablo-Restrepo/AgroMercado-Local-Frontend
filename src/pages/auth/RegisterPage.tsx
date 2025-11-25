@@ -8,6 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { ShoppingCart, User } from "lucide-react"
 import { authApi } from "@/services/api/authApi"
 import { useAuth } from "@/hooks/auth/useAuth"
+import { useSnackbar } from "notistack"
 
 interface RegisterForm {
   nombre: string
@@ -26,6 +27,7 @@ interface RegisterForm {
 export default function RegisterPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const { enqueueSnackbar } = useSnackbar()
 
   const [form, setForm] = useState<RegisterForm>({
     nombre: "",
@@ -91,11 +93,28 @@ export default function RegisterPage() {
 
     try {
       await authApi.register(payload)
-      navigate("/login", { state: { message: "Registro exitoso. Puedes iniciar sesión." } })
+      // Notificación de éxito y redirección
+      enqueueSnackbar("Registro exitoso. Puedes iniciar sesión.", { variant: "success" })
+      navigate("/login")
     } catch (err: any) {
-      // Manejar respuestas comunes 400 / 422 / mensajes del backend
-      const msg = err?.message || "Error al registrar el usuario"
-      setError(msg)
+      // Mostrar mensaje amigable (sin códigos)
+      const getFriendly = (e: any) => {
+        if (!e) return "Error al registrar el usuario"
+        if (typeof e === "string") return stripCode(e)
+        if (e?.response?.data?.message) return stripCode(String(e.response.data.message))
+        if (e?.message) return stripCode(String(e.message))
+        return "Error al registrar el usuario"
+      }
+
+      const stripCode = (s: string) =>
+        s.replace(/^request failed with status code \d+\s*[:-]?\s*/i, "")
+         .replace(/^error[:\s]*\d+\s*[:-]?\s*/i, "")
+         .replace(/^[[(]?(\d{3})[\])]?[:-]?\s*/i, "")
+         .trim()
+
+      const friendly = getFriendly(err)
+      setError(friendly)
+      enqueueSnackbar(friendly, { variant: "error" })
     } finally {
       setIsLoading(false)
     }

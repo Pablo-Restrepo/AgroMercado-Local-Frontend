@@ -11,13 +11,20 @@ export interface ProductorProduct {
   img: string
 }
 
+// Resumen de producto que incluye stock según la documentación del endpoint /productos/
+export interface ProductSummary extends ProductorProduct {
+  p_stock: number
+}
+
+// Nuevo tipo solicitado por el backend para crear producto
 export interface CreateProductRequest {
   p_nombre: string
   p_tipo: string
   p_unidad: string
   prod_id: number
-  img: string
+  img?: string
   p_precio: number
+  p_stock?: number
 }
 
 /**
@@ -66,11 +73,49 @@ export async function createProduct(productData: CreateProductRequest): Promise<
   }
 
   const body = await res.json().catch(() => null)
-  
-  // El API retorna el ID del producto creado como número
-  if (typeof body === 'number') return body
-  if (body && typeof body.data === 'number') return body.data
-  if (body && typeof body.id === 'number') return body.id
+
+  // El backend puede devolver:
+  // - un número (id)
+  // - { id: number } 
+  // - { data: { id: number } } o { data: number }
+  // - el recurso creado { ...producto, id: number }
+  const maybeId =
+    (body && (typeof body === "number" ? body : undefined)) ??
+    (body && (typeof body.id === "number" ? body.id : undefined)) ??
+    (body && body.data && typeof body.data === "number" ? body.data : undefined) ??
+    (body && body.data && typeof body.data.id === "number" ? body.data.id : undefined)
+
+  if (typeof maybeId === "number") return maybeId
+
+  // Si el cuerpo es el recurso creado sin id explícito, intentar extraer id por convenciones
+  if (body && typeof body === "object") {
+    for (const key of ["p_id", "prod_id", "id"]) {
+      if (typeof (body as any)[key] === "number") return (body as any)[key]
+    }
+  }
+
+  throw new Error("Respuesta inesperada del servidor al crear producto")
+}
+
+/**
+ * Lista todos los productos
+ * GET /api/productos/
+ */
+export async function getAllProducts(): Promise<ProductSummary[]> {
+  const res = await authFetch(`${API_BASE_URL}/productos/`, {
+    method: "GET",
+  })
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({ message: "Error en el servidor" }))
+    throw new Error(payload.message || `Error ${res.status}`)
+  }
+
+  const body = await res.json().catch(() => null)
+
+  if (Array.isArray(body)) return body as ProductSummary[]
+  if (body && Array.isArray((body as any).data)) return (body as any).data as ProductSummary[]
+  if (body && typeof body.id === 'number') return [body]
 
   throw new Error("Formato de respuesta inesperado")
 }
