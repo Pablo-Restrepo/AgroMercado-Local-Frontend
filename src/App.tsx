@@ -9,6 +9,7 @@ import DashBoardProductsList from '@/pages/dashboard/DashBoardProductsList'
 import DashBoardPage from '@/pages/dashboard/DashBoardPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
+import CreateGremio from '@/pages/gremios/CreateGremio'
 import { RequireAuth } from "./components/auth/RequireAuth"
 
 function App() {
@@ -20,7 +21,7 @@ function App() {
             {/* Páginas sin sidebar */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-            
+
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
@@ -28,6 +29,7 @@ function App() {
             <Route path="/dashboard/*" element={<RequireAuth />}>
               <Route path="*" element={<DashBoardPage />} />
               <Route path="crear-producto" element={<CreateProduct />} />
+              <Route path="crear-gremio" element={<CreateGremio />} />
             </Route>
 
             <Route path="/dashboard/productos" element={<DashBoardProductsList />} />
