@@ -1,7 +1,7 @@
 import type { MeResponse, LoggedUser } from "@/types/userLogged";
 import { authFetch } from "@/services/api/authFetch"; // usar authFetch que añade Authorization
 
-const API_BASE_URL = "http://127.0.0.1:8001";
+const API_BASE_URL = "http://localhost:8090";
 
 /**
  * Obtiene el usuario autenticado desde /usuarios/me usando authFetch

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
 import { Users } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
+import { createProducer } from "@/services/api/producerApi"
 
 interface ProducerForm {
     cedula: string
@@ -16,6 +17,9 @@ interface ProducerForm {
     confirmarContrasena: string
     correo: string
     confirmarCorreo: string
+    codigo: string
+    telefono: string
+    nombreUsuario: string
 }
 
 export default function CreateProducer() {
@@ -28,14 +32,16 @@ export default function CreateProducer() {
         contrasena: "",
         confirmarContrasena: "",
         correo: "",
-        confirmarCorreo: ""
+        confirmarCorreo: "",
+        codigo: "",
+        telefono: "",
+        nombreUsuario: ""
     })
 
     const [errors, setErrors] = useState<Partial<Record<keyof ProducerForm, string>>>({})
 
     const handleInputChange = (field: keyof ProducerForm, value: string) => {
         setForm(prev => ({ ...prev, [field]: value }))
-        // Clear error when user starts typing
         if (errors[field]) {
             setErrors(prev => ({ ...prev, [field]: "" }))
         }
@@ -44,7 +50,6 @@ export default function CreateProducer() {
     const validateForm = (): boolean => {
         const newErrors: Partial<Record<keyof ProducerForm, string>> = {}
 
-        // Validar campos requeridos
         if (!form.cedula.trim()) newErrors.cedula = "La cédula es requerida"
         if (!form.nombre.trim()) newErrors.nombre = "El nombre es requerido"
         if (!form.apellidos.trim()) newErrors.apellidos = "Los apellidos son requeridos"
@@ -54,24 +59,23 @@ export default function CreateProducer() {
         if (!form.confirmarContrasena) newErrors.confirmarContrasena = "Confirma la contraseña"
         if (!form.correo.trim()) newErrors.correo = "El correo es requerido"
         if (!form.confirmarCorreo.trim()) newErrors.confirmarCorreo = "Confirma el correo"
+        if (!form.codigo.trim()) newErrors.codigo = "El código es requerido"
+        if (!form.telefono.trim()) newErrors.telefono = "El teléfono es requerido"
+        if (!form.nombreUsuario.trim()) newErrors.nombreUsuario = "El nombre de usuario es requerido"
 
-        // Validar contraseñas coincidan
         if (form.contrasena && form.confirmarContrasena && form.contrasena !== form.confirmarContrasena) {
             newErrors.confirmarContrasena = "Las contraseñas no coinciden"
         }
 
-        // Validar correos coincidan
         if (form.correo && form.confirmarCorreo && form.correo !== form.confirmarCorreo) {
             newErrors.confirmarCorreo = "Los correos no coinciden"
         }
 
-        // Validar formato de correo
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
         if (form.correo && !emailRegex.test(form.correo)) {
             newErrors.correo = "Formato de correo inválido"
         }
 
-        // Validar longitud de contraseña
         if (form.contrasena && form.contrasena.length < 6) {
             newErrors.contrasena = "La contraseña debe tener al menos 6 caracteres"
         }
@@ -80,36 +84,59 @@ export default function CreateProducer() {
         return Object.keys(newErrors).length === 0
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
         if (!validateForm()) {
             return
         }
 
-        console.log("Formulario a enviar:", form)
-        // Aquí conectarás con tu servicio
-        alert("Productor creado exitosamente (placeholder)")
+        const payload = {
+            codigo: form.codigo,
+            id_gremio: 1,
+            usuario: {
+                u_nombre_usuario: form.nombreUsuario,
+                u_contrasenia: form.contrasena,
+                u_email: form.correo,
+                u_rol: "productor-afiliado",
+                persona: {
+                    p_cedula: form.cedula,
+                    p_apellido: form.apellidos,
+                    p_nombre: form.nombre,
+                    p_fecha_nacimiento: form.fechaNacimiento,
+                    p_direccion: form.direccion,
+                    p_telefono: form.telefono
+                }
+            }
+        }
 
-        // Resetear formulario
-        setForm({
-            cedula: "",
-            nombre: "",
-            apellidos: "",
-            direccion: "",
-            fechaNacimiento: "",
-            contrasena: "",
-            confirmarContrasena: "",
-            correo: "",
-            confirmarCorreo: ""
-        })
+        try {
+            await createProducer(payload)
+            alert("Productor creado exitosamente")
+            setForm({
+                cedula: "",
+                nombre: "",
+                apellidos: "",
+                direccion: "",
+                fechaNacimiento: "",
+                contrasena: "",
+                confirmarContrasena: "",
+                correo: "",
+                confirmarCorreo: "",
+                codigo: "",
+                telefono: "",
+                nombreUsuario: ""
+            })
+        } catch (error) {
+            console.error("Error:", error)
+            alert(`Error al crear productor: ${error instanceof Error ? error.message : "Error desconocido"}`)
+        }
     }
 
     return (
         <DashboardLayout title="Mi gremio">
             <div className="flex-1 bg-gray-50 p-6">
                 <div className="max-w-4xl mx-auto space-y-6">
-                    {/* Header Card - Información del Gremio */}
                     <Card className="border-gray-200">
                         <CardContent className="pt-6">
                             <div className="flex flex-col items-center text-center space-y-3">
@@ -126,7 +153,6 @@ export default function CreateProducer() {
                         </CardContent>
                     </Card>
 
-                    {/* Formulario de Creación */}
                     <Card className="border-gray-200">
                         <CardHeader>
                             <CardTitle className="text-xl font-semibold text-gray-900">
@@ -136,8 +162,39 @@ export default function CreateProducer() {
 
                         <CardContent>
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                {/* Primera fila: Cédula, Nombre, Apellidos */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="codigo" className="text-sm font-medium text-gray-700">
+                                            Código
+                                        </Label>
+                                        <Input
+                                            id="codigo"
+                                            type="text"
+                                            placeholder="PROD123"
+                                            value={form.codigo}
+                                            onChange={(e) => handleInputChange("codigo", e.target.value)}
+                                            className={errors.codigo ? "border-red-500" : ""}
+                                        />
+                                        {errors.codigo && (
+                                            <p className="text-xs text-red-500">{errors.codigo}</p>
+                                        )}
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="nombreUsuario" className="text-sm font-medium text-gray-700">
+                                            Nombre de Usuario
+                                        </Label>
+                                        <Input
+                                            id="nombreUsuario"
+                                            type="text"
+                                            placeholder="juanperez"
+                                            value={form.nombreUsuario}
+                                            onChange={(e) => handleInputChange("nombreUsuario", e.target.value)}
+                                            className={errors.nombreUsuario ? "border-red-500" : ""}
+                                        />
+                                        {errors.nombreUsuario && (
+                                            <p className="text-xs text-red-500">{errors.nombreUsuario}</p>
+                                        )}
+                                    </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="cedula" className="text-sm font-medium text-gray-700">
                                             Cédula
@@ -145,7 +202,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="cedula"
                                             type="text"
-                                            placeholder="Value"
+                                            placeholder="1234567890"
                                             value={form.cedula}
                                             onChange={(e) => handleInputChange("cedula", e.target.value)}
                                             className={errors.cedula ? "border-red-500" : ""}
@@ -154,7 +211,9 @@ export default function CreateProducer() {
                                             <p className="text-xs text-red-500">{errors.cedula}</p>
                                         )}
                                     </div>
+                                </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="nombre" className="text-sm font-medium text-gray-700">
                                             Nombre
@@ -162,7 +221,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="nombre"
                                             type="text"
-                                            placeholder="Value"
+                                            placeholder="Juan"
                                             value={form.nombre}
                                             onChange={(e) => handleInputChange("nombre", e.target.value)}
                                             className={errors.nombre ? "border-red-500" : ""}
@@ -179,7 +238,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="apellidos"
                                             type="text"
-                                            placeholder="Value"
+                                            placeholder="Pérez"
                                             value={form.apellidos}
                                             onChange={(e) => handleInputChange("apellidos", e.target.value)}
                                             className={errors.apellidos ? "border-red-500" : ""}
@@ -190,8 +249,7 @@ export default function CreateProducer() {
                                     </div>
                                 </div>
 
-                                {/* Segunda fila: Dirección, Fecha de nacimiento */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="direccion" className="text-sm font-medium text-gray-700">
                                             Dirección
@@ -199,7 +257,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="direccion"
                                             type="text"
-                                            placeholder="Value"
+                                            placeholder="Av. Siempre Viva 742"
                                             value={form.direccion}
                                             onChange={(e) => handleInputChange("direccion", e.target.value)}
                                             className={errors.direccion ? "border-red-500" : ""}
@@ -210,13 +268,29 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
+                                        <Label htmlFor="telefono" className="text-sm font-medium text-gray-700">
+                                            Teléfono
+                                        </Label>
+                                        <Input
+                                            id="telefono"
+                                            type="text"
+                                            placeholder="123456789"
+                                            value={form.telefono}
+                                            onChange={(e) => handleInputChange("telefono", e.target.value)}
+                                            className={errors.telefono ? "border-red-500" : ""}
+                                        />
+                                        {errors.telefono && (
+                                            <p className="text-xs text-red-500">{errors.telefono}</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <Label htmlFor="fechaNacimiento" className="text-sm font-medium text-gray-700">
-                                            fecha de nacimiento
+                                            Fecha de nacimiento
                                         </Label>
                                         <Input
                                             id="fechaNacimiento"
                                             type="date"
-                                            placeholder="DD/MM/YYYY"
                                             value={form.fechaNacimiento}
                                             onChange={(e) => handleInputChange("fechaNacimiento", e.target.value)}
                                             className={errors.fechaNacimiento ? "border-red-500" : ""}
@@ -227,7 +301,6 @@ export default function CreateProducer() {
                                     </div>
                                 </div>
 
-                                {/* Tercera fila: Contraseña, Correo */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="contrasena" className="text-sm font-medium text-gray-700">
@@ -236,7 +309,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="contrasena"
                                             type="password"
-                                            placeholder="Value"
+                                            placeholder="******"
                                             value={form.contrasena}
                                             onChange={(e) => handleInputChange("contrasena", e.target.value)}
                                             className={errors.contrasena ? "border-red-500" : ""}
@@ -253,7 +326,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="correo"
                                             type="email"
-                                            placeholder="Value"
+                                            placeholder="juan.perez@example.com"
                                             value={form.correo}
                                             onChange={(e) => handleInputChange("correo", e.target.value)}
                                             className={errors.correo ? "border-red-500" : ""}
@@ -264,7 +337,6 @@ export default function CreateProducer() {
                                     </div>
                                 </div>
 
-                                {/* Cuarta fila: Confirmar contraseña, Confirmar correo */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label htmlFor="confirmarContrasena" className="text-sm font-medium text-gray-700">
@@ -273,7 +345,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="confirmarContrasena"
                                             type="password"
-                                            placeholder="Value"
+                                            placeholder="******"
                                             value={form.confirmarContrasena}
                                             onChange={(e) => handleInputChange("confirmarContrasena", e.target.value)}
                                             className={errors.confirmarContrasena ? "border-red-500" : ""}
@@ -290,7 +362,7 @@ export default function CreateProducer() {
                                         <Input
                                             id="confirmarCorreo"
                                             type="email"
-                                            placeholder="Value"
+                                            placeholder="juan.perez@example.com"
                                             value={form.confirmarCorreo}
                                             onChange={(e) => handleInputChange("confirmarCorreo", e.target.value)}
                                             className={errors.confirmarCorreo ? "border-red-500" : ""}
@@ -301,7 +373,6 @@ export default function CreateProducer() {
                                     </div>
                                 </div>
 
-                                {/* Botón de crear */}
                                 <div className="flex justify-end pt-4">
                                     <Button
                                         type="submit"
