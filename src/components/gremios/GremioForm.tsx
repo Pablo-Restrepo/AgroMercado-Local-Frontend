@@ -3,38 +3,74 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
+import { Textarea } from "@/components/ui/textArea"
+
+
+export interface GremioFormData {
+    nombre: string
+    descripcion: string
+    ubicacion: string
+}
 
 interface GremioFormProps {
-    onSubmit: (name: string) => void
+    onSubmit: (data: GremioFormData) => void
     onCancel: () => void
 }
 
 export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
-    const [gremioName, setGremioName] = useState("")
-    const [error, setError] = useState("")
+    const [formData, setFormData] = useState<GremioFormData>({
+        nombre: "",
+        descripcion: "",
+        ubicacion: ""
+    })
+    const [errors, setErrors] = useState<Partial<Record<keyof GremioFormData, string>>>({})
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
 
         // Validación
-        if (!gremioName.trim()) {
-            setError("El nombre del gremio es requerido")
+        const newErrors: Partial<Record<keyof GremioFormData, string>> = {}
+
+        if (!formData.nombre.trim()) {
+            newErrors.nombre = "El nombre del gremio es requerido"
+        } else if (formData.nombre.trim().length < 3) {
+            newErrors.nombre = "El nombre debe tener al menos 3 caracteres"
+        }
+
+        if (!formData.descripcion.trim()) {
+            newErrors.descripcion = "La descripción es requerida"
+        } else if (formData.descripcion.trim().length < 10) {
+            newErrors.descripcion = "La descripción debe tener al menos 10 caracteres"
+        }
+
+        if (!formData.ubicacion.trim()) {
+            newErrors.ubicacion = "La ubicación es requerida"
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors)
             return
         }
 
-        if (gremioName.trim().length < 3) {
-            setError("El nombre debe tener al menos 3 caracteres")
-            return
-        }
-
-        setError("")
-        onSubmit(gremioName.trim())
+        setErrors({})
+        onSubmit({
+            nombre: formData.nombre.trim(),
+            descripcion: formData.descripcion.trim(),
+            ubicacion: formData.ubicacion.trim()
+        })
     }
 
     const handleCancel = () => {
-        setGremioName("")
-        setError("")
+        setFormData({ nombre: "", descripcion: "", ubicacion: "" })
+        setErrors({})
         onCancel()
+    }
+
+    const updateField = (field: keyof GremioFormData, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }))
+        if (errors[field]) {
+            setErrors(prev => ({ ...prev, [field]: undefined }))
+        }
     }
 
     return (
@@ -58,20 +94,59 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
                         <Input
                             id="gremio-name"
                             type="text"
-                            placeholder="Ej: Gremio de Productores de Café"
-                            value={gremioName}
-                            onChange={(e) => {
-                                setGremioName(e.target.value)
-                                if (error) setError("")
-                            }}
-                            className={`w-full ${error ? "border-red-500" : ""}`}
+                            placeholder="Ej: Gremio de Agricultores"
+                            value={formData.nombre}
+                            onChange={(e) => updateField("nombre", e.target.value)}
+                            className={`w-full ${errors.nombre ? "border-red-500" : ""}`}
                             autoFocus
                         />
-                        {error && (
-                            <p className="text-sm text-red-500 mt-1">{error}</p>
+                        {errors.nombre && (
+                            <p className="text-sm text-red-500 mt-1">{errors.nombre}</p>
                         )}
                         <p className="text-xs text-gray-500">
                             El nombre debe ser descriptivo y único para tu gremio
+                        </p>
+                    </div>
+
+                    {/* Descripción */}
+                    <div className="space-y-2">
+                        <Label htmlFor="gremio-descripcion" className="text-sm font-medium text-gray-700">
+                            Descripción <span className="text-red-500">*</span>
+                        </Label>
+                        <Textarea
+                            id="gremio-descripcion"
+                            placeholder="Ej: Gremio dedicado a la agricultura sostenible"
+                            value={formData.descripcion}
+                            onChange={(e) => updateField("descripcion", e.target.value)}
+                            className={`w-full min-h-[100px] ${errors.descripcion ? "border-red-500" : ""}`}
+                            rows={4}
+                        />
+                        {errors.descripcion && (
+                            <p className="text-sm text-red-500 mt-1">{errors.descripcion}</p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                            Describe el propósito y objetivos del gremio
+                        </p>
+                    </div>
+
+                    {/* Ubicación */}
+                    <div className="space-y-2">
+                        <Label htmlFor="gremio-ubicacion" className="text-sm font-medium text-gray-700">
+                            Ubicación <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
+                            id="gremio-ubicacion"
+                            type="text"
+                            placeholder="Ej: Vereda Santa Barbara, Popayán"
+                            value={formData.ubicacion}
+                            onChange={(e) => updateField("ubicacion", e.target.value)}
+                            className={`w-full ${errors.ubicacion ? "border-red-500" : ""}`}
+                        />
+                        {errors.ubicacion && (
+                            <p className="text-sm text-red-500 mt-1">{errors.ubicacion}</p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                            Indica la ubicación geográfica del gremio
                         </p>
                     </div>
 
