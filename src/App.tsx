@@ -10,6 +10,7 @@ import DashBoardShoppingPage from '@/pages/dashboard/DashBoardShoppingPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
 import CreateProducer from '@/pages/dashboard/CreateProducer'
+import CreateGremio from '@/pages/gremios/CreateGremio'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 
@@ -35,6 +36,7 @@ function App() {
               <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
               <Route path="crear-productor" element={<CreateProducer />} />
+              <Route path="crear-gremio" element={<CreateGremio />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
