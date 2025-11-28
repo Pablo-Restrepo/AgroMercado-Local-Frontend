@@ -23,7 +23,7 @@ export interface Gremio {
  * @param data - Datos del gremio a crear
  */
 export async function createGremio(userId: number, data: CreateGremioData): Promise<Gremio> {
-    const res = await authFetch(`${API_BASE_URL}/api/gremios/${userId}`, {
+    const res = await authFetch(`${API_BASE_URL}/gremios/${userId}`, {
         method: "POST",
         body: JSON.stringify(data),
     });

@@ -22,7 +22,7 @@ export interface CreateProducerPayload {
 }
 
 export async function createProducer(payload: CreateProducerPayload) {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/`, {
         method: "POST",
         body: JSON.stringify(payload),
     });
