@@ -9,6 +9,7 @@ import DashBoardProductsList from '@/pages/dashboard/DashBoardProductsList'
 import DashBoardShoppingPage from '@/pages/dashboard/DashBoardShoppingPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
+import CreateProducer from '@/pages/dashboard/CreateProducer'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 
@@ -24,6 +25,8 @@ function App() {
             <Route path="/registro" element={<RegisterPage />} />
             
             {/* Páginas públicas con sidebar */}
+
+            {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
             {/* Rutas protegidas con sidebar de dashboard */}
@@ -31,6 +34,7 @@ function App() {
               <Route path="" element={<DashBoardShoppingPage />} />
               <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
+              <Route path="crear-productor" element={<CreateProducer />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
