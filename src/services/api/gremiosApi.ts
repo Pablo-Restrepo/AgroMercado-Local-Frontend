@@ -59,7 +59,7 @@ export interface GremioListBody {
  * Listar gremios
  */
 export async function listarGremios(): Promise<GremioListBody[]> {
-    const res = await authFetch(`/api/gremios/`, {
+    const res = await authFetch(`${API_BASE_URL}/gremios/`, {
         method: "GET",
     });
     if (!res.ok) {
