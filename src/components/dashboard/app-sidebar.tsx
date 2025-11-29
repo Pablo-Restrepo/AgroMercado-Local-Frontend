@@ -32,7 +32,8 @@ import { AuthError } from "@/services/api/authFetch"
 import { authStorage } from "@/services/storage/authStorage"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { useSessionHandler } from "@/hooks/auth/useSessionHandler"
-import type { User } from "@/types/auth" 
+import type { User } from "@/types/auth"
+import { getProductorByUserId, type ProductorResponse } from "@/services/api/productoresApi"
 
 type SidebarUser = {
   name: string
@@ -95,6 +96,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const [priceRange, setPriceRange] = React.useState([0])
   const { isAuthenticated, user: authUser } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
+  const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
 
   // Determinar rol efectivo (preferir contexto, luego storage)
   const effectiveRole: User["u_rol"] =
@@ -122,7 +124,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
         role: authUser.u_rol,
       }
     }
-    
+
     const stored = authStorage.getUser()
     if (stored && isAuthenticated) {
       return {
@@ -132,7 +134,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
         role: stored.u_rol,
       }
     }
-    
+
     return {
       name: "Usuario",
       email: "usuario@example.com",
@@ -195,16 +197,35 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
         } catch {
           // no bloquear si falla el guardado
         }
+
+        // Si el usuario es productor, obtener datos del productor para verificar si tiene gremio
+        console.log('Rol del usuario:', mapped.role)
+        console.log('User ID:', u.u_id)
+        if (mapped.role === "productor" || mapped.role === "admin") {
+          console.log('Llamando a getProductorByUserId...')
+          getProductorByUserId(u.u_id)
+            .then((productor) => {
+              if (!mounted) return
+              console.log('Datos del productor:', productor)
+              setProductorData(productor)
+            })
+            .catch((error) => {
+              console.error('Error al obtener productor:', error)
+              // Si falla, no bloquear la UI
+            })
+        } else {
+          console.log('El usuario no es productor ni admin, no se busca información de gremio')
+        }
       })
       .catch((error) => {
         console.warn("Error fetching user data:", error)
-        
+
         // Si es un error de autenticación, manejar sesión expirada
         if (error instanceof AuthError) {
           console.log("Token expirado, cerrando sesión...")
           handleSessionExpired()
         }
-        
+
         // Para otros errores, mantener usuario actual sin hacer nada drástico
       })
 
@@ -248,88 +269,89 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent className="px-2">
-        {isAuthenticated ? (
-          <>
-            {/* Navigation Main */}
-            <div className="space-y-1 py-2">
-              {navMainForRole.map((item) => (
-                <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
-                  <a href={item.url} className="flex items-center gap-3">
-                    <item.icon className="size-4" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              ))}
-            </div>
+        {
+          isAuthenticated ? (
+            <>
+              {/* Navigation Main */}
+              <div className="space-y-1 py-2">
+                {navMainForRole.map((item) => (
+                  <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
+                    <a href={item.url} className="flex items-center gap-3">
+                      <item.icon className="size-4" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                ))}
+              </div>
 
-            <Separator className="my-4" />
+              <Separator className="my-4" />
 
-            {/* Filters Section */}
-            <div className="space-y-4 group-data-[collapsible=icon]:hidden">
-              <div className="px-2">
-                <div className="flex items-center gap-2 mb-3">
-                  <Filter className="size-4" />
-                  <Label className="text-sm font-medium">Filtros</Label>
-                </div>
-                
-                {/* Categories */}
-                <div className="space-y-3">
-                  <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
-                  <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
-                    {data.categories.map((category) => (
-                      <div key={category.id} className="flex items-center space-x-2">
-                        <RadioGroupItem value={category.id} id={category.id} className="size-4" />
-                        <Label htmlFor={category.id} className="text-sm cursor-pointer">
-                          {category.label}
-                        </Label>
+              {/* Filters Section */}
+              <div className="space-y-4 group-data-[collapsible=icon]:hidden">
+                <div className="px-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Filter className="size-4" />
+                    <Label className="text-sm font-medium">Filtros</Label>
+                  </div>
+
+                  {/* Categories */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
+                    <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
+                      {data.categories.map((category) => (
+                        <div key={category.id} className="flex items-center space-x-2">
+                          <RadioGroupItem value={category.id} id={category.id} className="size-4" />
+                          <Label htmlFor={category.id} className="text-sm cursor-pointer">
+                            {category.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <Separator className="my-4" />
+
+                  {/* Price Range */}
+                  <div className="space-y-3">
+                    <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
+                    <div className="px-2">
+                      <Slider
+                        value={priceRange}
+                        onValueChange={setPriceRange}
+                        max={50000}
+                        step={1000}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                        <span>$0</span>
+                        <span>${priceRange[0].toLocaleString()}</span>
                       </div>
-                    ))}
-                  </RadioGroup>
-                </div>
-
-                <Separator className="my-4" />
-
-                {/* Price Range */}
-                <div className="space-y-3">
-                  <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
-                  <div className="px-2">
-                    <Slider
-                      value={priceRange}
-                      onValueChange={setPriceRange}
-                      max={50000}
-                      step={1000}
-                      className="w-full"
-                    />
-                    <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                      <span>$0</span>
-                      <span>${priceRange[0].toLocaleString()}</span>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Secondary Navigation */}
-            <div className="mt-auto space-y-1 py-2">
-              <Separator className="mb-2" />
-              {data.navSecondary.map((item) => (
-                <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
-                  <a href={item.url} className="flex items-center gap-3">
-                    <item.icon className="size-4" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-                  </a>
-                </SidebarMenuButton>
-              ))}
+              {/* Secondary Navigation */}
+              <div className="mt-auto space-y-1 py-2">
+                <Separator className="mb-2" />
+                {data.navSecondary.map((item) => (
+                  <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
+                    <a href={item.url} className="flex items-center gap-3">
+                      <item.icon className="size-4" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                    </a>
+                  </SidebarMenuButton>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* Login Prompt cuando no está autenticado */
+            <div className="group-data-[collapsible=icon]:hidden">
+              <LoginPrompt />
             </div>
-          </>
-        ) : (
-          /* Login Prompt cuando no está autenticado */
-          <div className="group-data-[collapsible=icon]:hidden">
-            <LoginPrompt />
-          </div>
-        )}
+          )}
       </SidebarContent>
 
       <SidebarFooter>
