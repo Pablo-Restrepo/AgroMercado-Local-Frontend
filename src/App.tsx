@@ -14,6 +14,8 @@ import CreateGremio from '@/pages/gremios/CreateGremio'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 import EnviosPage from '@/pages/dashboard/EnviosPage'
+import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
+import AyudaPage from '@/pages/dashboard/AyudaPage'
 
 function App() {
   return (
@@ -35,6 +37,8 @@ function App() {
             <Route path="/dashboard/*" element={<RequireAuth />}>
               <Route path="" element={<DashBoardShoppingPage />} />
               <Route path="mis-pedidos" element={<EnviosPage />} />
+              <Route path="configuraciones" element={<ConfiguracionesPage />} />
+              <Route path="ayuda" element={<AyudaPage />} />
               <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
               <Route path="crear-productor" element={<CreateProducer />} />
