@@ -29,7 +29,8 @@ import { Slider } from "@/components/ui/slider"
 
 import { getCurrentUser } from "@/services/api/userApi"
 import { authStorage } from "@/services/storage/authStorage"
-import type { User } from "@/types/auth" 
+import type { User } from "@/types/auth"
+import { getProductorByUserId, type ProductorResponse } from "@/services/api/productoresApi"
 
 type SidebarUser = {
   name: string
@@ -91,6 +92,7 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
+  const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
 
   // usar user guardado en localStorage como inicial (si existe), sino fallback quemado
   const initialUser = React.useMemo(() => {
@@ -149,6 +151,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         } catch {
           // no bloquear si falla el guardado
         }
+
+        // Si el usuario es productor, obtener datos del productor para verificar si tiene gremio
+        console.log('Rol del usuario:', mapped.role)
+        console.log('User ID:', u.u_id)
+        if (mapped.role === "productor" || mapped.role === "admin") {
+          console.log('Llamando a getProductorByUserId...')
+          getProductorByUserId(u.u_id)
+            .then((productor) => {
+              if (!mounted) return
+              console.log('Datos del productor:', productor)
+              setProductorData(productor)
+            })
+            .catch((error) => {
+              console.error('Error al obtener productor:', error)
+              // Si falla, no bloquear la UI
+            })
+        } else {
+          console.log('El usuario no es productor ni admin, no se busca información de gremio')
+        }
       })
       .catch(() => {
         // mantener usuario quemado si falla
@@ -178,18 +199,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent className="px-2">
         {/* Navigation Main */}
         <div className="space-y-1 py-2">
-          {data.navMain.map((item) => (
-            <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
-              <a href={item.url} className="flex items-center gap-3">
-                <item.icon className="size-4" />
-                <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+          {(() => {
+            console.log('Estado de productorData:', productorData)
+            console.log('id_gremio:', productorData?.id_gremio)
+            return null
+          })()}
+          {data.navMain.map((item) => {
+            // Filtrar el item de "Mi gremio" si no tiene gremio
+            // Solo mostrar "Mi gremio" si productorData existe Y tiene id_gremio
+            if (item.title === "Mi gremio" && (!productorData || productorData.id_gremio === null)) {
+              return null
+            }
+            return (
+              <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
+                <a href={item.url} className="flex items-center gap-3">
+                  <item.icon className="size-4" />
+                  <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                </a>
+              </SidebarMenuButton>
+            )
+          })}
+          {/* Mostrar "Crear Gremio" solo si el productor no tiene gremio */}
+          {(!productorData || productorData.id_gremio === null) && (
+            <SidebarMenuButton asChild className="w-full justify-start">
+              <a href="/dashboard/crear-gremio" className="flex items-center gap-3">
+                <Warehouse className="size-4" />
+                <span className="group-data-[collapsible=icon]:hidden">Crear Gremio</span>
               </a>
             </SidebarMenuButton>
-          ))}
+          )}
         </div>
 
         <Separator className="my-4" />
@@ -201,7 +243,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Filter className="size-4" />
               <Label className="text-sm font-medium">Filtros</Label>
             </div>
-            
+
             {/* Categories */}
             <div className="space-y-3">
               <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
@@ -252,7 +294,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ))}
         </div>
       </SidebarContent>
-      
+
       <SidebarFooter>
         <NavUser user={currentUser} />
       </SidebarFooter>

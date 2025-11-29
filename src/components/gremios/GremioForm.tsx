@@ -45,6 +45,8 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
 
         if (!formData.ubicacion.trim()) {
             newErrors.ubicacion = "La ubicación es requerida"
+        } else if (formData.ubicacion.trim().length < 5) {
+            newErrors.ubicacion = "La ubicación debe tener al menos 5 caracteres"
         }
 
         if (Object.keys(newErrors).length > 0) {
