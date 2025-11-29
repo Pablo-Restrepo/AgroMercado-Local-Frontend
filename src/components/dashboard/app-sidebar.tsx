@@ -29,7 +29,7 @@ import { Slider } from "@/components/ui/slider"
 
 import { getCurrentUser } from "@/services/api/userApi"
 import { authStorage } from "@/services/storage/authStorage"
-import type { User } from "@/types/auth" 
+import type { User } from "@/types/auth"
 
 type SidebarUser = {
   name: string
@@ -62,7 +62,7 @@ const data = {
     },
     {
       title: "Mi gremio",
-      url: "/dashboard/gremio",
+      url: "/dashboard/mi-gremio",
       icon: Warehouse,
     },
   ],
@@ -178,7 +178,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent className="px-2">
         {/* Navigation Main */}
         <div className="space-y-1 py-2">
@@ -201,7 +201,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Filter className="size-4" />
               <Label className="text-sm font-medium">Filtros</Label>
             </div>
-            
+
             {/* Categories */}
             <div className="space-y-3">
               <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
@@ -252,7 +252,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           ))}
         </div>
       </SidebarContent>
-      
+
       <SidebarFooter>
         <NavUser user={currentUser} />
       </SidebarFooter>
