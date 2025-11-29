@@ -32,8 +32,8 @@ import { AuthError } from "@/services/api/authFetch"
 import { authStorage } from "@/services/storage/authStorage"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { useSessionHandler } from "@/hooks/auth/useSessionHandler"
-import type { User } from "@/types/auth"
 import { getProductorByUserId, type ProductorResponse } from "@/services/api/productoresApi"
+import type { User } from "@/types/auth"
 
 type SidebarUser = {
   name: string
@@ -61,7 +61,7 @@ const data = {
     },
     {
       title: "Mi gremio",
-      url: "/dashboard/gremio",
+      url: "/dashboard/mi-gremio",
       icon: Warehouse,
     },
   ],
