@@ -15,7 +15,6 @@ import ProducerManagement from '@/pages/dashboard/ProducerManagement'
 import EnviosPage from '@/pages/dashboard/EnviosPage'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
-import EnviosPage from '@/pages/dashboard/EnviosPage'
 import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
 import AyudaPage from '@/pages/dashboard/AyudaPage'
 import EditProductPage from '@/pages/dashboard/EditProductPage'
@@ -42,6 +41,7 @@ function App() {
             <Route path="/dashboard/*" element={<RequireAuth />}>
               {/* Dashboard principal - redirige según rol */}
               <Route path="" element={<DashboardHome />} />
+              <Route path="compras" element={<DashBoardShoppingPage />} />
               <Route path="mis-pedidos" element={<EnviosPage />} />
               <Route path="configuraciones" element={<ConfiguracionesPage />} />
               <Route path="ayuda" element={<AyudaPage />} />
@@ -50,7 +50,7 @@ function App() {
               <Route path="editar-producto/:id" element={<EditProductPage />} />
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
-              <Route path="mi-gremio" element={<ProducerManagement />} />
+              <Route path="gremio" element={<ProducerManagement />} />
               <Route path="envios" element={<EnviosPage />} />
             </Route>
 
