@@ -29,6 +29,7 @@ type ViewMode = "products" | "gremios" | "gremio-products"
 // Producto unificado para visualización
 type ViewProduct = {
   id: string
+  productId: number       // Agregar productId numérico
   name: string
   price: number
   unit: string
@@ -41,10 +42,27 @@ type ViewProduct = {
   stock?: number
 }
 
+const PLACEHOLDER_URL = "https://via.placeholder.com/400x300?text=No+image"
+
+// Agregar helper para normalizar imagenes
+function resolveImageSrc(img?: string, fallback = PLACEHOLDER_URL) {
+  if (!img || !img.trim()) return fallback
+  const trimmed = img.trim()
+  if (trimmed.startsWith("data:")) return trimmed
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  const cleaned = trimmed.replace(/\s+/g, "")
+  // heurístico base64
+  if (/^[A-Za-z0-9+/=]+$/.test(cleaned) && cleaned.length > 100) {
+    return `data:image/jpeg;base64,${cleaned}`
+  }
+  return fallback
+}
+
 // Mapear productos generales
 function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
   return {
-    id: `general-${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
+    id: item.p_id?.toString() || `general-${index}`, // usar ID real como string
+    productId: item.p_id || 0, // preservar ID numérico real
     name: item.p_nombre,
     price: item.p_precio ?? 0,
     unit: item.p_unidad ?? "unidad",
@@ -52,7 +70,7 @@ function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
     rating: 4.6,
     reviews: 0,
     category: (item.p_tipo ?? "otro").toLowerCase(),
-    image: item.img || "/images/default-product.jpg",
+    image: resolveImageSrc(item.img, PLACEHOLDER_URL),
     available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
     stock: item.p_stock
   }
@@ -61,7 +79,8 @@ function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
 // Mapear productos de gremio
 function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
   return {
-    id: `gremio-${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
+    id: item.p_id?.toString() || `gremio-${index}`, // usar ID real como string
+    productId: item.p_id || 0, // preservar ID numérico real
     name: item.p_nombre,
     price: item.p_precio ?? 0,
     unit: item.p_unidad ?? "unidad",
@@ -69,7 +88,7 @@ function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
     rating: 4.6,
     reviews: 0,
     category: (item.p_tipo ?? "otro").toLowerCase(),
-    image: item.img || "/images/default-product.jpg",
+    image: resolveImageSrc(item.img, PLACEHOLDER_URL),
     available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
     stock: item.p_stock
   }
@@ -102,6 +121,7 @@ export default function DashBoardShoppingPage() {
   const handleConfirmAddToCart = (product: any, quantity: number) => {
     addToCart({
       id: product.id,
+      productId: product.productId || 0, // Pasar el ID numérico real
       name: product.name,
       price: product.price,
       unit: product.unit,
@@ -120,7 +140,7 @@ export default function DashBoardShoppingPage() {
       setProducts(mapped)
     } catch (err) {
       console.error("Error fetching products:", err)
-      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos"))
+      setFetchError(typeof err === "string" ? err : ((err as any)?.message ?? "Error al cargar productos"))
     } finally {
       setIsLoading(false)
     }
@@ -135,7 +155,7 @@ export default function DashBoardShoppingPage() {
       setGremios(items)
     } catch (err) {
       console.error("Error fetching gremios:", err)
-      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar gremios"))
+      setFetchError(typeof err === "string" ? err : ((err as any)?.message ?? "Error al cargar gremios"))
     } finally {
       setIsLoading(false)
     }
@@ -151,7 +171,7 @@ export default function DashBoardShoppingPage() {
       setProducts(mapped)
     } catch (err) {
       console.error("Error fetching gremio products:", err)
-      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos del gremio"))
+      setFetchError(typeof err === "string" ? err : ((err as any)?.message ?? "Error al cargar productos del gremio"))
     } finally {
       setIsLoading(false)
     }
@@ -353,6 +373,10 @@ export default function DashBoardShoppingPage() {
                         src={product.image}
                         alt={product.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          if (target.src !== PLACEHOLDER_URL) target.src = PLACEHOLDER_URL
+                        }}
                       />
                       <Button
                         size="icon"

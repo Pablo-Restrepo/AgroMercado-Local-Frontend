@@ -20,7 +20,27 @@ interface ProductCardProps {
     product: Product
 }
 
+const PLACEHOLDER = "https://via.placeholder.com/400x300?text=No+image"
+
+function resolveImageSrc(img?: string) {
+  if (!img) return PLACEHOLDER
+  const trimmed = img.trim()
+  // Si ya viene con data: (data URI) usar tal cual
+  if (trimmed.startsWith("data:")) return trimmed
+  // Si parece un URL (http, https) usar tal cual
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+  // Si parece base64 (solo chars base64) devolver como data URI (fallback to jpeg)
+  // Nota: esto es heurístico — si tu backend guarda mime puedes adaptar.
+  if (/^[A-Za-z0-9+/=\s]+$/.test(trimmed) && trimmed.length > 100) {
+    return `data:image/jpeg;base64,${trimmed}`
+  }
+  // por defecto usar placeholder
+  return PLACEHOLDER
+}
+
 export function ProductCard({ product }: ProductCardProps) {
+    const imgSrc = resolveImageSrc(product.image)
+
     const getCategoryBadge = (category: string) => {
         const categoryLabels: Record<string, string> = {
             verduras: "Verduras",
@@ -40,7 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Card className="flex flex-col min-w-[235px] max-w-[313px] w-full h-[519px] p-5">
             <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0">
                 <img
-                    src={product.image}
+                    src={imgSrc}
                     alt={product.name}
                     className="object-cover w-full h-full"
                 />

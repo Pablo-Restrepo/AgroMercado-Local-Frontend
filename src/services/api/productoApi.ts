@@ -3,6 +3,7 @@ import { authFetch } from "@/services/api/authFetch"
 import { API_BASE_URL } from "@/services/api/config"
 
 export interface ProductorProduct {
+  p_id?: number           // añadir ID real del producto
   p_nombre: string
   p_tipo: string
   p_unidad: string
@@ -11,20 +12,34 @@ export interface ProductorProduct {
   img: string
 }
 
-// Resumen de producto que incluye stock según la documentación del endpoint /productos/
 export interface ProductSummary extends ProductorProduct {
   p_stock: number
 }
 
-// Nuevo tipo solicitado por el backend para crear producto
+/**
+ * Request type para crear un producto.
+ * Incluye los campos que normalmente se envían al crear un producto;
+ * p_id queda excluido porque lo genera el servidor.
+ */
 export interface CreateProductRequest {
   p_nombre: string
   p_tipo: string
   p_unidad: string
-  prod_id: number
-  img?: string
+  gre_nombre: string
   p_precio: number
   p_stock?: number
+  img?: string
+}
+
+export interface GremioProduct {
+  p_id?: number           // añadir ID real del producto
+  p_nombre: string
+  p_tipo: string
+  p_unidad: string
+  gre_nombre: string
+  p_precio: number
+  p_stock: number
+  img: string
 }
 
 /**
@@ -135,15 +150,6 @@ export async function getAllProducts(): Promise<ProductSummary[]> {
   }
 ]
  */
-export interface GremioProduct {
-  p_nombre: string
-  p_tipo: string
-  p_unidad: string
-  gre_nombre: string
-  p_precio: number
-  p_stock: number
-  img: string
-}
 export async function listarProductosPorGremio(prod_cod_gremio: string): Promise<GremioProduct[]> {
   const res = await authFetch(`${API_BASE_URL}/productos/gremio/${prod_cod_gremio}`, {
     method: "GET",

@@ -1,5 +1,6 @@
 export interface CartItem {
   id: string
+  productId: number       // añadir ID numérico real
   name: string
   price: number
   unit: string

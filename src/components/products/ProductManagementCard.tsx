@@ -10,35 +10,61 @@ interface ProductManagementCardProps {
   onDelete: (product: ProductorProduct) => void
 }
 
-export function ProductManagementCard({ product, onEdit, onDelete }: ProductManagementCardProps) {
-  // Función para obtener imagen por defecto si no hay imagen
-  const getProductImage = (img?: string) => {
-    if (img && img.trim()) {
-      return img
+const PLACEHOLDER = "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+
+/**
+ * Resolve image source:
+ * - si viene con data: -> usar tal cual
+ * - si es URL http(s) -> usar tal cual
+ * - si parece base64 (solo chars base64 y longitud suficiente) -> convertir a data URI (jpeg por defecto)
+ * - fallback -> PLACEHOLDER
+ */
+function resolveImageSrc(img?: string, tipo?: string) {
+  if (!img || !img.trim()) {
+    // si no hay img, intentar elegir por tipo
+    if (tipo) {
+      const tt = tipo.toLowerCase()
+      if (tt.includes('fruta')) {
+        return "https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      }
+      if (tt.includes('verdura') || tt.includes('hortaliza')) {
+        return "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      }
     }
-    // Imagen por defecto basada en el tipo de producto
-    const tipo = product.p_tipo.toLowerCase()
-    if (tipo.includes('fruta')) {
-      return "https://images.unsplash.com/photo-1610832958506-aa56368176cf?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    }
-    if (tipo.includes('verdura') || tipo.includes('hortaliza')) {
-      return "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
-    }
-    return "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+    return PLACEHOLDER
   }
+
+  const trimmed = img.trim()
+
+  // data URI completo
+  if (trimmed.startsWith("data:")) return trimmed
+
+  // url http(s)
+  if (/^https?:\/\//i.test(trimmed)) return trimmed
+
+  // heurística base64: caracteres válidos y longitud razonable
+  if (/^[A-Za-z0-9+/=\s]+$/.test(trimmed) && trimmed.replace(/\s+/g, '').length > 100) {
+    return `data:image/jpeg;base64,${trimmed.replace(/\s+/g, '')}`
+  }
+
+  // fallback por tipo o placeholder
+  return PLACEHOLDER
+}
+
+export function ProductManagementCard({ product, onEdit, onDelete }: ProductManagementCardProps) {
+  const imgSrc = resolveImageSrc(product.img, product.p_tipo)
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm">
       {/* Product Image */}
       <div className="relative h-48 overflow-hidden">
         <img
-          src={getProductImage(product.img)}
+          src={imgSrc}
           alt={product.p_nombre}
           className="w-full h-full object-cover"
           onError={(e) => {
-            // Si falla la imagen, usar una por defecto
             const target = e.target as HTMLImageElement
-            target.src = "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+            target.src = PLACEHOLDER
           }}
         />
         

@@ -112,11 +112,32 @@ export default function CreateProduct() {
     }
   }
 
-  // Función para subir imagen (placeholder - necesitarás implementar según tu API de imágenes)
+  // Mapeo simple de categorías a cat_id (ajusta los ids según tu backend)
+  const categoryToCatId: Record<string, number> = {
+    frutas: 1,
+    verduras: 2,
+    tuberculos: 3,
+    hierbas: 4,
+    medicinales: 5,
+  }
+
+  // Convierte File -> base64 (solo la parte después de la coma)
   const uploadImage = async (file: File): Promise<string> => {
-    // Por ahora, retornar un placeholder URL
-    // TODO: Implementar subida real de imágenes
-    return `https://via.placeholder.com/400x300?text=${encodeURIComponent(file.name)}`
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = () => {
+        reader.abort()
+        reject(new Error("Error leyendo la imagen"))
+      }
+      reader.onload = () => {
+        const result = reader.result as string
+        // result es "data:<mime>;base64,AAAA..."
+        const parts = result.split(",")
+        if (parts.length === 2) resolve(parts[1])
+        else resolve(result) // ya es probable base64 puro
+      }
+      reader.readAsDataURL(file)
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,14 +184,13 @@ export default function CreateProduct() {
     setIsSubmitting(true)
 
     try {
-      // Subir la primera imagen (o usar placeholder si no hay)
-      let imageUrl = ""
+      // Subir/convertir la primera imagen a base64 (o dejar vacío)
+      let imageBase64 = ""
       if (form.images.length > 0) {
-        imageUrl = await uploadImage(form.images[0])
+        imageBase64 = await uploadImage(form.images[0])
       }
 
-      // Crear producto
-      // Determinar prod_id: preferir campo explícito de productor si existe en user
+      // Determinar prod_id
       const producerId = Number((user as any).prod_id ?? (user as any).p_id ?? (user as any).prodId ?? user?.u_id)
       if (!Number.isInteger(producerId)) {
         setIsSubmitting(false)
@@ -178,14 +198,20 @@ export default function CreateProduct() {
         return
       }
 
+      // mapear categoría a cat_id y p_medicinal
+      const selectedCatId = categoryToCatId[form.category] ?? 0
+      const isMedicinal = form.category === "medicinales"
+
       const productData = {
         p_nombre: form.name.trim(),
         p_tipo: form.category,
         p_unidad: form.unit,
         prod_id: producerId,
-        img: imageUrl,
+        img: imageBase64,          // base64 puro (sin data:)
         p_precio: parseFloat(form.price),
         p_stock: stockNum,
+        cat_id: selectedCatId,     // requerido por backend
+        p_medicinal: isMedicinal,  // requerido por backend
       }
 
       // Llamada al API
@@ -195,7 +221,6 @@ export default function CreateProduct() {
       }
 
       const productId = await createFn(productData)
- 
       console.log("Producto creado con ID:", productId)
       
       // Limpiar formulario
@@ -331,24 +356,23 @@ export default function CreateProduct() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-700">
-                      Unidad <span className="text-red-500">*</span>
-                    </Label>
-                    <Select
-                      value={form.unit}
-                      onValueChange={(value) => handleInputChange("unit", value)}
-                      className="w-full"
-                      options={[
-                        { value: "kg", label: "Kilogramo (kg)" },
-                        { value: "g", label: "Gramo (g)" },
-                        { value: "lb", label: "Libra (lb)" },
-                        { value: "unidad", label: "Unidad" },
-                        { value: "manojo", label: "Manojo" },
-                        { value: "docena", label: "Docena" },
-                      ]}
-                      disabled={isSubmitting}
-                    />
-                  </div>
+                      <Label className="text-sm font-medium text-gray-700">
+                        Unidad <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={form.unit}
+                        onValueChange={(value) => handleInputChange("unit", value)}
+                        className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
+                        options={[
+                          { value: "kg", label: "Kilogramo (kg)" },
+                          { value: "g", label: "Gramo (g)" },
+                          { value: "lb", label: "Libra (lb)" },
+                          { value: "unidad", label: "Unidad" },
+                          { value: "manojo", label: "Manojo" },
+                          { value: "docena", label: "Docena" },
+                        ]}
+                      />
+                    </div>
                 </div>
 
                 {/* Categoría */}
@@ -359,7 +383,7 @@ export default function CreateProduct() {
                   <Select
                     value={form.category}
                     onValueChange={(value) => handleInputChange("category", value)}
-                    className="w-full"
+                    className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                     options={[
                       { value: "", label: "Selecciona categoría" },
                       { value: "frutas", label: "Frutas" },
@@ -368,10 +392,8 @@ export default function CreateProduct() {
                       { value: "hierbas", label: "Hierbas aromáticas" },
                       { value: "medicinales", label: "Plantas medicinales" },
                     ]}
-                    disabled={isSubmitting}
                   />
                 </div>
-
                 {/* Imágenes */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">

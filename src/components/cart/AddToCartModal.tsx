@@ -15,6 +15,7 @@ import { MapPin, Minus, Plus } from "lucide-react"
 
 interface Product {
   id: string
+  productId?: number // Campo productId
   name: string
   price: number
   unit: string
@@ -43,7 +44,7 @@ export function AddToCartModal({ product, isOpen, onClose, onAddToCart }: AddToC
 
   const handleAddToCart = () => {
     onAddToCart(product, quantity)
-    setQuantity(1) // Reset quantity
+    setQuantity(1)
     onClose()
   }
 
