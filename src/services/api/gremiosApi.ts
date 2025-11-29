@@ -1,6 +1,5 @@
 import { authFetch } from "@/services/api/authFetch";
-
-const API_BASE_URL = "http://localhost:8090";
+import { API_BASE_URL } from "@/services/api/config";
 
 export interface CreateGremioData {
     nombre: string;
@@ -33,6 +32,40 @@ export async function createGremio(userId: number, data: CreateGremioData): Prom
         throw new Error(payload.detail || payload.message || "Error al crear el gremio");
     }
 
+    const body = await res.json();
+    return body;
+}
+
+/** Gremio body
+ * [
+  {
+    "id": 0,
+    "nombre": "string",
+    "descripcion": "string",
+    "ubicacion": "string",
+    "productores": []
+  }
+]
+ */
+export interface GremioListBody {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    ubicacion: string;
+}
+
+
+/**
+ * Listar gremios
+ */
+export async function listarGremios(): Promise<GremioListBody[]> {
+    const res = await authFetch(`${API_BASE_URL}/gremios/`, {
+        method: "GET",
+    });
+    if (!res.ok) {
+        const payload = await res.json().catch(() => ({ message: "Error en el servidor" }));
+        throw new Error(payload.message || "Error al listar los gremios");
+    }
     const body = await res.json();
     return body;
 }
