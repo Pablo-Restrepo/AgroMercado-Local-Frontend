@@ -25,8 +25,8 @@ export function DeliveryModal({ isOpen, onClose, onConfirm, total }: DeliveryMod
   const [address, setAddress] = useState("")
 
   const handleConfirm = () => {
-    const destino = deliveryType === "domicilio" ? address : "recoger_en_tienda"
-    if (deliveryType === "domicilio" && !address.trim()) {
+    const destino = address.trim()
+    if (!destino) {
       alert("Por favor ingresa una dirección de entrega")
       return
     }
@@ -43,7 +43,7 @@ export function DeliveryModal({ isOpen, onClose, onConfirm, total }: DeliveryMod
             Método de entrega
           </DialogTitle>
           <DialogDescription>
-            Selecciona cómo quieres recibir tu pedido
+            Ingresa la dirección de entrega
           </DialogDescription>
         </DialogHeader>
         
@@ -58,19 +58,6 @@ export function DeliveryModal({ isOpen, onClose, onConfirm, total }: DeliveryMod
                 </Label>
                 <p className="text-sm text-gray-500 mt-1">
                   Recibe tu pedido en la dirección que indiques
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-2 p-3 border rounded-lg">
-              <RadioGroupItem value="recoger" id="recoger" />
-              <div className="flex-1">
-                <Label htmlFor="recoger" className="flex items-center gap-2 cursor-pointer">
-                  <Truck className="h-4 w-4" />
-                  Recoger en tienda
-                </Label>
-                <p className="text-sm text-gray-500 mt-1">
-                  Recoge tu pedido directamente en el punto de venta
                 </p>
               </div>
             </div>

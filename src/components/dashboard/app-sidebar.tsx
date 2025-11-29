@@ -103,14 +103,14 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   // Menús por rol
   const clienteNav = [
     { title: "Home", url: "/dashboard", icon: Package },
-    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
+    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },  // Agregar esta línea
   ]
 
   const productorNav = data.navMain // mantiene el conjunto existente para productor/admin
 
-  const navMainForRole = (effectiveRole === "productor-admin" || effectiveRole === "admin")
+  const navMainForRole = (effectiveRole === "productor" || effectiveRole === "admin")
     ? productorNav
-    : clienteNav
+    : clienteNav  // Cambiar de "productor-admin" a solo "productor"
 
   // Usar usuario del contexto de auth si existe, sino valores por defecto
   const initialUser = React.useMemo((): SidebarUser => {

@@ -38,9 +38,14 @@ export const cartStorage = {
     const existingItemIndex = cart.items.findIndex(i => i.id === item.id)
     
     if (existingItemIndex >= 0) {
+      // Actualizar cantidad del producto existente
       cart.items[existingItemIndex].quantity += quantity
     } else {
-      cart.items.push({ ...item, quantity })
+      // Agregar nuevo producto
+      cart.items.push({
+        ...item,
+        quantity
+      })
     }
     
     this.updateCartTotals(cart)

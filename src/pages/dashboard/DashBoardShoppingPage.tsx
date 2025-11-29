@@ -60,9 +60,10 @@ function resolveImageSrc(img?: string, fallback = PLACEHOLDER_URL) {
 
 // Mapear productos generales
 function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
+  const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
   return {
-    id: item.p_id?.toString() || `general-${index}`, // usar ID real como string
-    productId: item.p_id || 0, // preservar ID numérico real
+    id: item.p_id ? `product-${item.p_id}` : `general-${index}`,
+    productId: item.p_id || 0,
     name: item.p_nombre,
     price: item.p_precio ?? 0,
     unit: item.p_unidad ?? "unidad",
@@ -71,16 +72,17 @@ function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
     reviews: 0,
     category: (item.p_tipo ?? "otro").toLowerCase(),
     image: resolveImageSrc(item.img, PLACEHOLDER_URL),
-    available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
-    stock: item.p_stock
+    available: stock === undefined || stock > 0, // Solo disponible si hay stock
+    stock: stock
   }
 }
 
 // Mapear productos de gremio
 function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
+  const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
   return {
-    id: item.p_id?.toString() || `gremio-${index}`, // usar ID real como string
-    productId: item.p_id || 0, // preservar ID numérico real
+    id: item.p_id ? `product-${item.p_id}` : `gremio-${index}`,
+    productId: item.p_id || 0,
     name: item.p_nombre,
     price: item.p_precio ?? 0,
     unit: item.p_unidad ?? "unidad",
@@ -89,8 +91,8 @@ function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
     reviews: 0,
     category: (item.p_tipo ?? "otro").toLowerCase(),
     image: resolveImageSrc(item.img, PLACEHOLDER_URL),
-    available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
-    stock: item.p_stock
+    available: stock === undefined || stock > 0, // Solo disponible si hay stock
+    stock: stock
   }
 }
 
@@ -119,15 +121,24 @@ export default function DashBoardShoppingPage() {
   }, [])
 
   const handleConfirmAddToCart = (product: any, quantity: number) => {
+    console.log("Adding product to cart:", {
+      id: product.id,
+      productId: product.productId,
+      name: product.name,
+      location: product.location
+    })
+    
     addToCart({
       id: product.id,
-      productId: product.productId || 0, // Pasar el ID numérico real
+      productId: product.productId || 0,
       name: product.name,
       price: product.price,
       unit: product.unit,
       image: product.image,
       location: product.location
     }, quantity)
+    
+    console.log("Cart after adding:", cart)
   }
 
   // Cargar productos generales
@@ -213,7 +224,9 @@ export default function DashBoardShoppingPage() {
                                    product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
     const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
                                product.price <= sidebarFilters.priceRange[0]
-    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
+    const hasStock = product.stock === undefined || product.stock > 0 // Ocultar productos sin stock
+    
+    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice && hasStock
   })
 
   // Filtrar gremios

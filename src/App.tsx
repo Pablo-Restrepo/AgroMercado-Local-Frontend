@@ -13,6 +13,7 @@ import CreateProducer from '@/pages/dashboard/CreateProducer'
 import CreateGremio from '@/pages/gremios/CreateGremio'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
+import EnviosPage from '@/pages/dashboard/EnviosPage'
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
             {/* Rutas protegidas con sidebar de dashboard */}
             <Route path="/dashboard/*" element={<RequireAuth />}>
               <Route path="" element={<DashBoardShoppingPage />} />
+              <Route path="mis-pedidos" element={<EnviosPage />} />
               <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
               <Route path="crear-productor" element={<CreateProducer />} />
