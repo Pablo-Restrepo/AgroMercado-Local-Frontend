@@ -29,8 +29,8 @@ export async function createGremio(userId: number, data: CreateGremioData): Prom
     });
 
     if (!res.ok) {
-        const payload = await res.json().catch(() => ({ message: "Error en el servidor" }));
-        throw new Error(payload.message || "Error al crear el gremio");
+        const payload = await res.json().catch(() => ({ detail: "Error en el servidor" }));
+        throw new Error(payload.detail || payload.message || "Error al crear el gremio");
     }
 
     const body = await res.json();
