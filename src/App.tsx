@@ -12,6 +12,7 @@ import CreateProduct from '@/pages/products/CreateProduct'
 import CreateProducer from '@/pages/dashboard/CreateProducer'
 import CreateGremio from '@/pages/gremios/CreateGremio'
 import ProducerManagement from '@/pages/dashboard/ProducerManagement'
+import EnviosPage from '@/pages/dashboard/EnviosPage'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 
@@ -39,6 +40,7 @@ function App() {
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
               <Route path="mi-gremio" element={<ProducerManagement />} />
+              <Route path="envios" element={<EnviosPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
