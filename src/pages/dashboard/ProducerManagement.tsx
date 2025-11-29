@@ -79,7 +79,7 @@ export default function ProducerManagement() {
 
     if (loading) {
         return (
-            <DashboardLayout title="Mi gremio">
+            <DashboardLayout title="Mi gremio" hideFilters>
                 <div className="flex-1 bg-gray-50 p-6 flex items-center justify-center">
                     <p className="text-gray-600">Cargando información del gremio...</p>
                 </div>
@@ -88,7 +88,7 @@ export default function ProducerManagement() {
     }
 
     return (
-        <DashboardLayout title="Mi gremio">
+        <DashboardLayout title="Mi gremio" hideFilters>
             <div className="flex-1 bg-gray-50 p-6">
                 <div className="max-w-6xl mx-auto space-y-6">
                     {error && (
@@ -172,8 +172,8 @@ export default function ProducerManagement() {
                                                             </span>
                                                         )}
                                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${productor.es_activo
-                                                                ? 'bg-green-100 text-green-800'
-                                                                : 'bg-gray-100 text-gray-800'
+                                                            ? 'bg-green-100 text-green-800'
+                                                            : 'bg-gray-100 text-gray-800'
                                                             }`}>
                                                             <span className={`w-1.5 h-1.5 rounded-full ${productor.es_activo ? 'bg-green-600' : 'bg-gray-600'
                                                                 }`} />

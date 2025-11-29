@@ -16,6 +16,7 @@ interface DashboardLayoutProps {
   showBackButton?: boolean
   backUrl?: string
   onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
+  hideFilters?: boolean
 }
 
 export function DashboardLayout({
@@ -23,7 +24,8 @@ export function DashboardLayout({
   title,
   showBackButton = false,
   backUrl,
-  onFilterChange
+  onFilterChange,
+  hideFilters = false
 }: DashboardLayoutProps) {
   const navigate = useNavigate()
 
@@ -37,7 +39,7 @@ export function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar onFilterChange={onFilterChange} />
+      <AppSidebar onFilterChange={onFilterChange} hideFilters={hideFilters} />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center gap-2 border-b">
           <div className="flex items-center gap-2 px-4">
@@ -46,11 +48,11 @@ export function DashboardLayout({
               orientation="vertical"
               className="mr-2 data-[orientation=vertical]:h-4"
             />
-            
+
             {showBackButton && (
               <>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
                   onClick={handleBack}
                   className="gap-2"
@@ -64,7 +66,7 @@ export function DashboardLayout({
                 />
               </>
             )}
-            
+
             {title && (
               <h1 className="text-xl font-semibold">{title}</h1>
             )}

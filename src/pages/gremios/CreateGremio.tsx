@@ -52,7 +52,7 @@ export default function CreateGremio() {
     }
 
     return (
-        <DashboardLayout title="Crear Gremio" showBackButton>
+        <DashboardLayout title="Crear Gremio" showBackButton hideFilters>
             <div className="flex-1 bg-gray-50 p-6">
                 <div className="max-w-2xl mx-auto">
                     {error && (

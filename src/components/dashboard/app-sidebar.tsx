@@ -7,7 +7,6 @@ import {
   Filter,
   Settings,
   HelpCircle,
-  Leaf,
   LogIn,
 } from "lucide-react"
 
@@ -89,9 +88,10 @@ const data = {
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
+  hideFilters?: boolean
 }
 
-export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
+export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
   const { isAuthenticated, user: authUser } = useAuth()
@@ -120,7 +120,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
       return {
         name: authUser.u_nombre_usuario,
         email: authUser.u_email,
-        avatar: `/avatars/${authUser.u_id}.jpg`,
+        avatar: `https://ui.shadcn.com/avatars/0${(authUser.u_id % 5) + 1}.png`,
         role: authUser.u_rol,
       }
     }
@@ -130,7 +130,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
       return {
         name: stored.u_nombre_usuario,
         email: stored.u_email,
-        avatar: `/avatars/${stored.u_id}.jpg`,
+        avatar: `https://ui.shadcn.com/avatars/0${(stored.u_id % 5) + 1}.png`,
         role: stored.u_rol,
       }
     }
@@ -138,7 +138,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
     return {
       name: "Usuario",
       email: "usuario@example.com",
-      avatar: "/avatars/default.jpg",
+      avatar: "https://ui.shadcn.com/avatars/01.png",
     }
   }, [authUser, isAuthenticated])
 
@@ -181,7 +181,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
         const mapped: SidebarUser = {
           name: `${u.nombres} ${u.apellidos}`,
           email: u.email,
-          avatar: `/avatars/${u.u_id}.jpg`,
+          avatar: `https://ui.shadcn.com/avatars/0${(u.u_id % 5) + 1}.png`,
           role: normalizeRole(u.rol),
         }
         setCurrentUser(mapped)
@@ -257,9 +257,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <a href="/dashboard" className="flex items-center gap-2">
-                <div className="bg-green-600 text-white flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Leaf className="size-4" />
-                </div>
+                <img src="/logo.svg" alt="AgroMercado" className="size-8" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">AgroMercado Local</span>
                   <span className="truncate text-xs text-muted-foreground">Plataforma</span>
@@ -289,49 +287,51 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
               <Separator className="my-4" />
 
               {/* Filters Section */}
-              <div className="space-y-4 group-data-[collapsible=icon]:hidden">
-                <div className="px-2">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Filter className="size-4" />
-                    <Label className="text-sm font-medium">Filtros</Label>
-                  </div>
+              {!hideFilters && (
+                <div className="space-y-4 group-data-[collapsible=icon]:hidden">
+                  <div className="px-2">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Filter className="size-4" />
+                      <Label className="text-sm font-medium">Filtros</Label>
+                    </div>
 
-                  {/* Categories */}
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
-                    <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
-                      {data.categories.map((category) => (
-                        <div key={category.id} className="flex items-center space-x-2">
-                          <RadioGroupItem value={category.id} id={category.id} className="size-4" />
-                          <Label htmlFor={category.id} className="text-sm cursor-pointer">
-                            {category.label}
-                          </Label>
+                    {/* Categories */}
+                    <div className="space-y-3">
+                      <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
+                      <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
+                        {data.categories.map((category) => (
+                          <div key={category.id} className="flex items-center space-x-2">
+                            <RadioGroupItem value={category.id} id={category.id} className="size-4" />
+                            <Label htmlFor={category.id} className="text-sm cursor-pointer">
+                              {category.label}
+                            </Label>
+                          </div>
+                        ))}
+                      </RadioGroup>
+                    </div>
+
+                    <Separator className="my-4" />
+
+                    {/* Price Range */}
+                    <div className="space-y-3">
+                      <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
+                      <div className="px-2">
+                        <Slider
+                          value={priceRange}
+                          onValueChange={setPriceRange}
+                          max={50000}
+                          step={1000}
+                          className="w-full"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                          <span>$0</span>
+                          <span>${priceRange[0].toLocaleString()}</span>
                         </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-
-                  <Separator className="my-4" />
-
-                  {/* Price Range */}
-                  <div className="space-y-3">
-                    <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
-                    <div className="px-2">
-                      <Slider
-                        value={priceRange}
-                        onValueChange={setPriceRange}
-                        max={50000}
-                        step={1000}
-                        className="w-full"
-                      />
-                      <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                        <span>$0</span>
-                        <span>${priceRange[0].toLocaleString()}</span>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
 
               {/* Secondary Navigation */}
               <div className="mt-auto space-y-1 py-2">
