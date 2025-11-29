@@ -4,12 +4,25 @@ import * as productoApi from "@/services/api/productoApi"
 import type { ProductorProduct } from "@/services/api/productoApi"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { ProductManagementCard } from "@/components/products/ProductManagementCard"
+import { useNavigate } from "react-router-dom"
+import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog"
+import { formatErrorMessage } from "@/utils/errorMessages"
 
 export default function DashBoardProductsList() {
     const [products, setProducts] = useState<ProductorProduct[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [deleteDialog, setDeleteDialog] = useState<{
+        isOpen: boolean
+        product: ProductorProduct | null
+        isLoading: boolean
+    }>({
+        isOpen: false,
+        product: null,
+        isLoading: false
+    })
     const { user, isAuthenticated } = useAuth()
+    const navigate = useNavigate()
     
     const [filters, setFilters] = useState({
         selectedCategory: "todo",
@@ -31,7 +44,7 @@ export default function DashBoardProductsList() {
                 setProducts(productsData)
             } catch (err) {
                 console.error("Error loading products:", err)
-                setError(err instanceof Error ? err.message : "Error al cargar productos")
+                setError(formatErrorMessage(err))
             } finally {
                 setLoading(false)
             }
@@ -63,24 +76,45 @@ export default function DashBoardProductsList() {
 
     // Función para manejar edición de producto
     const handleEditProduct = (product: ProductorProduct) => {
-        console.log("Editar producto:", product)
-        // TODO: Implementar navegación a página de edición
-        // navigate(`/dashboard/editar-producto/${product.id}`)
+        if (product.p_id) {
+            navigate(`/dashboard/editar-producto/${product.p_id}`)
+        } else {
+            console.error("Producto sin ID:", product)
+            setError("No se puede editar este producto. Falta información del ID.")
+        }
     }
 
-    // Función para manejar eliminación de producto
-    const handleDeleteProduct = async (product: ProductorProduct) => {
-        if (window.confirm(`¿Estás seguro de que quieres eliminar "${product.p_nombre}"?`)) {
-            try {
-                // TODO: Implementar llamada al API para eliminar
-                console.log("Eliminar producto:", product)
-                // await deleteProduct(product.id)
-                // Actualizar lista después de eliminar
-                // setProducts(prev => prev.filter(p => p.id !== product.id))
-            } catch (err) {
-                console.error("Error deleting product:", err)
-                alert("Error al eliminar el producto")
-            }
+    // Abrir dialog de confirmación
+    const handleDeleteProduct = (product: ProductorProduct) => {
+        if (!product.p_id) {
+            setError("No se puede eliminar este producto. Falta información del ID.")
+            return
+        }
+        setDeleteDialog({ isOpen: true, product, isLoading: false })
+    }
+
+    // Confirmar eliminación
+    const confirmDelete = async () => {
+        if (!deleteDialog.product?.p_id) return
+
+        setDeleteDialog(prev => ({ ...prev, isLoading: true }))
+        
+        try {
+            await productoApi.deleteProduct(deleteDialog.product.p_id)
+            // Actualizar lista después de eliminar
+            setProducts(prev => prev.filter(p => p.p_id !== deleteDialog.product!.p_id))
+            setDeleteDialog({ isOpen: false, product: null, isLoading: false })
+        } catch (err) {
+            console.error("Error deleting product:", err)
+            setError(formatErrorMessage(err))
+            setDeleteDialog(prev => ({ ...prev, isLoading: false }))
+        }
+    }
+
+    // Cerrar dialog
+    const closeDeleteDialog = () => {
+        if (!deleteDialog.isLoading) {
+            setDeleteDialog({ isOpen: false, product: null, isLoading: false })
         }
     }
 
@@ -112,15 +146,20 @@ export default function DashBoardProductsList() {
 
                 {/* Error State */}
                 {error && (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="text-center">
-                            <p className="text-red-600 mb-4">Error: {error}</p>
-                            <button 
-                                onClick={() => window.location.reload()}
-                                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                            >
-                                Reintentar
-                            </button>
+                    <div className="flex items-center justify-center py-8">
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md w-full">
+                            <div className="text-center">
+                                <p className="text-red-800 mb-4">{error}</p>
+                                <button 
+                                    onClick={() => {
+                                        setError(null)
+                                        window.location.reload()
+                                    }}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                                >
+                                    Reintentar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -165,6 +204,16 @@ export default function DashBoardProductsList() {
                         )}
                     </>
                 )}
+
+                {/* Delete Confirmation Dialog */}
+                <DeleteConfirmDialog
+                    isOpen={deleteDialog.isOpen}
+                    onClose={closeDeleteDialog}
+                    onConfirm={confirmDelete}
+                    title={deleteDialog.product?.p_nombre || ""}
+                    description="Este producto se eliminará permanentemente de tu catálogo."
+                    isLoading={deleteDialog.isLoading}
+                />
             </div>
         </DashboardLayout>
     )

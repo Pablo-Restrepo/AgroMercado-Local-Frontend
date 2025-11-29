@@ -16,6 +16,7 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import EnviosPage from '@/pages/dashboard/EnviosPage'
 import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
 import AyudaPage from '@/pages/dashboard/AyudaPage'
+import EditProductPage from '@/pages/dashboard/EditProductPage'
 
 function App() {
   return (
@@ -41,6 +42,7 @@ function App() {
               <Route path="ayuda" element={<AyudaPage />} />
               <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
+              <Route path="editar-producto/:id" element={<EditProductPage />} />
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
             </Route>

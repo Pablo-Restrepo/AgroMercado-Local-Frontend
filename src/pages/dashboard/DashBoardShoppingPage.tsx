@@ -42,7 +42,7 @@ type ViewProduct = {
   stock?: number
 }
 
-const PLACEHOLDER_URL = "https://via.placeholder.com/400x300?text=No+image"
+const PLACEHOLDER_URL = "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
 
 // Agregar helper para normalizar imagenes
 function resolveImageSrc(img?: string, fallback = PLACEHOLDER_URL) {

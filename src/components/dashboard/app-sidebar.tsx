@@ -103,14 +103,15 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   // Menús por rol
   const clienteNav = [
     { title: "Home", url: "/dashboard", icon: Package },
-    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },  // Agregar esta línea
+    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
   ]
 
   const productorNav = data.navMain // mantiene el conjunto existente para productor/admin
 
+  // FIX: Corregir la comparación de roles
   const navMainForRole = (effectiveRole === "productor" || effectiveRole === "admin")
     ? productorNav
-    : clienteNav  // Cambiar de "productor-admin" a solo "productor"
+    : clienteNav
 
   // Usar usuario del contexto de auth si existe, sino valores por defecto
   const initialUser = React.useMemo((): SidebarUser => {
@@ -166,10 +167,13 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
 
     let mounted = true
 
+    // FIX: Función para normalizar roles de la BD
     function normalizeRole(role?: string): User["u_rol"] {
       if (!role) return "cliente"
-      if (role.includes("admin")) return "admin"
-      if (role.includes("productor")) return "productor"
+      const roleUpper = role.toUpperCase()
+      if (roleUpper.includes("ADMIN")) return "admin"
+      if (roleUpper.includes("PRODUCTOR")) return "productor"
+      if (roleUpper.includes("CLIENTE")) return "cliente"
       return "cliente"
     }
 
@@ -180,7 +184,7 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           name: `${u.nombres} ${u.apellidos}`,
           email: u.email,
           avatar: `/avatars/${u.u_id}.jpg`,
-          role: normalizeRole(u.rol),
+          role: normalizeRole(u.rol), // usar la función de normalización
         }
         setCurrentUser(mapped)
 
@@ -204,8 +208,6 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
           console.log("Token expirado, cerrando sesión...")
           handleSessionExpired()
         }
-        
-        // Para otros errores, mantener usuario actual sin hacer nada drástico
       })
 
     return () => {

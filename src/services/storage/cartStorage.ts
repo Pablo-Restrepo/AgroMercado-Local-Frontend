@@ -1,4 +1,4 @@
-import type { Cart } from "@/types/cart"
+import type { Cart, CartItem } from "@/types/cart"
 const CART_COOKIE_NAME = "agromercado_cart"
 const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
 

@@ -42,6 +42,16 @@ export interface GremioProduct {
   img: string
 }
 
+export interface UpdateProductRequest {
+  p_nombre: string
+  cat_id: number
+  p_unidad: string
+  img?: string
+  p_precio: number
+  p_stock: number
+  p_medicinal: boolean
+}
+
 /**
  * Lista productos por productor.
  * El endpoint espera el prod_id como entero en la ruta.
@@ -163,4 +173,73 @@ export async function listarProductosPorGremio(prod_cod_gremio: string): Promise
   if (Array.isArray(body)) return body as GremioProduct[]
   if (body && Array.isArray((body as any).data)) return (body as any).data as GremioProduct[]
   throw new Error("Formato de respuesta inesperado")
-};
+}
+
+/**
+ * Edita un producto existente
+ * PUT /api/productos/{p_id}
+ */
+export async function updateProduct(p_id: number, productData: UpdateProductRequest): Promise<number> {
+  const res = await authFetch(`${API_BASE_URL}/productos/${p_id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(productData),
+  })
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({ message: "Error en el servidor" }))
+    throw new Error(payload.message || `Error ${res.status}: No se pudo actualizar el producto`)
+  }
+
+  const body = await res.json().catch(() => null)
+  
+  // Retorna el ID del producto actualizado
+  if (typeof body === "number") return body
+  if (body && typeof body.id === "number") return body.id
+  if (body && typeof body.p_id === "number") return body.p_id
+  
+  return p_id // fallback al ID enviado
+}
+
+/**
+ * Elimina un producto
+ * DELETE /api/productos/{p_id}
+ */
+export async function deleteProduct(p_id: number): Promise<number> {
+  const res = await authFetch(`${API_BASE_URL}/productos/${p_id}`, {
+    method: "DELETE",
+  })
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({ message: "Error en el servidor" }))
+    throw new Error(payload.message || `Error ${res.status}: No se pudo eliminar el producto`)
+  }
+
+  const body = await res.json().catch(() => null)
+  
+  // Retorna el ID del producto eliminado
+  if (typeof body === "number") return body
+  if (body && typeof body.id === "number") return body.id
+  
+  return p_id // fallback al ID enviado
+}
+
+/**
+ * Obtiene un producto por ID para edición
+ * GET /api/productos/{p_id}
+ */
+export async function getProductById(p_id: number): Promise<ProductorProduct> {
+  const res = await authFetch(`${API_BASE_URL}/productos/${p_id}`, {
+    method: "GET",
+  })
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({ message: "Error en el servidor" }))
+    throw new Error(payload.message || `Error ${res.status}: Producto no encontrado`)
+  }
+
+  const body = await res.json()
+  return body as ProductorProduct
+}
