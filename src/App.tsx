@@ -17,6 +17,7 @@ import EnviosPage from '@/pages/dashboard/EnviosPage'
 import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
 import AyudaPage from '@/pages/dashboard/AyudaPage'
 import EditProductPage from '@/pages/dashboard/EditProductPage'
+import DashboardHome from '@/pages/dashboard/DashboardHome'
 
 function App() {
   return (
@@ -29,14 +30,13 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterPage />} />
             
-            {/* Páginas públicas con sidebar */}
-
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
             {/* Rutas protegidas con sidebar de dashboard */}
             <Route path="/dashboard/*" element={<RequireAuth />}>
-              <Route path="" element={<DashBoardShoppingPage />} />
+              {/* Dashboard principal - redirige según rol */}
+              <Route path="" element={<DashboardHome />} />
               <Route path="mis-pedidos" element={<EnviosPage />} />
               <Route path="configuraciones" element={<ConfiguracionesPage />} />
               <Route path="ayuda" element={<AyudaPage />} />
@@ -45,6 +45,8 @@ function App() {
               <Route path="editar-producto/:id" element={<EditProductPage />} />
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
+              {/* Ruta específica para compras (solo para clientes) */}
+              <Route path="compras" element={<DashBoardShoppingPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

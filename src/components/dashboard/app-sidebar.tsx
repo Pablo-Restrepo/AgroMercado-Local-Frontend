@@ -100,13 +100,34 @@ export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const effectiveRole: User["u_rol"] =
     authUser?.u_rol ?? authStorage.getUser()?.u_rol ?? "cliente"
 
-  // Menús por rol
+  // Menús por rol - ACTUALIZADO
   const clienteNav = [
-    { title: "Home", url: "/dashboard", icon: Package },
+    { title: "Productos Disponibles", url: "/dashboard/compras", icon: Package },
     { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
   ]
 
-  const productorNav = data.navMain // mantiene el conjunto existente para productor/admin
+  const productorNav = [
+    {
+      title: "Mis productos",
+      url: "/dashboard/mis-productos", 
+      icon: Package,
+    },
+    {
+      title: "Crear producto",
+      url: "/dashboard/crear-producto",
+      icon: Plus,
+    },
+    {
+      title: "Gestionar envíos",
+      url: "/dashboard/envios",
+      icon: Send,
+    },
+    {
+      title: "Mi gremio",
+      url: "/dashboard/gremio", 
+      icon: Warehouse,
+    },
+  ]
 
   // FIX: Corregir la comparación de roles
   const navMainForRole = (effectiveRole === "productor" || effectiveRole === "admin")
