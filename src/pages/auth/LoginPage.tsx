@@ -3,8 +3,21 @@ import { LoginForm } from "@/components/auth/LoginForm"
 import { useAuth } from "@/hooks/auth/useAuth"
 
 export default function LoginPage() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLoading } = useAuth()
 
+  // Mostrar loading mientras se verifica la autenticación
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Verificando sesión...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Si ya está autenticado, redirigir al dashboard
   if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
   }
@@ -13,7 +26,8 @@ export default function LoginPage() {
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="bg-muted relative hidden lg:block">
         <img
-          src="https://growtanical.co.uk/cdn/shop/collections/vpLGH2GzU97jufqBhgtCGB.jpg" alt="Image"
+          src="https://growtanical.co.uk/cdn/shop/collections/vpLGH2GzU97jufqBhgtCGB.jpg" 
+          alt="Image"
           className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
@@ -28,6 +42,12 @@ export default function LoginPage() {
           <div className="w-full max-w-xs">
             <LoginForm />
           </div>
+        </div>
+        <div className="text-center text-sm">
+          <span className="text-gray-600">¿No tienes una cuenta? </span>
+          <Link to="/registro" className="text-green-600 hover:underline font-medium">
+            Regístrate aquí
+          </Link>
         </div>
       </div>
     </div>

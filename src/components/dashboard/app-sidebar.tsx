@@ -1,5 +1,3 @@
-"use client"
-
 import * as React from "react"
 import {
   Package,
@@ -10,6 +8,7 @@ import {
   Settings,
   HelpCircle,
   Leaf,
+  LogIn,
 } from "lucide-react"
 
 import { NavUser } from "@/components/dashboard/nav-user"
@@ -26,9 +25,13 @@ import { Separator } from "@/components/ui/separator"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Slider } from "@/components/ui/slider"
+import { Button } from "@/components/ui/button"
 
 import { getCurrentUser } from "@/services/api/userApi"
+import { AuthError } from "@/services/api/authFetch"
 import { authStorage } from "@/services/storage/authStorage"
+import { useAuth } from "@/hooks/auth/useAuth"
+import { useSessionHandler } from "@/hooks/auth/useSessionHandler"
 import type { User } from "@/types/auth" 
 
 type SidebarUser = {
@@ -39,15 +42,10 @@ type SidebarUser = {
 }
 
 const data = {
-  user: {
-    name: "Jonathan Guejia",
-    email: "jonathan@agromercado.com",
-    avatar: "/avatars/jonathan.jpg",
-  },
   navMain: [
     {
       title: "Mis productos",
-      url: "/dashboard/productos",
+      url: "/dashboard/mis-productos",
       icon: Package,
     },
     {
@@ -88,41 +86,115 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
+}
+
+export function AppSidebar({ onFilterChange, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
+  const { isAuthenticated, user: authUser } = useAuth()
+  const { handleSessionExpired } = useSessionHandler()
 
-  // usar user guardado en localStorage como inicial (si existe), sino fallback quemado
-  const initialUser = React.useMemo(() => {
+  // Determinar rol efectivo (preferir contexto, luego storage)
+  const effectiveRole: User["u_rol"] =
+    authUser?.u_rol ?? authStorage.getUser()?.u_rol ?? "cliente"
+
+  // Menús por rol - ACTUALIZADO
+  const clienteNav = [
+    { title: "Productos Disponibles", url: "/dashboard/compras", icon: Package },
+    { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
+  ]
+
+  const productorNav = [
+    {
+      title: "Mis productos",
+      url: "/dashboard/mis-productos", 
+      icon: Package,
+    },
+    {
+      title: "Crear producto",
+      url: "/dashboard/crear-producto",
+      icon: Plus,
+    },
+    {
+      title: "Gestionar envíos",
+      url: "/dashboard/envios",
+      icon: Send,
+    },
+    {
+      title: "Mi gremio",
+      url: "/dashboard/gremio", 
+      icon: Warehouse,
+    },
+  ]
+
+  // FIX: Corregir la comparación de roles
+  const navMainForRole = (effectiveRole === "productor" || effectiveRole === "admin")
+    ? productorNav
+    : clienteNav
+
+  // Usar usuario del contexto de auth si existe, sino valores por defecto
+  const initialUser = React.useMemo((): SidebarUser => {
+    if (authUser) {
+      return {
+        name: authUser.u_nombre_usuario,
+        email: authUser.u_email,
+        avatar: `/avatars/${authUser.u_id}.jpg`,
+        role: authUser.u_rol,
+      }
+    }
+    
     const stored = authStorage.getUser()
-    if (stored) {
+    if (stored && isAuthenticated) {
       return {
         name: stored.u_nombre_usuario,
         email: stored.u_email,
         avatar: `/avatars/${stored.u_id}.jpg`,
-        role: stored.u_rol, // <-- ahora guardamos rol si existe en storage
-      } as SidebarUser
+        role: stored.u_rol,
+      }
     }
+    
     return {
-      name: data.user.name,
-      email: data.user.email,
-      avatar: data.user.avatar,
-    } as SidebarUser
-  }, [])
+      name: "Usuario",
+      email: "usuario@example.com",
+      avatar: "/avatars/default.jpg",
+    }
+  }, [authUser, isAuthenticated])
 
   const [currentUser, setCurrentUser] = React.useState<SidebarUser>(() => initialUser)
 
+  // Notificar cambios de filtros
+  const notifyFilterChange = React.useCallback(() => {
+    onFilterChange?.({
+      selectedCategory,
+      priceRange
+    })
+  }, [selectedCategory, priceRange, onFilterChange])
+
   React.useEffect(() => {
+    notifyFilterChange()
+  }, [notifyFilterChange])
+
+  // Solo hacer llamada autenticada si el usuario está logueado
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      setCurrentUser(initialUser)
+      return
+    }
+
     const token = authStorage?.getAccessToken?.()
     if (!token) return
 
     let mounted = true
 
-    // normalizar rol del backend a los enums usados en frontend
+    // FIX: Función para normalizar roles de la BD
     function normalizeRole(role?: string): User["u_rol"] {
       if (!role) return "cliente"
-      if (role.includes("admin")) return "admin"
-      if (role.includes("productor")) return "productor"
+      const roleUpper = role.toUpperCase()
+      if (roleUpper.includes("ADMIN")) return "admin"
+      if (roleUpper.includes("PRODUCTOR")) return "productor"
+      if (roleUpper.includes("CLIENTE")) return "cliente"
       return "cliente"
     }
 
@@ -132,12 +204,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const mapped: SidebarUser = {
           name: `${u.nombres} ${u.apellidos}`,
           email: u.email,
-          avatar: `/avatars/${u.u_id}.jpg`, // placeholder; cambia cuando tengas ruta real
-          role: normalizeRole(u.rol), // <-- guardo rol aquí pero no lo muestro en NavUser
+          avatar: `/avatars/${u.u_id}.jpg`,
+          role: normalizeRole(u.rol), // usar la función de normalización
         }
         setCurrentUser(mapped)
 
-        // guardar usuario normalizado en authStorage para uso en otras partes
         try {
           const userToStore: User = {
             u_id: u.u_id,
@@ -150,14 +221,36 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           // no bloquear si falla el guardado
         }
       })
-      .catch(() => {
-        // mantener usuario quemado si falla
+      .catch((error) => {
+        console.warn("Error fetching user data:", error)
+        
+        // Si es un error de autenticación, manejar sesión expirada
+        if (error instanceof AuthError) {
+          console.log("Token expirado, cerrando sesión...")
+          handleSessionExpired()
+        }
       })
 
     return () => {
       mounted = false
     }
-  }, [])
+  }, [isAuthenticated, initialUser, handleSessionExpired])
+
+  // Componente para mostrar cuando no está autenticado
+  const LoginPrompt = () => (
+    <div className="px-4 py-6 text-center">
+      <LogIn className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+      <h3 className="text-sm font-medium text-gray-900 mb-2">
+        Inicia sesión
+      </h3>
+      <p className="text-xs text-gray-500 mb-4">
+        Accede a tu cuenta para ver tus productos y configuraciones
+      </p>
+      <Button asChild size="sm" className="w-full bg-green-600 hover:bg-green-700">
+        <a href="/login">Iniciar sesión</a>
+      </Button>
+    </div>
+  )
 
   return (
     <Sidebar variant="inset" collapsible="icon" {...props}>
@@ -180,81 +273,98 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       
       <SidebarContent className="px-2">
-        {/* Navigation Main */}
-        <div className="space-y-1 py-2">
-          {data.navMain.map((item) => (
-            <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
-              <a href={item.url} className="flex items-center gap-3">
-                <item.icon className="size-4" />
-                <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-              </a>
-            </SidebarMenuButton>
-          ))}
-        </div>
-
-        <Separator className="my-4" />
-
-        {/* Filters Section */}
-        <div className="space-y-4 group-data-[collapsible=icon]:hidden">
-          <div className="px-2">
-            <div className="flex items-center gap-2 mb-3">
-              <Filter className="size-4" />
-              <Label className="text-sm font-medium">Filtros</Label>
-            </div>
-            
-            {/* Categories */}
-            <div className="space-y-3">
-              <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
-              <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
-                {data.categories.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
-                    <RadioGroupItem value={category.id} id={category.id} className="size-4" />
-                    <Label htmlFor={category.id} className="text-sm cursor-pointer">
-                      {category.label}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+        {isAuthenticated ? (
+          <>
+            {/* Navigation Main */}
+            <div className="space-y-1 py-2">
+              {navMainForRole.map((item) => (
+                <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
+                  <a href={item.url} className="flex items-center gap-3">
+                    <item.icon className="size-4" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              ))}
             </div>
 
             <Separator className="my-4" />
 
-            {/* Price Range */}
-            <div className="space-y-3">
-              <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
+            {/* Filters Section */}
+            <div className="space-y-4 group-data-[collapsible=icon]:hidden">
               <div className="px-2">
-                <Slider
-                  value={priceRange}
-                  onValueChange={setPriceRange}
-                  max={50000}
-                  step={1000}
-                  className="w-full"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-2">
-                  <span>$0</span>
-                  <span>${priceRange[0].toLocaleString()}</span>
+                <div className="flex items-center gap-2 mb-3">
+                  <Filter className="size-4" />
+                  <Label className="text-sm font-medium">Filtros</Label>
+                </div>
+                
+                {/* Categories */}
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
+                  <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
+                    {data.categories.map((category) => (
+                      <div key={category.id} className="flex items-center space-x-2">
+                        <RadioGroupItem value={category.id} id={category.id} className="size-4" />
+                        <Label htmlFor={category.id} className="text-sm cursor-pointer">
+                          {category.label}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                <Separator className="my-4" />
+
+                {/* Price Range */}
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Rango de Precio</Label>
+                  <div className="px-2">
+                    <Slider
+                      value={priceRange}
+                      onValueChange={setPriceRange}
+                      max={50000}
+                      step={1000}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                      <span>$0</span>
+                      <span>${priceRange[0].toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Secondary Navigation */}
-        <div className="mt-auto space-y-1 py-2">
-          <Separator className="mb-2" />
-          {data.navSecondary.map((item) => (
-            <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
-              <a href={item.url} className="flex items-center gap-3">
-                <item.icon className="size-4" />
-                <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
-              </a>
-            </SidebarMenuButton>
-          ))}
-        </div>
+            {/* Secondary Navigation */}
+            <div className="mt-auto space-y-1 py-2">
+              <Separator className="mb-2" />
+              {data.navSecondary.map((item) => (
+                <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
+                  <a href={item.url} className="flex items-center gap-3">
+                    <item.icon className="size-4" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              ))}
+            </div>
+          </>
+        ) : (
+          /* Login Prompt cuando no está autenticado */
+          <div className="group-data-[collapsible=icon]:hidden">
+            <LoginPrompt />
+          </div>
+        )}
       </SidebarContent>
-      
+
       <SidebarFooter>
-        <NavUser user={currentUser} />
+        {isAuthenticated ? (
+          <NavUser user={currentUser} />
+        ) : (
+          <div className="group-data-[collapsible=icon]:hidden px-2">
+            <Button asChild variant="outline" size="sm" className="w-full">
+              <a href="/login">Iniciar sesión</a>
+            </Button>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   )

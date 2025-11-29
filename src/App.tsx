@@ -6,10 +6,18 @@ import HomePage from "@/pages/home/HomePage"
 import LoginPage from "@/pages/auth/LoginPage"
 import NotFound from "@/pages/NotFound"
 import DashBoardProductsList from '@/pages/dashboard/DashBoardProductsList'
-import DashBoardPage from '@/pages/dashboard/DashBoardPage'
+import DashBoardShoppingPage from '@/pages/dashboard/DashBoardShoppingPage'
 import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
+import CreateProducer from '@/pages/dashboard/CreateProducer'
+import CreateGremio from '@/pages/gremios/CreateGremio'
 import { RequireAuth } from "./components/auth/RequireAuth"
+import RegisterPage from '@/pages/auth/RegisterPage'
+import EnviosPage from '@/pages/dashboard/EnviosPage'
+import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
+import AyudaPage from '@/pages/dashboard/AyudaPage'
+import EditProductPage from '@/pages/dashboard/EditProductPage'
+import DashboardHome from '@/pages/dashboard/DashboardHome'
 
 function App() {
   return (
@@ -20,17 +28,27 @@ function App() {
             {/* Páginas sin sidebar */}
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/registro" element={<RegisterPage />} />
             
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
-            {/* Rutas protegidas con sidebar */}
+            {/* Rutas protegidas con sidebar de dashboard */}
             <Route path="/dashboard/*" element={<RequireAuth />}>
-              <Route path="*" element={<DashBoardPage />} />
+              {/* Dashboard principal - redirige según rol */}
+              <Route path="" element={<DashboardHome />} />
+              <Route path="mis-pedidos" element={<EnviosPage />} />
+              <Route path="configuraciones" element={<ConfiguracionesPage />} />
+              <Route path="ayuda" element={<AyudaPage />} />
+              <Route path="mis-productos" element={<DashBoardProductsList />} />
               <Route path="crear-producto" element={<CreateProduct />} />
+              <Route path="editar-producto/:id" element={<EditProductPage />} />
+              <Route path="crear-productor" element={<CreateProducer />} />
+              <Route path="crear-gremio" element={<CreateGremio />} />
+              {/* Ruta específica para compras (solo para clientes) */}
+              <Route path="compras" element={<DashBoardShoppingPage />} />
             </Route>
 
-            <Route path="/dashboard/productos" element={<DashBoardProductsList />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
