@@ -119,3 +119,42 @@ export async function getAllProducts(): Promise<ProductSummary[]> {
 
   throw new Error("Formato de respuesta inesperado")
 }
+
+/**
+ * Listar productos segun gremio
+ * /api/productos/gremio/{prod_cod_gremio}
+ * [
+  {
+    "p_nombre": "string",
+    "p_tipo": "string",
+    "p_unidad": "string",
+    "gre_nombre": "string",
+    "p_precio": 0,
+    "p_stock": 0,
+    "img": "string"
+  }
+]
+ */
+export interface GremioProduct {
+  p_nombre: string
+  p_tipo: string
+  p_unidad: string
+  gre_nombre: string
+  p_precio: number
+  p_stock: number
+  img: string
+}
+export async function listarProductosPorGremio(prod_cod_gremio: string): Promise<GremioProduct[]> {
+  const res = await authFetch(`${API_BASE_URL}/productos/gremio/${prod_cod_gremio}`, {
+    method: "GET",
+  })
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({ message: "Error en el servidor" }))
+    throw new Error(payload.message || "Error al listar los productos por gremio")
+  }
+
+  const body = await res.json().catch(() => null)
+  if (Array.isArray(body)) return body as GremioProduct[]
+  if (body && Array.isArray((body as any).data)) return (body as any).data as GremioProduct[]
+  throw new Error("Formato de respuesta inesperado")
+};

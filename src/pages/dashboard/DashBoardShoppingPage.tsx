@@ -10,16 +10,23 @@ import {
   Heart, 
   ShoppingCart, 
   Search,
-  ShoppingBag
+  ShoppingBag,
+  ArrowLeft,
+  Users
 } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
 import * as productoApi from "@/services/api/productoApi"
-import type { ProductSummary } from "@/services/api/productoApi"
+import * as gremiosApi from "@/services/api/gremiosApi"
+import type { ProductSummary, GremioProduct } from "@/services/api/productoApi"
+import type { GremioListBody } from "@/services/api/gremiosApi"
 
-// Lista dinámica obtenida del API
+// Modo de vista
+type ViewMode = "products" | "gremios" | "gremio-products"
+
+// Producto unificado para visualización
 type ViewProduct = {
   id: string
   name: string
@@ -31,33 +38,56 @@ type ViewProduct = {
   category: string
   image: string
   available: boolean
+  stock?: number
 }
 
-// Mapear la respuesta del API al formato de visualización
-function mapApiToViewItem(item: ProductSummary, index: number): ViewProduct {
+// Mapear productos generales
+function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
   return {
-    id: `${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
+    id: `general-${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
     name: item.p_nombre,
     price: item.p_precio ?? 0,
     unit: item.p_unidad ?? "unidad",
     location: item.gre_nombre ?? "Gremio",
-    rating: 4.6, // valor por defecto (el API no incluye rating)
+    rating: 4.6,
     reviews: 0,
     category: (item.p_tipo ?? "otro").toLowerCase(),
     image: item.img || "/images/default-product.jpg",
     available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
+    stock: item.p_stock
+  }
+}
+
+// Mapear productos de gremio
+function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
+  return {
+    id: `gremio-${item.p_nombre.replace(/\s+/g, "-").toLowerCase()}-${index}`,
+    name: item.p_nombre,
+    price: item.p_precio ?? 0,
+    unit: item.p_unidad ?? "unidad",
+    location: item.gre_nombre ?? "Gremio",
+    rating: 4.6,
+    reviews: 0,
+    category: (item.p_tipo ?? "otro").toLowerCase(),
+    image: item.img || "/images/default-product.jpg",
+    available: (typeof item.p_stock === "number") ? item.p_stock > 0 : true,
+    stock: item.p_stock
   }
 }
 
 export default function DashBoardShoppingPage() {
+  const [viewMode, setViewMode] = useState<ViewMode>("products")
   const [searchQuery, setSearchQuery] = useState("")
+  const [gremioSearchQuery, setGremioSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [products, setProducts] = useState<ViewProduct[]>([])
+  const [gremios, setGremios] = useState<GremioListBody[]>([])
+  const [selectedGremio, setSelectedGremio] = useState<GremioListBody | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  console.log(fetchError);
-  // Estado para los filtros que vienen de la sidebar
+
+  // Estado para filtros de sidebar
   const [sidebarFilters, setSidebarFilters] = useState({
     selectedCategory: "todo",
     priceRange: [0]
@@ -65,19 +95,10 @@ export default function DashBoardShoppingPage() {
   
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
  
-  // Función que recibe los filtros de la sidebar - usar useCallback
   const handleFilterChange = useCallback((filters: { selectedCategory: string; priceRange: number[] }) => {
     setSidebarFilters(filters)
   }, [])
- 
-  const handleAddToCart = (productId: string) => {
-    const product = mockProducts.find(p => p.id === productId)
-    if (product) {
-      setSelectedProduct(product)
-      setIsModalOpen(true)
-    }
-  }
- 
+
   const handleConfirmAddToCart = (product: any, quantity: number) => {
     addToCart({
       id: product.id,
@@ -88,200 +109,377 @@ export default function DashBoardShoppingPage() {
       location: product.location
     }, quantity)
   }
- 
-  // Cargar productos desde el API al montar el componente
-  useEffect(() => {
-    let mounted = true
+
+  // Cargar productos generales
+  const loadGeneralProducts = useCallback(async () => {
     setIsLoading(true)
     setFetchError(null)
-
-    productoApi.getAllProducts()
-      .then((items) => {
-        if (!mounted) return
-        const mapped = items.map((it, idx) => mapApiToViewItem(it, idx))
-        setProducts(mapped)
-      })
-      .catch((err) => {
-        console.error("Error fetching products:", err)
-        if (mounted) setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos"))
-      })
-      .finally(() => {
-        if (mounted) setIsLoading(false)
-      })
-
-    return () => { mounted = false }
+    try {
+      const items = await productoApi.getAllProducts()
+      const mapped = items.map((it, idx) => mapGeneralProduct(it, idx))
+      setProducts(mapped)
+    } catch (err) {
+      console.error("Error fetching products:", err)
+      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos"))
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
- 
-   // Aplicar filtros de búsqueda y sidebar
+
+  // Cargar gremios
+  const loadGremios = useCallback(async () => {
+    setIsLoading(true)
+    setFetchError(null)
+    try {
+      const items = await gremiosApi.listarGremios()
+      setGremios(items)
+    } catch (err) {
+      console.error("Error fetching gremios:", err)
+      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar gremios"))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Cargar productos por gremio
+  const loadGremioProducts = useCallback(async (gremioId: number) => {
+    setIsLoading(true)
+    setFetchError(null)
+    try {
+      const items = await productoApi.listarProductosPorGremio(gremioId.toString())
+      const mapped = items.map((it, idx) => mapGremioProduct(it, idx))
+      setProducts(mapped)
+    } catch (err) {
+      console.error("Error fetching gremio products:", err)
+      setFetchError(typeof err === "string" ? err : (err?.message ?? "Error al cargar productos del gremio"))
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // Efecto inicial
+  useEffect(() => {
+    if (viewMode === "products") {
+      loadGeneralProducts()
+    } else if (viewMode === "gremios") {
+      loadGremios()
+    }
+  }, [viewMode, loadGeneralProducts, loadGremios])
+
+  // Manejar selección de gremio
+  const handleSelectGremio = (gremio: GremioListBody) => {
+    setSelectedGremio(gremio)
+    setViewMode("gremio-products")
+    loadGremioProducts(gremio.id)
+    setSearchQuery("")
+  }
+
+  // Volver a vista anterior
+  const handleGoBack = () => {
+    if (viewMode === "gremio-products") {
+      setViewMode("gremios")
+      setSelectedGremio(null)
+      setProducts([])
+    } else {
+      setViewMode("products")
+    }
+    setSearchQuery("")
+  }
+
+  // Filtrar productos
   const filteredProducts = products.filter(product => {
-     // Filtro por búsqueda
-     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-     
-     // Filtro por categoría de la sidebar
-     const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
-                                    product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
-     
-     // Filtro por rango de precio de la sidebar
-     const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
-                                product.price <= sidebarFilters.priceRange[0]
-     
-     return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
-   })
- 
-   return (
-     <>
-       <DashboardLayout 
-         title="Productos Disponibles"
-         onFilterChange={handleFilterChange}
-       >
-         <div className="flex-1 bg-gray-50">
-           {/* Search and Filters */}
-           <div className="bg-white border-b">
-             <div className="container mx-auto px-4 py-4">
-               <div className="flex items-center justify-between mb-4">
-                 <div className="flex items-center gap-4">
-                   {/* Mostrar filtros activos */}
-                   {sidebarFilters.selectedCategory !== "todo" && (
-                     <Badge variant="outline" className="capitalize">
-                       {sidebarFilters.selectedCategory}
-                     </Badge>
-                   )}
-                   {sidebarFilters.priceRange[0] > 0 && (
-                     <Badge variant="outline">
-                       Hasta ${sidebarFilters.priceRange[0].toLocaleString()}
-                     </Badge>
-                   )}
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
+                                   product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
+    const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
+                               product.price <= sidebarFilters.priceRange[0]
+    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice
+  })
+
+  // Filtrar gremios
+  const filteredGremios = gremios.filter(gremio =>
+    gremio.nombre.toLowerCase().includes(gremioSearchQuery.toLowerCase()) ||
+    gremio.descripcion.toLowerCase().includes(gremioSearchQuery.toLowerCase()) ||
+    gremio.ubicacion.toLowerCase().includes(gremioSearchQuery.toLowerCase())
+  )
+
+  const getTitle = () => {
+    switch (viewMode) {
+      case "gremios": return "Gremios Disponibles"
+      case "gremio-products": return `Productos de ${selectedGremio?.nombre || "Gremio"}`
+      default: return "Productos Disponibles"
+    }
+  }
+
+  return (
+    <>
+      <DashboardLayout 
+        title={getTitle()}
+        onFilterChange={handleFilterChange}
+      >
+        <div className="flex-1 bg-gray-50">
+          {/* Header con controles de vista */}
+          <div className="bg-white border-b">
+            <div className="container mx-auto px-4 py-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  {/* Botón de volver */}
+                  {(viewMode === "gremios" || viewMode === "gremio-products") && (
+                    <Button variant="ghost" onClick={handleGoBack} className="gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      Volver
+                    </Button>
+                  )}
+
+                  {/* Filtros activos */}
+                  {viewMode !== "gremios" && (
+                    <>
+                      {sidebarFilters.selectedCategory !== "todo" && (
+                        <Badge variant="outline" className="capitalize">
+                          {sidebarFilters.selectedCategory}
+                        </Badge>
+                      )}
+                      {sidebarFilters.priceRange[0] > 0 && (
+                        <Badge variant="outline">
+                          Hasta ${sidebarFilters.priceRange[0].toLocaleString()}
+                        </Badge>
+                      )}
+                    </>
+                  )}
+
                   <span className="text-sm text-gray-600">
-                    {isLoading ? "Cargando productos..." : `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} encontrado${filteredProducts.length !== 1 ? 's' : ''}`}
+                    {isLoading ? "Cargando..." : 
+                     viewMode === "gremios" ? 
+                       `${filteredGremios.length} gremio${filteredGremios.length !== 1 ? 's' : ''} encontrado${filteredGremios.length !== 1 ? 's' : ''}` :
+                       `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} encontrado${filteredProducts.length !== 1 ? 's' : ''}`
+                    }
                   </span>
-                 </div>
-                 <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
-                   <ShoppingBag className="h-4 w-4" />
-                   Carrito de compras
-                   {cart.itemCount > 0 && (
-                     <Badge variant="secondary" className="ml-1">
-                       {cart.itemCount}
-                     </Badge>
-                   )}
-                 </Button>
-               </div>
- 
-               {/* Search Bar */}
-               <div className="flex flex-col sm:flex-row gap-4">
-                 <div className="flex-1 relative">
-                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                   <Input
-                     placeholder="Buscar productos..."
-                     value={searchQuery}
-                     onChange={(e) => setSearchQuery(e.target.value)}
-                     className="pl-10"
-                   />
-                 </div>
-               </div>
-             </div>
-           </div>
- 
-           {/* Products Grid */}
-           <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {/* Product Image */}
-                  <div className="relative h-48 overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                    >
-                      <Heart className="h-4 w-4 text-gray-600" />
-                    </Button>
-                  </div>
- 
-                  {/* Product Info */}
-                  <div className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-lg text-gray-900 leading-tight">
-                        {product.name}
-                      </h3>
-                      <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
-                        {product.category}
-                      </Badge>
-                    </div>
- 
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span className="truncate">{product.location}</span>
-                    </div>
- 
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium text-sm">{product.rating}</span>
-                        <span className="text-sm text-gray-500">
-                          ({product.reviews} reseñas)
-                        </span>
-                      </div>
-                    </div>
- 
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          ${product.price.toLocaleString()}
-                        </div>
-                        <div className="text-sm text-gray-500">por {product.unit}</div>
-                      </div>
-                    </div>
- 
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Botones de cambio de vista */}
+                  {viewMode === "products" && (
                     <Button 
-                      onClick={() => {
-                        setSelectedProduct(product)
-                        setIsModalOpen(true)
-                      }}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+                      variant="outline" 
+                      onClick={() => setViewMode("gremios")}
+                      className="gap-2"
                     >
-                      <ShoppingCart className="h-4 w-4" />
-                      Añadir al carrito
+                      <Users className="h-4 w-4" />
+                      Ver Gremios
                     </Button>
-                  </div>
-                </Card>
-              ))}
+                  )}
+
+                  {/* Carrito */}
+                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
+                    <ShoppingBag className="h-4 w-4" />
+                    Carrito
+                    {cart.itemCount > 0 && (
+                      <Badge variant="secondary" className="ml-1">
+                        {cart.itemCount}
+                      </Badge>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                {viewMode === "gremios" ? (
+                  <Input
+                    placeholder="Buscar gremios por nombre, descripción o ubicación..."
+                    value={gremioSearchQuery}
+                    onChange={(e) => setGremioSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                ) : (
+                  <Input
+                    placeholder="Buscar productos..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                )}
+              </div>
             </div>
- 
-             {/* Empty State */}
+          </div>
+
+          {/* Contenido principal */}
+          <div className="container mx-auto px-4 py-8">
+            {viewMode === "gremios" ? (
+              // Vista de Gremios
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredGremios.map((gremio) => (
+                  <Card 
+                    key={gremio.id} 
+                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    onClick={() => handleSelectGremio(gremio)}
+                  >
+                    <div className="p-6 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-xl text-gray-900 mb-2">
+                            {gremio.nombre}
+                          </h3>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {gremio.descripcion}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="ml-2 flex-shrink-0">
+                          <Users className="h-3 w-3 mr-1" />
+                          Gremio
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span>{gremio.ubicacion}</span>
+                      </div>
+
+                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                        Ver Productos
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              // Vista de Productos
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="relative h-48 overflow-hidden">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                      >
+                        <Heart className="h-4 w-4 text-gray-600" />
+                      </Button>
+                      {product.stock !== undefined && (
+                        <Badge 
+                          variant={product.available ? "default" : "destructive"}
+                          className="absolute bottom-2 left-2"
+                        >
+                          {product.available ? `Stock: ${product.stock}` : "Agotado"}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="p-4 space-y-3">
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-lg text-gray-900 leading-tight">
+                          {product.name}
+                        </h3>
+                        <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
+                          {product.category}
+                        </Badge>
+                      </div>
+
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span className="truncate">{product.location}</span>
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-medium text-sm">{product.rating}</span>
+                          <span className="text-sm text-gray-500">
+                            ({product.reviews} reseñas)
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            ${product.price.toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-500">por {product.unit}</div>
+                        </div>
+                      </div>
+
+                      <Button 
+                        onClick={() => {
+                          setSelectedProduct(product)
+                          setIsModalOpen(true)
+                        }}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
+                        disabled={!product.available}
+                      >
+                        <ShoppingCart className="h-4 w-4" />
+                        {product.available ? "Añadir al carrito" : "Agotado"}
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Empty States */}
             {isLoading ? (
-              <div className="text-center py-12">Cargando productos...</div>
-            ) : filteredProducts.length === 0 ? (
-               <div className="text-center py-12">
-                 <div className="text-gray-500">
-                   <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                   <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
-                   <p>Intenta cambiar los filtros o términos de búsqueda</p>
-                 </div>
-               </div>
+              <div className="text-center py-12">Cargando...</div>
+            ) : viewMode === "gremios" && filteredGremios.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium mb-2">No se encontraron gremios</h3>
+                  <p>Intenta cambiar los términos de búsqueda</p>
+                </div>
+              </div>
+            ) : filteredProducts.length === 0 && viewMode !== "gremios" ? (
+              <div className="text-center py-12">
+                <div className="text-gray-500">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
+                  <p>Intenta cambiar los filtros o términos de búsqueda</p>
+                </div>
+              </div>
             ) : null}
-           </div>
-         </div>
-       </DashboardLayout>
- 
-       {/* Modales */}
-       <AddToCartModal
-         product={selectedProduct}
-         isOpen={isModalOpen}
-         onClose={() => setIsModalOpen(false)}
-         onAddToCart={handleConfirmAddToCart}
-       />
- 
-       <FloatingCart
-         cart={cart}
-         onUpdateQuantity={updateQuantity}
-         onRemoveItem={removeFromCart}
-         onClearCart={clearCart}
-       />
-     </>
-   )
- }
+
+            {/* Error State */}
+            {fetchError && (
+              <div className="text-center py-12">
+                <div className="text-red-500">
+                  <h3 className="text-lg font-medium mb-2">Error al cargar datos</h3>
+                  <p>{fetchError}</p>
+                  <Button 
+                    variant="outline" 
+                    className="mt-4"
+                    onClick={() => {
+                      if (viewMode === "products") loadGeneralProducts()
+                      else if (viewMode === "gremios") loadGremios()
+                      else if (selectedGremio) loadGremioProducts(selectedGremio.id)
+                    }}
+                  >
+                    Reintentar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </DashboardLayout>
+
+      <AddToCartModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddToCart={handleConfirmAddToCart}
+      />
+
+      <FloatingCart
+        cart={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
+      />
+    </>
+  )
+}
