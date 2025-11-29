@@ -1,58 +1,87 @@
-import { authFetch } from "@/services/api/authFetch"
-import { API_BASE_URL } from "@/services/api/config"
+import { authFetch } from "@/services/api/authFetch";
+
+// El gateway redirige las peticiones al microservicio de compras (puerto 8003)
+const API_BASE_URL = "http://localhost:8090";
+
+export interface ProductoUnitario {
+    id_producto: number;
+    cantidad: number;
+    precio_unitario: number;
+    unidad: string;
+}
+
+export interface Compra {
+    id: number;
+    id_usuario: number;
+    productos: ProductoUnitario[];
+    fecha: string;
+    total: number;
+    estado: string;
+}
 
 export interface Envio {
-  id?: number
-  compra_id?: number
-  estado?: string
-  destino?: string
-  fecha_creacion?: string
-  seguimiento?: any
-  [key: string]: any
+    id: number;
+    id_gremio: number;
+    compra: Compra;
+    destino: string;
+    valor: number;
+    estado: "PENDIENTE" | "DESPACHADO" | "EN_RUTA" | "ENTREGADO";
+    fecha_envio: string | null;
 }
 
-/** Helper para leer mensaje de error del response JSON */
-async function parseError(res: Response) {
-  try {
-    const payload = await res.json()
-    return payload?.message || payload || `Error ${res.status}`
-  } catch {
-    return `Error ${res.status}`
-  }
+export interface EnviosResponse {
+    envios: Envio[];
 }
 
-/**
- * Obtiene todos los envíos del usuario por ID.
- */
-export async function getEnviosByUsuario(usuario_id: number): Promise<Envio[]> {
-  console.log("EnviosApi - Making request to:", `${API_BASE_URL}/envios/usuario/${usuario_id}`)
-  
-  const res = await authFetch(`${API_BASE_URL}/envios/usuario/${usuario_id}`, {
-    method: "GET",
-    headers: { "Accept": "application/json" },
-  })
+// Obtener envíos por gremio
+export async function obtenerEnviosPorGremio(gremioId: number): Promise<Envio[]> {
+    const response = await authFetch(`${API_BASE_URL}/api/envios/gremio/${gremioId}`, {
+        method: "GET",
+    });
 
-  console.log("EnviosApi - Response status:", res.status)
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: "Error al obtener envíos" }));
+        throw new Error(errorData.detail || "Error al obtener envíos");
+    }
 
-  if (!res.ok) {
-    const msg = await parseError(res)
-    console.error("EnviosApi - Error response:", msg)
-    throw new Error(msg)
-  }
-
-  const body = await res.json().catch(() => null)
-  console.log("EnviosApi - Response body:", body)
-
-  if (Array.isArray(body)) return body as Envio[]
-  if (body && Array.isArray(body.data)) return body.data as Envio[]
-
-  // Algunos endpoints devuelven string o objeto simple
-  if (typeof body === "string") return [{ estado: body }]
-  if (body && typeof body === "object") return [body as Envio]
-
-  return []
+    const data = await response.json();
+    // El backend devuelve { status_code: 200, content: { envios: [...] } }
+    return data.content?.envios || data.envios || [];
 }
 
-export default {
-  getEnviosByUsuario,
+// Obtener envíos por usuario
+export async function obtenerEnviosPorUsuario(usuarioId: number): Promise<Envio[]> {
+    const response = await authFetch(`${API_BASE_URL}/api/envios/usuario/${usuarioId}`, {
+        method: "GET",
+    });
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: "Error al obtener envíos" }));
+        throw new Error(errorData.detail || "Error al obtener envíos");
+    }
+
+    const data = await response.json();
+    // El backend devuelve { status_code: 200, content: { envios: [...] } }
+    return data.content?.envios || data.envios || [];
+}
+
+// Actualizar estado de envío
+export async function actualizarEstadoEnvio(
+    envioId: number,
+    nuevoEstado: "DESPACHADO" | "EN_RUTA" | "ENTREGADO"
+): Promise<void> {
+    // El backend espera el parámetro 'status' como query parameter
+    const response = await authFetch(
+        `${API_BASE_URL}/api/envios/${envioId}?status=${nuevoEstado}`,
+        {
+            method: "PATCH",
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ detail: "Error al actualizar estado del envío" }));
+        throw new Error(errorData.detail || "Error al actualizar estado del envío");
+    }
+
+    // El backend devuelve { status_code: 200, content: { message: "...", envio_id: ... } }
 }

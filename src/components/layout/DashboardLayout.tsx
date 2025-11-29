@@ -18,6 +18,7 @@ interface DashboardLayoutProps {
   showBackButton?: boolean
   backUrl?: string
   onFilterChange?: (filters: { selectedCategory: string; priceRange: number[] }) => void
+  hideFilters?: boolean
 }
 
 export function DashboardLayout({
@@ -25,7 +26,8 @@ export function DashboardLayout({
   title,
   showBackButton = false,
   backUrl,
-  onFilterChange
+  onFilterChange,
+  hideFilters = false
 }: DashboardLayoutProps) {
   const navigate = useNavigate()
   const { user } = useAuth()

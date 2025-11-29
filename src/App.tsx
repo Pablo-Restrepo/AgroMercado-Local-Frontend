@@ -11,6 +11,8 @@ import ProductsPage from '@/pages/products/ProductsPage'
 import CreateProduct from '@/pages/products/CreateProduct'
 import CreateProducer from '@/pages/dashboard/CreateProducer'
 import CreateGremio from '@/pages/gremios/CreateGremio'
+import ProducerManagement from '@/pages/dashboard/ProducerManagement'
+import EnviosPage from '@/pages/dashboard/EnviosPage'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 import EnviosPage from '@/pages/dashboard/EnviosPage'
@@ -30,6 +32,9 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterPage />} />
             
+
+            {/* Páginas públicas con sidebar */}
+
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
@@ -45,8 +50,8 @@ function App() {
               <Route path="editar-producto/:id" element={<EditProductPage />} />
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
-              {/* Ruta específica para compras (solo para clientes) */}
-              <Route path="compras" element={<DashBoardShoppingPage />} />
+              <Route path="mi-gremio" element={<ProducerManagement />} />
+              <Route path="envios" element={<EnviosPage />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
