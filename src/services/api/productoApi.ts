@@ -243,3 +243,47 @@ export async function getProductById(p_id: number): Promise<ProductorProduct> {
   const body = await res.json()
   return body as ProductorProduct
 }
+
+
+// Actualizar la interfaz para que coincida con el schema del backend
+interface ProductById {
+  p_id?: number
+  p_nombre: string
+  cat_id?: number          // añadir cat_id del schema
+  p_tipo?: string          // hacer opcional ya que no está en el schema
+  p_unidad: string
+  gre_nombre?: string      // hacer opcional ya que no está en el schema  
+  p_precio: number
+  p_stock?: number         // añadir p_stock del schema
+  p_medicinal?: boolean    // añadir p_medicinal del schema
+  img?: string             // hacer opcional
+}
+
+/**
+ * Obtiene múltiples productos por sus IDs de forma optimizada
+ */
+export async function getProductsByIds(productIds: number[]): Promise<ProductById[]> {
+  if (productIds.length === 0) return []
+  
+  // Hacer llamadas individuales ya que no existe endpoint batch
+  const promises = productIds.map(async (id) => {
+    try {
+      return await getProductById(id)
+    } catch (error) {
+      console.warn(`Error obteniendo producto ${id}:`, error)
+      // Retornar un producto placeholder en caso de error
+      return {
+        p_id: id,
+        p_nombre: `Producto #${id} (No disponible)`,
+        p_tipo: "unknown",
+        p_unidad: "unidad",
+        gre_nombre: "Desconocido",
+        p_precio: 0,
+        img: ""
+      } as ProductorProduct
+    }
+  })
+  
+  const results = await Promise.all(promises)
+  return results
+}
