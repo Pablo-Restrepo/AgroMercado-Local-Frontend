@@ -1,7 +1,7 @@
 import { authFetch } from "@/services/api/authFetch";
 
 // El gateway redirige las peticiones al microservicio de compras (puerto 8003)
-const API_BASE_URL = "http://localhost:8090";
+import { API_BASE_URL } from "@/services/api/config"
 
 export interface ProductoUnitario {
     id_producto: number;
@@ -35,7 +35,7 @@ export interface EnviosResponse {
 
 // Obtener envíos por gremio
 export async function obtenerEnviosPorGremio(gremioId: number): Promise<Envio[]> {
-    const response = await authFetch(`${API_BASE_URL}/api/envios/gremio/${gremioId}`, {
+    const response = await authFetch(`${API_BASE_URL}/envios/gremio/${gremioId}`, {
         method: "GET",
     });
 
@@ -51,7 +51,7 @@ export async function obtenerEnviosPorGremio(gremioId: number): Promise<Envio[]>
 
 // Obtener envíos por usuario
 export async function obtenerEnviosPorUsuario(usuarioId: number): Promise<Envio[]> {
-    const response = await authFetch(`${API_BASE_URL}/api/envios/usuario/${usuarioId}`, {
+    const response = await authFetch(`${API_BASE_URL}/envios/usuario/${usuarioId}`, {
         method: "GET",
     });
 
@@ -72,7 +72,7 @@ export async function actualizarEstadoEnvio(
 ): Promise<void> {
     // El backend espera el parámetro 'status' como query parameter
     const response = await authFetch(
-        `${API_BASE_URL}/api/envios/${envioId}?status=${nuevoEstado}`,
+        `${API_BASE_URL}/envios/${envioId}?status=${nuevoEstado}`,
         {
             method: "PATCH",
         }
