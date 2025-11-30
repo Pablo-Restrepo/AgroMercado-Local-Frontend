@@ -294,31 +294,36 @@ export default function DashBoardShoppingPage() {
     }
   }
 
-  // Función mejorada para obtener badge de categoría
+  // Función mejorada para obtener badge de categoría con colores personalizados
   const getCategoryBadge = (category: string) => {
+    // Mapeo de colores por tipo de categoría
+    const getCategoryStyles = (catName: string) => {
+      const name = catName.toLowerCase()
+
+      if (name.includes('fruta'))
+        return "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100"
+      if (name.includes('verdura') || name.includes('hortaliza'))
+        return "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+      if (name.includes('tubérculo') || name.includes('tuberculo'))
+        return "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100"
+      if (name.includes('hierba') || name.includes('aromática'))
+        return "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+      if (name.includes('medicinal'))
+        return "bg-red-50 text-red-700 border-red-200 hover:bg-red-100"
+
+      return "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100"
+    }
+
     if (!category || category === "otros" || category === "Sin categoría") {
       return (
-        <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
+        <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize bg-gray-50 text-gray-600 border-gray-200">
           Sin categoría
         </Badge>
       )
     }
 
-    // Mapeo de colores por tipo de categoría
-    const getCategoryVariant = (catName: string) => {
-      const name = catName.toLowerCase()
-
-      if (name.includes('fruta')) return "default"
-      if (name.includes('verdura') || name.includes('hortaliza')) return "secondary"
-      if (name.includes('tubérculo') || name.includes('tuberculo')) return "outline"
-      if (name.includes('hierba') || name.includes('aromática')) return "default"
-      if (name.includes('medicinal')) return "destructive"
-
-      return "outline"
-    }
-
     return (
-      <Badge variant={getCategoryVariant(category)} className="ml-2 flex-shrink-0 capitalize">
+      <Badge variant="outline" className={`ml-2 flex-shrink-0 capitalize ${getCategoryStyles(category)}`}>
         {category}
       </Badge>
     )
@@ -331,9 +336,9 @@ export default function DashBoardShoppingPage() {
         onFilterChange={handleFilterChange}
         hideFilters={shouldHideFilters}
       >
-        <div className="flex-1 bg-gray-50">
+        <div className="flex-1 bg-gray-50 dark:bg-background">
           {/* Header con controles de vista */}
-          <div className="bg-white border-b">
+          <div className="bg-white dark:bg-card border-b dark:border-border">
             <div className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-4">
@@ -361,7 +366,7 @@ export default function DashBoardShoppingPage() {
                     </>
                   )}
 
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-muted-foreground">
                     {isLoading ? "Cargando..." :
                       viewMode === "gremios" ?
                         `${filteredGremios.length} gremio${filteredGremios.length !== 1 ? 's' : ''} encontrado${filteredGremios.length !== 1 ? 's' : ''}` :
@@ -424,35 +429,34 @@ export default function DashBoardShoppingPage() {
           <div className="container mx-auto px-4 py-8">
             {viewMode === "gremios" ? (
               // Vista de Gremios
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredGremios.map((gremio) => (
                   <Card
                     key={gremio.id}
-                    className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                    className="flex flex-col min-w-[235px] max-w-[313px] w-full p-5 hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() => handleSelectGremio(gremio)}
                   >
-                    <div className="p-6 space-y-4">
+                    <div className="flex flex-col flex-1 gap-3">
                       <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-xl mb-2">
-                            {gremio.nombre}
-                          </h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed">
-                            {gremio.descripcion}
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="ml-2 flex-shrink-0">
+                        <h3 className="font-semibold text-lg leading-tight">
+                          {gremio.nombre}
+                        </h3>
+                        <Badge variant="outline" className="ml-2 flex-shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200">
                           <Users className="h-3 w-3 mr-1" />
                           Gremio
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>{gremio.ubicacion}</span>
+                      <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                        {gremio.descripcion}
+                      </p>
+
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{gremio.ubicacion}</span>
                       </div>
 
-                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
+                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg h-10 text-sm mt-auto">
                         Ver Productos
                       </Button>
                     </div>
@@ -463,8 +467,8 @@ export default function DashBoardShoppingPage() {
               // Vista de Productos
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredProducts.map((product) => (
-                  <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="relative h-48 overflow-hidden">
+                  <Card key={product.id} className="flex flex-col min-w-[235px] max-w-[313px] w-full h-[519px] p-5 hover:shadow-lg transition-shadow">
+                    <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0 relative">
                       <img
                         src={product.image}
                         alt={product.name}
@@ -474,66 +478,67 @@ export default function DashBoardShoppingPage() {
                           if (target.src !== PLACEHOLDER_URL) target.src = PLACEHOLDER_URL
                         }}
                       />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="absolute top-2 right-2 bg-white/80 hover:bg-white dark:bg-black/80 dark:hover:bg-black"
-                      >
-                        <Heart className="h-4 w-4 text-muted-foreground" />
-                      </Button>
                       {product.stock !== undefined && (
                         <Badge
-                          variant={product.available ? "default" : "destructive"}
-                          className="absolute bottom-2 left-2"
+                          variant="outline"
+                          className={`absolute bottom-2 left-2 ${product.available
+                              ? "bg-green-50 text-green-700 border-green-300"
+                              : "bg-red-50 text-red-700 border-red-300"
+                            }`}
                         >
                           {product.available ? `Stock: ${product.stock}` : "Agotado"}
                         </Badge>
                       )}
                     </div>
 
-                    <div className="p-4 space-y-3">
+                    <div className="flex flex-col flex-1 gap-3 min-h-0">
                       <div className="flex items-start justify-between">
                         <h3 className="font-semibold text-lg leading-tight">
                           {product.name}
                         </h3>
-                        {getCategoryBadge(product.category)}
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <p className="font-bold text-2xl">${product.price.toLocaleString()}</p>
+                          <p className="text-sm text-muted-foreground">por {product.unit}</p>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
+                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
                         <span className="truncate">{product.location}</span>
                       </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1">
                           <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="font-medium text-sm">{product.rating}</span>
-                          <span className="text-sm text-gray-500">
+                          <span className="font-semibold text-sm">{product.rating}</span>
+                          <span className="text-sm text-muted-foreground">
                             ({product.reviews} reseñas)
                           </span>
                         </div>
+                        {getCategoryBadge(product.category)}
                       </div>
 
-                      <div className="flex items-end justify-between">
-                        <div>
-                          <div className="text-2xl font-bold text-gray-900">
-                            ${product.price.toLocaleString()}
-                          </div>
-                          <div className="text-sm text-gray-500">por {product.unit}</div>
-                        </div>
+                      <div className="flex gap-2 mt-auto">
+                        <Button
+                          onClick={() => {
+                            setSelectedProduct(product)
+                            setIsModalOpen(true)
+                          }}
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg h-10 text-sm"
+                          size="sm"
+                          disabled={!product.available}
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2" />
+                          {product.available ? "Añadir al carrito" : "Agotado"}
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-10 w-10 rounded-lg"
+                        >
+                          <Heart className="h-4 w-4 text-muted-foreground" />
+                        </Button>
                       </div>
-
-                      <Button
-                        onClick={() => {
-                          setSelectedProduct(product)
-                          setIsModalOpen(true)
-                        }}
-                        className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
-                        disabled={!product.available}
-                      >
-                        <ShoppingCart className="h-4 w-4" />
-                        {product.available ? "Añadir al carrito" : "Agotado"}
-                      </Button>
                     </div>
                   </Card>
                 ))}
@@ -545,16 +550,16 @@ export default function DashBoardShoppingPage() {
               <div className="text-center py-12 text-muted-foreground">Cargando...</div>
             ) : viewMode === "gremios" && filteredGremios.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-gray-500">
-                  <Users className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <div className="text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <h3 className="text-lg font-medium mb-2">No se encontraron gremios</h3>
                   <p>Intenta cambiar los términos de búsqueda</p>
                 </div>
               </div>
             ) : filteredProducts.length === 0 && viewMode !== "gremios" ? (
               <div className="text-center py-12">
-                <div className="text-gray-500">
-                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <div className="text-muted-foreground">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
                   <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
                   <p>Intenta cambiar los filtros o términos de búsqueda</p>
                 </div>
