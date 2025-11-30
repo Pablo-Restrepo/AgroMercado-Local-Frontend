@@ -17,6 +17,7 @@ import {
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
+import { CartDrawer } from "@/components/cart/CartDrawer"
 import { useCart } from "@/hooks/useCart"
 import { useAuth } from "@/hooks/auth/useAuth"
 import * as productoApi from "@/services/api/productoApi"
@@ -114,6 +115,7 @@ export default function DashBoardShoppingPage() {
   const [gremioSearchQuery, setGremioSearchQuery] = useState("")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [products, setProducts] = useState<ViewProduct[]>([])
   const [gremios, setGremios] = useState<GremioListBody[]>([])
@@ -389,8 +391,11 @@ export default function DashBoardShoppingPage() {
                   )}
 
                   {/* Carrito */}
-                  <Button className="bg-green-600 hover:bg-green-700 text-white gap-2">
-                    <ShoppingBag className="h-4 w-4" />
+                  <Button
+                    onClick={() => setIsCartOpen(true)}
+                    className="bg-green-600 hover:bg-green-700 text-white gap-2"
+                  >
+                    <ShoppingCart className="h-4 w-4" />
                     Carrito
                     {cart.itemCount > 0 && (
                       <Badge variant="secondary" className="ml-1">
@@ -482,8 +487,8 @@ export default function DashBoardShoppingPage() {
                         <Badge
                           variant="outline"
                           className={`absolute bottom-2 left-2 ${product.available
-                              ? "bg-green-50 text-green-700 border-green-300"
-                              : "bg-red-50 text-red-700 border-red-300"
+                            ? "bg-green-50 text-green-700 border-green-300"
+                            : "bg-red-50 text-red-700 border-red-300"
                             }`}
                         >
                           {product.available ? `Stock: ${product.stock}` : "Agotado"}
@@ -599,6 +604,15 @@ export default function DashBoardShoppingPage() {
 
       <FloatingCart
         cart={cart}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        onClearCart={clearCart}
+      />
+
+      <CartDrawer
+        cart={cart}
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
         onClearCart={clearCart}
