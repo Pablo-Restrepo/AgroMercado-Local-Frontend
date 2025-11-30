@@ -68,13 +68,16 @@ export async function obtenerEnviosPorUsuario(usuarioId: number): Promise<Envio[
 // Actualizar estado de envío
 export async function actualizarEstadoEnvio(
     envioId: number,
-    nuevoEstado: "DESPACHADO" | "EN_RUTA" | "ENTREGADO"
+    nuevoEstado: "DESPACHADO" | "EN_RUTA" | "ENTREGADO" | "PENDIENTE"
 ): Promise<void> {
     // El backend espera el parámetro 'status' como query parameter
     const response = await authFetch(
         `${API_BASE_URL}/envios/${envioId}?status=${nuevoEstado}`,
         {
             method: "PATCH",
+            headers: {
+                "Content-Type": "application/json",
+            },
         }
     );
 
