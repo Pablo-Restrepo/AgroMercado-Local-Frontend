@@ -11,6 +11,7 @@ import Select from "@/components/ui/select"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import * as productoApi from "@/services/api/productoApi"
 import * as categoryApi from "@/services/api/categoryApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
 import { useAuth } from "@/hooks/auth/useAuth"
 import type { Category } from "@/services/api/categoryApi"
 
@@ -44,11 +45,14 @@ export default function CreateProduct() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [producerId, setProductorId] = useState<number | null>(null)
+  const [loadingProducer, setLoadingProducer] = useState(true)
 
-  // Cargar categorías al montar el componente
+  // Cargar categorías y datos del productor al montar el componente
   useEffect(() => {
-    const cargarCategorias = async () => {
+    const cargarDatos = async () => {
       try {
+        // Cargar categorías
         setLoadingCategorias(true)
         const categoriasData = await categoryApi.listarCategorias()
         setCategorias(categoriasData)
@@ -58,10 +62,26 @@ export default function CreateProduct() {
       } finally {
         setLoadingCategorias(false)
       }
+
+      // Cargar datos del productor
+      if (user?.u_id) {
+        try {
+          setLoadingProducer(true)
+          const productorData = await getProductorByUserId(user.u_id)
+          setProductorId(productorData.id)
+        } catch (err) {
+          console.error("Error cargando datos del productor:", err)
+          setError("Error al cargar los datos del productor. Asegúrate de tener un perfil de productor completado.")
+        } finally {
+          setLoadingProducer(false)
+        }
+      } else {
+        setLoadingProducer(false)
+      }
     }
 
-    cargarCategorias()
-  }, [])
+    cargarDatos()
+  }, [user?.u_id])
 
   const handleInputChange = (field: keyof ProductForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -194,6 +214,11 @@ export default function CreateProduct() {
       return
     }
 
+    if (!producerId) {
+      setError("No se encontró el identificador de productor. Asegúrate de tener un perfil de productor completado.")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -201,14 +226,6 @@ export default function CreateProduct() {
       let imageBase64 = ""
       if (form.images.length > 0) {
         imageBase64 = await uploadImage(form.images[0])
-      }
-
-      // Determinar prod_id
-      const producerId = Number((user as any).prod_id ?? (user as any).p_id ?? (user as any).prodId ?? user?.u_id)
-      if (!Number.isInteger(producerId)) {
-        setIsSubmitting(false)
-        setError("No se encontró el identificador de productor en el perfil. Completa tu perfil de productor antes de crear productos.")
-        return
       }
 
       // Obtener categoría seleccionada para determinar si es medicinal
@@ -219,7 +236,7 @@ export default function CreateProduct() {
         p_nombre: form.name.trim(),
         p_tipo: selectedCategory?.cat_nombre || "otro",  // usar nombre de categoría
         p_unidad: form.unit,
-        prod_id: producerId,
+        prod_id: producerId,  // usar el producerId obtenido del API
         img: imageBase64,          // base64 puro (sin data:)
         p_precio: parseFloat(form.price),
         p_stock: stockNum,
@@ -296,6 +313,22 @@ export default function CreateProduct() {
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-3">
                   <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              {loadingProducer && (
+                <div className="flex items-center justify-center gap-2 p-4 text-sm text-gray-500">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando información del productor...
+                </div>
+              )}
+
+              {!loadingProducer && !producerId && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  <p className="text-sm text-yellow-700">
+                    No se encontró información de productor asociada a tu cuenta.
+                    Asegúrate de tener un perfil de productor completado antes de crear productos.
+                  </p>
                 </div>
               )}
 
@@ -423,8 +456,8 @@ export default function CreateProduct() {
                   {/* Zona de carga */}
                   <div
                     className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
-                        ? "border-green-500 bg-green-500/10"
-                        : "border-border hover:border-green-400"
+                      ? "border-green-500 bg-green-500/10"
+                      : "border-border hover:border-green-400"
                       } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
@@ -491,12 +524,17 @@ export default function CreateProduct() {
                   <Button
                     type="submit"
                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                    disabled={isSubmitting || loadingCategorias}
+                    disabled={isSubmitting || loadingCategorias || loadingProducer}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Creando...
+                      </>
+                    ) : loadingProducer ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Cargando datos...
                       </>
                     ) : (
                       "Crear Producto"

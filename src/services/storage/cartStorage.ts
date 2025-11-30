@@ -1,20 +1,17 @@
 import type { Cart, CartItem } from "@/types/cart"
-const CART_COOKIE_NAME = "agromercado_cart"
-const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 días
+
+const CART_STORAGE_KEY = "agromercado_cart"
 
 export const cartStorage = {
   getCart(): Cart {
     try {
-      const cookie = document.cookie
-        .split('; ')
-        .find(row => row.startsWith(`${CART_COOKIE_NAME}=`))
-      
-      if (!cookie) {
+      const stored = localStorage.getItem(CART_STORAGE_KEY)
+
+      if (!stored) {
         return { items: [], total: 0, itemCount: 0 }
       }
-      
-      const value = decodeURIComponent(cookie.split('=')[1])
-      return JSON.parse(value)
+
+      return JSON.parse(stored)
     } catch {
       return { items: [], total: 0, itemCount: 0 }
     }
@@ -22,21 +19,20 @@ export const cartStorage = {
 
   setCart(cart: Cart): void {
     try {
-      const value = encodeURIComponent(JSON.stringify(cart))
-      document.cookie = `${CART_COOKIE_NAME}=${value}; path=/; max-age=${CART_COOKIE_MAX_AGE}`
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart))
     } catch (error) {
-      console.error("Error saving cart to cookies:", error)
+      console.error("Error saving cart to localStorage:", error)
     }
   },
 
   clearCart(): void {
-    document.cookie = `${CART_COOKIE_NAME}=; path=/; max-age=0`
+    localStorage.removeItem(CART_STORAGE_KEY)
   },
 
   addItem(item: Omit<CartItem, 'quantity'>, quantity: number = 1): Cart {
     const cart = this.getCart()
     const existingItemIndex = cart.items.findIndex(i => i.id === item.id)
-    
+
     if (existingItemIndex >= 0) {
       // Actualizar cantidad del producto existente
       cart.items[existingItemIndex].quantity += quantity
@@ -47,7 +43,7 @@ export const cartStorage = {
         quantity
       })
     }
-    
+
     this.updateCartTotals(cart)
     this.setCart(cart)
     return cart
@@ -56,7 +52,7 @@ export const cartStorage = {
   updateItemQuantity(itemId: string, quantity: number): Cart {
     const cart = this.getCart()
     const itemIndex = cart.items.findIndex(i => i.id === itemId)
-    
+
     if (itemIndex >= 0) {
       if (quantity <= 0) {
         cart.items.splice(itemIndex, 1)
@@ -64,7 +60,7 @@ export const cartStorage = {
         cart.items[itemIndex].quantity = quantity
       }
     }
-    
+
     this.updateCartTotals(cart)
     this.setCart(cart)
     return cart

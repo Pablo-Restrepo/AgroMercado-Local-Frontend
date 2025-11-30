@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import * as productoApi from "@/services/api/productoApi"
 import * as categoryApi from "@/services/api/categoryApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
 import type { ProductorProduct } from "@/services/api/productoApi"
 import type { Category } from "@/services/api/categoryApi"
 import { useAuth } from "@/hooks/auth/useAuth"
@@ -16,6 +17,8 @@ export default function DashBoardProductsList() {
     const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [producerId, setProductorId] = useState<number | null>(null)
+    const [loadingProducer, setLoadingProducer] = useState(true)
     const [deleteDialog, setDeleteDialog] = useState<{
         isOpen: boolean
         product: ProductorProduct | null
@@ -40,6 +43,29 @@ export default function DashBoardProductsList() {
         return normalizeCategoryForFilter(categoryName)
     }, [categorias])
 
+    // Cargar datos del productor
+    useEffect(() => {
+        const loadProductorData = async () => {
+            if (!user?.u_id) {
+                setLoadingProducer(false)
+                return
+            }
+
+            try {
+                setLoadingProducer(true)
+                const productorData = await getProductorByUserId(user.u_id)
+                setProductorId(productorData.id)
+            } catch (err) {
+                console.error("Error cargando datos del productor:", err)
+                setError("Error al cargar los datos del productor. Asegúrate de tener un perfil de productor completado.")
+            } finally {
+                setLoadingProducer(false)
+            }
+        }
+
+        loadProductorData()
+    }, [user?.u_id])
+
     // Cargar categorías con fallback
     useEffect(() => {
         const loadCategorias = async () => {
@@ -62,15 +88,21 @@ export default function DashBoardProductsList() {
     // Cargar productos del backend
     useEffect(() => {
         const loadProducts = async () => {
-            if (!isAuthenticated || !user) {
+            if (!isAuthenticated || !user || loadingProducer) {
                 setLoading(false)
+                return
+            }
+
+            if (!producerId) {
+                setLoading(false)
+                setError("No se encontró información de productor asociada a tu cuenta.")
                 return
             }
 
             try {
                 setLoading(true)
                 setError(null)
-                const productsData = await productoApi.getProductsByProductor(user.u_id)
+                const productsData = await productoApi.getProductsByProductor(producerId)
                 setProducts(productsData)
             } catch (err) {
                 console.error("Error loading products:", err)
@@ -81,7 +113,7 @@ export default function DashBoardProductsList() {
         }
 
         loadProducts()
-    }, [user, isAuthenticated])
+    }, [user, isAuthenticated, producerId, loadingProducer])
 
     // Filtrar productos - MEJORADO
     const filteredProducts = products.filter(product => {
@@ -168,11 +200,13 @@ export default function DashBoardProductsList() {
         >
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
                 {/* Loading State */}
-                {loading && (
+                {(loading || loadingProducer) && (
                     <div className="flex items-center justify-center py-12">
                         <div className="text-center">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                            <p className="mt-2 text-muted-foreground">Cargando productos...</p>
+                            <p className="mt-2 text-muted-foreground">
+                                {loadingProducer ? "Cargando información del productor..." : "Cargando productos..."}
+                            </p>
                         </div>
                     </div>
                 )}
@@ -198,7 +232,7 @@ export default function DashBoardProductsList() {
                 )}
 
                 {/* Products Grid */}
-                {!loading && !error && (
+                {!loading && !loadingProducer && !error && (
                     <>
                         <div className="flex justify-between items-center">
                             <p className="text-sm text-muted-foreground">
