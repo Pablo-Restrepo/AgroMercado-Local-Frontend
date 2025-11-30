@@ -72,6 +72,9 @@ export async function listarGremios(): Promise<Gremio[]> {
 export async function crearProductor(payload: CreateProducerPayload): Promise<Productor> {
     const response = await authFetch(`${API_BASE_URL}/api/productores/`, {
         method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
     });
 
