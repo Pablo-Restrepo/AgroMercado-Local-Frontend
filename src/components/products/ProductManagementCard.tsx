@@ -67,7 +67,7 @@ function resolveImageSrc(img?: string, tipo?: string) {
 export function ProductManagementCard({ product, onEdit, onDelete }: ProductManagementCardProps) {
   const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
   const [loadingCategorias, setLoadingCategorias] = useState(false)
-  
+
   // Usar la nueva función para mapear la categoría
   const categoryName = mapCategoryIdToName(product.cat_id, product.p_tipo, categorias)
   const imgSrc = resolveImageSrc(product.img, categoryName)
@@ -100,23 +100,23 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
     // Determinar variante de badge y color basado en el nombre
     const getVariantAndColor = (catName: string) => {
       const name = catName.toLowerCase()
-      
-      if (name.includes('fruta')) 
-        return { variant: "default" as const, color: "text-blue-700 bg-blue-50 border-blue-200" }
-      
-      if (name.includes('verdura') || name.includes('hortaliza')) 
-        return { variant: "secondary" as const, color: "text-green-700 bg-green-50 border-green-200" }
-      
-      if (name.includes('tubérculo') || name.includes('tuberculo')) 
-        return { variant: "outline" as const, color: "text-orange-700 bg-orange-50 border-orange-200" }
-      
-      if (name.includes('hierba') || name.includes('aromática')) 
-        return { variant: "default" as const, color: "text-purple-700 bg-purple-50 border-purple-200" }
-      
-      if (name.includes('medicinal')) 
-        return { variant: "destructive" as const, color: "text-red-700 bg-red-50 border-red-200" }
-      
-      return { variant: "outline" as const, color: "text-gray-700 bg-gray-50 border-gray-200" }
+
+      if (name.includes('fruta'))
+        return { variant: "default" as const, color: "text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100" }
+
+      if (name.includes('verdura') || name.includes('hortaliza'))
+        return { variant: "secondary" as const, color: "text-green-700 bg-green-50 border-green-200 hover:bg-green-100" }
+
+      if (name.includes('tubérculo') || name.includes('tuberculo'))
+        return { variant: "outline" as const, color: "text-orange-700 bg-orange-50 border-orange-200 hover:bg-orange-100" }
+
+      if (name.includes('hierba') || name.includes('aromática'))
+        return { variant: "default" as const, color: "text-purple-700 bg-purple-50 border-purple-200 hover:bg-purple-100" }
+
+      if (name.includes('medicinal'))
+        return { variant: "destructive" as const, color: "text-red-700 bg-red-50 border-red-200 hover:bg-red-100" }
+
+      return { variant: "outline" as const, color: "text-gray-700 bg-gray-50 border-gray-200 hover:bg-gray-100" }
     }
 
     return {
@@ -129,9 +129,9 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
   const categoryInfo = getCategoryInfo(categoryName)
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm">
+    <Card className="flex flex-col min-w-[235px] max-w-[313px] w-full h-auto p-5">
       {/* Product Image */}
-      <div className="relative h-48 overflow-hidden">
+      <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0 relative">
         <img
           src={imgSrc}
           alt={product.p_nombre}
@@ -141,10 +141,10 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
             target.src = PLACEHOLDER
           }}
         />
-        
+
         {/* Stock Badge */}
         {product.p_stock !== undefined && (
-          <Badge 
+          <Badge
             variant={product.p_stock > 0 ? "default" : "destructive"}
             className="absolute bottom-2 left-2"
           >
@@ -154,15 +154,15 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
 
         {/* Medicinal Badge */}
         {product.p_medicinal && (
-          <Badge 
-            variant="outline" 
-            className="absolute top-2 left-2 bg-green-50 text-green-700 border-green-200"
+          <Badge
+            variant="outline"
+            className="absolute top-2 left-2 bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
           >
             <Leaf className="h-3 w-3 mr-1" />
             Medicinal
           </Badge>
         )}
-        
+
         {/* Action Buttons */}
         <div className="absolute top-2 right-2 flex gap-2">
           <Button
@@ -185,12 +185,12 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
       </div>
 
       {/* Product Info */}
-      <div className="p-4 space-y-3">
+      <div className="space-y-3">
         <div className="flex items-start justify-between">
           <h3 className="font-semibold text-lg text-gray-900 leading-tight">
             {product.p_nombre}
           </h3>
-          <Badge 
+          <Badge
             variant={categoryInfo.variant}
             className={`ml-2 flex-shrink-0 capitalize ${categoryInfo.color}`}
           >
@@ -219,26 +219,6 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
             </div>
             <div className="text-sm text-gray-500">por {product.p_unidad || "unidad"}</div>
           </div>
-        </div>
-
-        {/* Management Actions */}
-        <div className="flex gap-2 pt-2">
-          <Button 
-            onClick={() => onEdit(product)}
-            variant="outline"
-            className="flex-1 gap-2"
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </Button>
-          <Button 
-            onClick={() => onDelete(product)}
-            variant="destructive"
-            className="flex-1 gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Eliminar
-          </Button>
         </div>
       </div>
     </Card>

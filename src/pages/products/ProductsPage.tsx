@@ -169,7 +169,7 @@ export default function ProductsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full sm:w-[200px] border dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 dark:text-white"
+                    className="w-full sm:w-[200px] border rounded px-3 py-2 bg-white"
                   >
                     <option value="all">Todas las categorías</option>
                     <option value="verduras">Verduras</option>
@@ -247,9 +247,9 @@ export default function ProductsPage() {
             {/* Empty State */}
             {filteredProducts.length === 0 && (
               <div className="text-center py-12">
-                <div className="text-gray-500 dark:text-gray-400">
-                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                  <h3 className="text-lg font-medium mb-2 dark:text-gray-200">No se encontraron productos</h3>
+                <div className="text-gray-500">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                  <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
                   <p>Intenta con otros términos de búsqueda o categorías</p>
                 </div>
               </div>
