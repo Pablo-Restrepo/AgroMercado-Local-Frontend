@@ -136,9 +136,9 @@ export default function ProductsPage() {
   return (
     <>
       <DashboardLayout title="Productos" hideFilters={shouldHideFilters}>
-        <div className="flex-1 bg-gray-50">
+        <div className="flex-1 bg-gray-50 dark:bg-gray-900">
           {/* Search and Filters - Ahora dentro del layout */}
-          <div className="bg-white border-b">
+          <div className="bg-white dark:bg-gray-800 border-b dark:border-gray-700">
             <div className="container mx-auto px-4 py-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1" />
@@ -169,7 +169,7 @@ export default function ProductsPage() {
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full sm:w-[200px] border rounded px-3 py-2 bg-white"
+                    className="w-full sm:w-[200px] border dark:border-gray-600 rounded px-3 py-2 bg-white dark:bg-gray-700 dark:text-white"
                   >
                     <option value="all">Todas las categorías</option>
                     <option value="verduras">Verduras</option>
@@ -183,68 +183,62 @@ export default function ProductsPage() {
           </div>
 
           {/* Products Grid */}
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+            <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
               {filteredProducts.map((product) => (
-                <Card key={product.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                  {/* Product Image */}
-                  <div className="relative h-48 overflow-hidden">
+                <Card key={product.id} className="flex flex-col min-w-[235px] max-w-[313px] w-full h-[519px] p-5">
+                  <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0">
                     <img
                       src={product.image}
                       alt={product.name}
-                      className="w-full h-full object-cover"
+                      className="object-cover w-full h-full"
                     />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="absolute top-2 right-2 bg-white/80 hover:bg-white"
-                    >
-                      <Heart className="h-4 w-4 text-gray-600" />
-                    </Button>
                   </div>
 
-                  {/* Product Info */}
-                  <div className="p-4 space-y-3">
+                  <div className="flex flex-col flex-1 gap-3 min-h-0">
                     <div className="flex items-start justify-between">
-                      <h3 className="font-semibold text-lg text-gray-900 leading-tight">
-                        {product.name}
-                      </h3>
-                      <Badge variant="outline" className="ml-2 flex-shrink-0">
-                        {product.category}
-                      </Badge>
+                      <h3 className="font-semibold text-lg leading-tight">{product.name}</h3>
+                      <div className="text-right flex-shrink-0 ml-2">
+                        <p className="font-bold text-2xl">${product.price.toLocaleString()}</p>
+                        <p className="text-sm text-zinc-400">por {product.unit}</p>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-1 text-sm text-gray-600">
-                      <MapPin className="h-4 w-4" />
-                      <span className="truncate">{product.location}</span>
+                    <div className="flex items-center gap-1.5 text-sm text-zinc-600">
+                      <MapPin className="h-4 w-4 flex-shrink-0" />
+                      <span className="truncate text-zinc-500">{product.location}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-medium text-sm">{product.rating}</span>
-                        <span className="text-sm text-gray-500">
+                        <span className="font-semibold text-sm">{product.rating}</span>
+                        <span className="text-sm text-zinc-400">
                           ({product.reviews} reseñas)
                         </span>
                       </div>
+                      <Badge variant="outline" className="flex-shrink-0">
+                        {product.category}
+                      </Badge>
                     </div>
 
-                    <div className="flex items-end justify-between">
-                      <div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          ${product.price.toLocaleString()}
-                        </div>
-                        <div className="text-sm text-gray-500">por {product.unit}</div>
-                      </div>
+                    <div className="flex gap-2 mt-auto">
+                      <Button
+                        onClick={() => handleAddToCart(product.id)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg h-10 text-sm"
+                        size="sm"
+                      >
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Añadir al carrito
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-10 w-10 rounded-lg"
+                      >
+                        <Heart className="h-4 w-4 text-zinc-500" />
+                      </Button>
                     </div>
-
-                    <Button
-                      onClick={() => handleAddToCart(product.id)}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
-                    >
-                      <ShoppingCart className="h-4 w-4" />
-                      Añadir al carrito
-                    </Button>
                   </div>
                 </Card>
               ))}
@@ -253,9 +247,9 @@ export default function ProductsPage() {
             {/* Empty State */}
             {filteredProducts.length === 0 && (
               <div className="text-center py-12">
-                <div className="text-gray-500">
-                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium mb-2">No se encontraron productos</h3>
+                <div className="text-gray-500 dark:text-gray-400">
+                  <ShoppingBag className="h-12 w-12 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                  <h3 className="text-lg font-medium mb-2 dark:text-gray-200">No se encontraron productos</h3>
                   <p>Intenta con otros términos de búsqueda o categorías</p>
                 </div>
               </div>

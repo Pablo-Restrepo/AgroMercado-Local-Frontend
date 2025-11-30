@@ -108,9 +108,9 @@ export default function RegisterPage() {
 
       const stripCode = (s: string) =>
         s.replace(/^request failed with status code \d+\s*[:-]?\s*/i, "")
-         .replace(/^error[:\s]*\d+\s*[:-]?\s*/i, "")
-         .replace(/^[[(]?(\d{3})[\])]?[:-]?\s*/i, "")
-         .trim()
+          .replace(/^error[:\s]*\d+\s*[:-]?\s*/i, "")
+          .replace(/^[[(]?(\d{3})[\])]?[:-]?\s*/i, "")
+          .trim()
 
       const friendly = getFriendly(err)
       setError(friendly)
@@ -145,76 +145,72 @@ export default function RegisterPage() {
               <p className="text-gray-600 text-sm mt-1">Únete a AgroMercado Local y conecta con productores locales</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded">{error}</div>}
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="nombre">Nombre</Label>
                 <Input id="nombre" value={form.nombre} onChange={(e) => handleChange("nombre", e.target.value)} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="apellidos">Apellidos</Label>
                 <Input id="apellidos" value={form.apellidos} onChange={(e) => handleChange("apellidos", e.target.value)} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="email">Correo electrónico</Label>
                 <Input id="email" type="email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="cedula">Cédula</Label>
                   <Input id="cedula" value={form.cedula} onChange={(e) => handleChange("cedula", e.target.value)} />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="fechaNacimiento">Fecha de nacimiento</Label>
                   <Input id="fechaNacimiento" type="date" value={form.fechaNacimiento} onChange={(e) => handleChange("fechaNacimiento", e.target.value)} />
                 </div>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="direccion">Dirección</Label>
                 <Input id="direccion" value={form.direccion} onChange={(e) => handleChange("direccion", e.target.value)} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="telefono">Teléfono</Label>
                 <Input id="telefono" value={form.telefono} onChange={(e) => handleChange("telefono", e.target.value)} />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="nombreUsuario">Nombre de usuario</Label>
                 <Input id="nombreUsuario" value={form.nombreUsuario} onChange={(e) => handleChange("nombreUsuario", e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="contrasenia">Contraseña</Label>
                   <Input id="contrasenia" type="password" value={form.contrasenia} onChange={(e) => handleChange("contrasenia", e.target.value)} />
                 </div>
-                <div>
+                <div className="space-y-2">
                   <Label htmlFor="confirmarContrasenia">Confirmar contraseña</Label>
                   <Input id="confirmarContrasenia" type="password" value={form.confirmarContrasenia} onChange={(e) => handleChange("confirmarContrasenia", e.target.value)} />
                 </div>
               </div>
 
-              <div>
-                <Label className="text-base">Tipo de cuenta</Label>
-                <RadioGroup value={form.tipoUsuario} onValueChange={(v) => handleChange("tipoUsuario", v as "comprador" | "productor")} className="flex gap-3 mt-2">
-                  <div className="flex items-center gap-2 border rounded-lg p-3 cursor-pointer">
+              <div className="space-y-2">
+                <Label className="text-base text-center">Tipo de cuenta</Label>
+                <RadioGroup value={form.tipoUsuario} onValueChange={(v) => handleChange("tipoUsuario", v as "comprador" | "productor")} className="grid grid-cols-2 gap-3 mt-2">
+                  <Label htmlFor="comprador" className="flex items-center gap-2 border rounded-lg p-3 cursor-pointer">
                     <RadioGroupItem value="comprador" id="comprador" />
-                    <Label htmlFor="comprador" className="flex items-center gap-2">
-                      <ShoppingCart className="h-4 w-4" /> Comprador
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-2 border rounded-lg p-3 cursor-pointer">
+                    <ShoppingCart className="h-4 w-4" /> Comprador
+                  </Label>
+                  <Label htmlFor="productor" className="flex items-center gap-2 border rounded-lg p-3 cursor-pointer">
                     <RadioGroupItem value="productor" id="productor" />
-                    <Label htmlFor="productor" className="flex items-center gap-2">
-                      <User className="h-4 w-4" /> Productor
-                    </Label>
-                  </div>
+                    <User className="h-4 w-4" /> Productor
+                  </Label>
                 </RadioGroup>
               </div>
 
