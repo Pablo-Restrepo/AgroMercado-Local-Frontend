@@ -60,7 +60,7 @@ export function HeroSection() {
                             </Link>
                         </Button>
                         <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
-                            <Link to="/registro-productor">
+                            <Link to="/registro">
                                 Soy Productor
                             </Link>
                         </Button>

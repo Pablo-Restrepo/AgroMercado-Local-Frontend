@@ -34,16 +34,10 @@ const navigationItems = [
     },
     {
         title: "Productores",
-        href: "/productores",
+        href: "/registro",
         icon: Users,
         description: "Conoce a nuestros agricultores",
-    },
-    {
-        title: "Mercado",
-        href: "/mercado",
-        icon: ShoppingBag,
-        description: "Compra directo del productor",
-    },
+    }
 ]
 
 export function Navbar() {
@@ -95,7 +89,7 @@ export function Navbar() {
                                         <NavigationMenuLink asChild>
                                             <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                to="/productos/frutas"
+                                                to="/productos"
                                             >
                                                 <div className="text-sm font-medium leading-none">Frutas</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -108,7 +102,7 @@ export function Navbar() {
                                         <NavigationMenuLink asChild>
                                             <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                to="/productos/verduras"
+                                                to="/productos"
                                             >
                                                 <div className="text-sm font-medium leading-none">Verduras</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -121,7 +115,7 @@ export function Navbar() {
                                         <NavigationMenuLink asChild>
                                             <Link
                                                 className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                                                to="/productos/lacteos"
+                                                to="/productos"
                                             >
                                                 <div className="text-sm font-medium leading-none">Lácteos</div>
                                                 <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
@@ -136,19 +130,12 @@ export function Navbar() {
 
                         <NavigationMenuItem>
                             <NavigationMenuLink
-                                href="/productores"
+                                href="/registro"
                                 className="group inline-flex h-10 items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50">
                                 Productores
                             </NavigationMenuLink>
                         </NavigationMenuItem>
 
-                        <NavigationMenuItem>
-                            <NavigationMenuLink
-                                href="/mercado"
-                                className="group inline-flex h-10 items-center justify-center rounded-md bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50">
-                                Mercado
-                            </NavigationMenuLink>
-                        </NavigationMenuItem>
                     </NavigationMenuList>
                 </NavigationMenu>
 
