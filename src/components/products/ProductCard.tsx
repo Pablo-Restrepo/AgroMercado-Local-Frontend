@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Star, Heart, ShoppingCart } from "lucide-react"
+import * as categoryApi from "@/services/api/categoryApi"
+import type { Category } from "@/services/api/categoryApi"
 
 export interface Product {
     id: string
@@ -22,6 +25,15 @@ interface ProductCardProps {
 
 const PLACEHOLDER = "https://via.placeholder.com/400x300?text=No+image"
 
+// Categorías de fallback hardcodeadas
+const FALLBACK_CATEGORIES: Category[] = [
+  { cat_id: 1, cat_nombre: "frutas" },
+  { cat_id: 4, cat_nombre: "hierbas" },
+  { cat_id: 5, cat_nombre: "hortalizas" },
+  { cat_id: 3, cat_nombre: "tubérculos" },
+  { cat_id: 2, cat_nombre: "verduras" }
+]
+
 function resolveImageSrc(img?: string) {
   if (!img) return PLACEHOLDER
   const trimmed = img.trim()
@@ -39,19 +51,99 @@ function resolveImageSrc(img?: string) {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+    const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
     const imgSrc = resolveImageSrc(product.image)
 
-    const getCategoryBadge = (category: string) => {
-        const categoryLabels: Record<string, string> = {
-            verduras: "Verduras",
-            frutas: "Frutas",
-            tuberculos: "Tubérculos",
-            hierbas: "Hierbas",
-            medicinales: "Medicinales",
+    // Cargar categorías dinámicamente con fallback
+    useEffect(() => {
+        const loadCategorias = async () => {
+            try {
+                const categoriasData = await categoryApi.listarCategorias()
+                if (categoriasData && categoriasData.length > 0) {
+                    setCategorias(categoriasData)
+                }
+                // Si no hay datos del API, mantener las categorías hardcodeadas
+            } catch (error) {
+                console.error("Error cargando categorías:", error)
+                // Mantener categorías hardcodeadas en caso de error
+                setCategorias(FALLBACK_CATEGORIES)
+            }
         }
+
+        loadCategorias()
+    }, [])
+
+    const getCategoryBadge = (category: string) => {
+        if (!category || !category.trim()) {
+            return (
+                <Badge variant="outline" className="capitalize">
+                    Sin categoría
+                </Badge>
+            )
+        }
+
+        const categoryLower = category.toLowerCase().trim()
+        
+        // Intentar encontrar la categoría real desde el API o fallback
+        const realCategory = categorias.find(cat => {
+            const catName = cat.cat_nombre.toLowerCase()
+            
+            return catName === categoryLower ||
+                   catName.includes(categoryLower) ||
+                   categoryLower.includes(catName)
+        })
+
+        // Mapeos adicionales para diferentes variaciones
+        const categoryMappings: Record<string, string> = {
+            'fruta': 'frutas',
+            'fruit': 'frutas',
+            'verdura': 'verduras',
+            'hortaliza': 'hortalizas',
+            'vegetal': 'verduras',
+            'vegetales': 'verduras',
+            'tuberculo': 'tubérculos',
+            'tubérculo': 'tubérculos',
+            'tuber': 'tubérculos',
+            'hierba': 'hierbas',
+            'aromática': 'hierbas',
+            'aromaticas': 'hierbas',
+            'herbs': 'hierbas',
+            'herb': 'hierbas'
+        }
+
+        let displayName = category
+        
+        if (realCategory) {
+            displayName = realCategory.cat_nombre
+        } else {
+            // Intentar mapeo directo
+            const mappedCategory = categoryMappings[categoryLower]
+            if (mappedCategory) {
+                const mappedCat = categorias.find(cat => 
+                    cat.cat_nombre.toLowerCase() === mappedCategory
+                )
+                if (mappedCat) {
+                    displayName = mappedCat.cat_nombre
+                }
+            }
+        }
+
+        // Mapeo de colores por tipo de categoría
+        const getCategoryVariant = (catName: string) => {
+            const name = catName.toLowerCase()
+            
+            if (name.includes('fruta')) return "default"
+            if (name.includes('verdura') || name.includes('hortaliza')) return "secondary" 
+            if (name.includes('tubérculo') || name.includes('tuberculo')) return "outline"
+            if (name.includes('hierba') || name.includes('aromática')) return "default"
+            if (name.includes('medicinal')) return "destructive"
+            
+            return "outline" // Por defecto
+        }
+
         return (
-            <Badge variant="success">
-                {categoryLabels[category] || category}
+            <Badge variant={getCategoryVariant(displayName)} className="capitalize">
+                {displayName}
             </Badge>
         )
     }
@@ -63,6 +155,10 @@ export function ProductCard({ product }: ProductCardProps) {
                     src={imgSrc}
                     alt={product.name}
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                        const target = e.target as HTMLImageElement
+                        if (target.src !== PLACEHOLDER) target.src = PLACEHOLDER
+                    }}
                 />
             </div>
 
@@ -92,9 +188,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 </div>
 
                 <div className="flex gap-2 mt-auto">
-                    <Button className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg h-10 text-sm" size="sm">
+                    <Button 
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white rounded-lg h-10 text-sm" 
+                        size="sm"
+                        disabled={product.stock === "agotado"}
+                    >
                         <ShoppingCart className="h-4 w-4 mr-2" />
-                        Añadir al carrito
+                        {product.stock === "agotado" ? "Agotado" : "Añadir al carrito"}
                     </Button>
                     <Button
                         size="icon"

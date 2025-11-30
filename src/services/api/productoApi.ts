@@ -3,17 +3,29 @@ import { authFetch } from "@/services/api/authFetch"
 import { API_BASE_URL } from "@/services/api/config"
 
 export interface ProductorProduct {
-  p_id?: number           // añadir ID real del producto
+  p_id?: number
   p_nombre: string
-  p_tipo: string
+  cat_id?: number          // Cambio: usar cat_id en lugar de p_tipo
+  p_tipo?: string          // Mantener para compatibilidad hacia atrás
   p_unidad: string
-  gre_nombre: string
+  gre_nombre?: string
   p_precio: number
-  img: string
+  p_stock?: number
+  p_medicinal?: boolean
+  img?: string
 }
 
-export interface ProductSummary extends ProductorProduct {
+export interface ProductSummary {
+  p_id?: number
+  p_nombre: string
+  cat_id?: number          // Cambio: usar cat_id
+  p_tipo?: string          // Mantener para compatibilidad
+  p_unidad: string
+  gre_nombre?: string
+  p_precio: number
   p_stock: number
+  p_medicinal?: boolean
+  img?: string
 }
 
 /**
@@ -23,23 +35,26 @@ export interface ProductSummary extends ProductorProduct {
  */
 export interface CreateProductRequest {
   p_nombre: string
-  p_tipo: string
+  cat_id: number           // Cambio: usar cat_id
   p_unidad: string
   gre_nombre: string
   p_precio: number
   p_stock?: number
+  p_medicinal?: boolean
   img?: string
 }
 
 export interface GremioProduct {
-  p_id?: number           // añadir ID real del producto
+  p_id?: number
   p_nombre: string
-  p_tipo: string
+  cat_id?: number          // Cambio: usar cat_id
+  p_tipo?: string          // Mantener para compatibilidad
   p_unidad: string
-  gre_nombre: string
+  gre_nombre?: string
   p_precio: number
   p_stock: number
-  img: string
+  p_medicinal?: boolean
+  img?: string
 }
 
 export interface UpdateProductRequest {
@@ -249,14 +264,14 @@ export async function getProductById(p_id: number): Promise<ProductorProduct> {
 interface ProductById {
   p_id?: number
   p_nombre: string
-  cat_id?: number          // añadir cat_id del schema
-  p_tipo?: string          // hacer opcional ya que no está en el schema
+  cat_id?: number          // Usar cat_id del schema
+  p_tipo?: string          // Mantener para compatibilidad
   p_unidad: string
-  gre_nombre?: string      // hacer opcional ya que no está en el schema  
+  gre_nombre?: string
   p_precio: number
-  p_stock?: number         // añadir p_stock del schema
-  p_medicinal?: boolean    // añadir p_medicinal del schema
-  img?: string             // hacer opcional
+  p_stock?: number
+  p_medicinal?: boolean
+  img?: string
 }
 
 /**
