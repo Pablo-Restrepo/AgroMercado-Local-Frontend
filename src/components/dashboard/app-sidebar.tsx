@@ -8,6 +8,7 @@ import {
   Settings,
   HelpCircle,
   LogIn,
+  Loader2,
 } from "lucide-react"
 
 import { NavUser } from "@/components/dashboard/nav-user"
@@ -94,13 +95,24 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
-  const { isAuthenticated, user: authUser } = useAuth()
+  const { isAuthenticated, user: authUser, isLoading } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
   const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
 
   // Determinar rol efectivo (preferir contexto, luego storage)
   const effectiveRole: User["u_rol"] =
     authUser?.u_rol ?? authStorage.getUser()?.u_rol ?? "cliente"
+
+  // Si está cargando, mostrar estado de carga
+  if (isLoading) {
+    return (
+      <Sidebar variant="inset" collapsible="icon" {...props}>
+        <SidebarContent className="flex items-center justify-center">
+          <Loader2 className="h-6 w-6 animate-spin text-green-600" />
+        </SidebarContent>
+      </Sidebar>
+    )
+  }
 
   // Menús por rol - ACTUALIZADO
   const clienteNav = [
