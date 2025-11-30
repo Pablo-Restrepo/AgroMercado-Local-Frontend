@@ -9,6 +9,7 @@ import {
   HelpCircle,
   LogIn,
   Loader2,
+  Users,
 } from "lucide-react"
 
 import { NavUser } from "@/components/dashboard/nav-user"
@@ -65,6 +66,11 @@ const data = {
       icon: Warehouse,
     },
   ],
+  createGremioNav: {
+    title: "Crear gremio",
+    url: "/dashboard/crear-gremio",
+    icon: Users,
+  },
   categories: [
     { id: "todo", label: "Todo" },
     { id: "frutas", label: "Frutas" },
@@ -98,10 +104,14 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
   const { isAuthenticated, user: authUser, isLoading } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
   const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
+  const [currentUser, setCurrentUser] = React.useState<SidebarUser | null>(null)
 
-  // Determinar rol efectivo (preferir contexto, luego storage)
-  const effectiveRole: User["u_rol"] =
-    authUser?.u_rol ?? authStorage.getUser()?.u_rol ?? "cliente"
+  // Determinar rol efectivo usando el currentUser actualizado
+  const effectiveRole: User["u_rol"] = React.useMemo(() => {
+    if (currentUser?.role) return currentUser.role
+    if (authUser?.u_rol) return authUser.u_rol
+    return authStorage.getUser()?.u_rol ?? "cliente"
+  }, [currentUser, authUser])
 
   // Si está cargando, mostrar estado de carga
   if (isLoading) {
@@ -120,30 +130,23 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
     { title: "Mis pedidos", url: "/dashboard/mis-pedidos", icon: Send },
   ]
 
-  const productorNav = [
-    {
-      title: "Mis productos",
-      url: "/dashboard/mis-productos", 
-      icon: Package,
-    },
-    {
-      title: "Crear producto",
-      url: "/dashboard/crear-producto",
-      icon: Plus,
-    },
-    {
-      title: "Gestionar envíos",
-      url: "/dashboard/envios",
-      icon: Send,
-    },
-    {
-      title: "Mi gremio",
-      url: "/dashboard/gremio", 
-      icon: Warehouse,
-    },
-  ]
+  // Filtrar "Mi gremio" si el productor no tiene gremio, y reemplazarlo por "Crear gremio"
+  const productorNav = React.useMemo(() => {
+    if (!productorData) {
+      // Si aún no tenemos datos del productor, mostrar todo
+      return data.navMain
+    }
 
-  // FIX: Corregir la comparación de roles
+    // Si tiene gremio, mostrar todo; si no, reemplazar "Mi gremio" por "Crear gremio"
+    if (productorData.id_gremio !== null) {
+      return data.navMain
+    } else {
+      return data.navMain.map(item =>
+        item.title === "Mi gremio" ? data.createGremioNav : item
+      )
+    }
+  }, [productorData])
+
   const navMainForRole = (effectiveRole === "productor" || effectiveRole === "admin")
     ? productorNav
     : clienteNav
@@ -176,7 +179,12 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
     }
   }, [authUser, isAuthenticated])
 
-  const [currentUser, setCurrentUser] = React.useState<SidebarUser>(() => initialUser)
+  // Inicializar currentUser con initialUser
+  React.useEffect(() => {
+    if (!currentUser) {
+      setCurrentUser(initialUser)
+    }
+  }, [initialUser, currentUser])
 
   // Notificar cambios de filtros
   const notifyFilterChange = React.useCallback(() => {
@@ -310,7 +318,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
           isAuthenticated ? (
             <>
               {/* Navigation Main */}
-              <div className="space-y-1 py-2">
+              <div className="space-y-1 pt-2">
                 {navMainForRole.map((item) => (
                   <SidebarMenuButton key={item.title} asChild className="w-full justify-start">
                     <a href={item.url} className="flex items-center gap-3">
@@ -392,7 +400,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
       </SidebarContent>
 
       <SidebarFooter>
-        {isAuthenticated ? (
+        {isAuthenticated && currentUser ? (
           <NavUser user={currentUser} />
         ) : (
           <div className="group-data-[collapsible=icon]:hidden px-2">
