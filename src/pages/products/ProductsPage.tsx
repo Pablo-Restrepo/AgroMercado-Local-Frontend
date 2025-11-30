@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { 
-  MapPin, 
-  Star, 
-  Heart, 
-  ShoppingCart, 
+import {
+  MapPin,
+  Star,
+  Heart,
+  ShoppingCart,
   Search,
   ShoppingBag
 } from "lucide-react"
@@ -16,6 +16,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
+import { useAuth } from "@/hooks/auth/useAuth"
 
 // Datos placeholder - después conectarás con tu servicio
 const mockProducts = [
@@ -32,11 +33,11 @@ const mockProducts = [
     available: true
   },
   {
-    id: "2", 
+    id: "2",
     name: "Lechuga fresca",
     price: 4000,
     unit: "kg",
-    location: "Finca La Esperanza • Popayán", 
+    location: "Finca La Esperanza • Popayán",
     rating: 4.8,
     reviews: 24,
     category: "Verduras",
@@ -47,7 +48,7 @@ const mockProducts = [
     id: "3",
     name: "Zanahorias",
     price: 7000,
-    unit: "kg", 
+    unit: "kg",
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
@@ -57,7 +58,7 @@ const mockProducts = [
   },
   {
     id: "4",
-    name: "Papa Pastusa", 
+    name: "Papa Pastusa",
     price: 18000,
     unit: "kg",
     location: "Finca Los Robles • Popayán",
@@ -72,7 +73,7 @@ const mockProducts = [
     name: "Banano Maduro",
     price: 3290,
     unit: "kg",
-    location: "Finca Los Robles • Popayán", 
+    location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
     category: "Frutas",
@@ -82,12 +83,12 @@ const mockProducts = [
   {
     id: "6",
     name: "Cebolla Roja",
-    price: 5500, 
+    price: 5500,
     unit: "kg",
     location: "Finca Los Robles • Popayán",
     rating: 4.8,
     reviews: 24,
-    category: "Verduras", 
+    category: "Verduras",
     image: "https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
     available: true
   }
@@ -98,8 +99,12 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  
+
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { user } = useAuth()
+
+  // Determinar si debe ocultar filtros basado en el rol del usuario
+  const shouldHideFilters = user?.u_rol === "productor" || user?.u_rol === "admin"
   console.log("Product selected:", selectedProduct)
   console.log("Modal open:", isModalOpen)
   console.log("Cart state:", cart)
@@ -130,7 +135,7 @@ export default function ProductsPage() {
 
   return (
     <>
-      <DashboardLayout title="Productos">
+      <DashboardLayout title="Productos" hideFilters={shouldHideFilters}>
         <div className="flex-1 bg-gray-50">
           {/* Search and Filters - Ahora dentro del layout */}
           <div className="bg-white border-b">
@@ -148,30 +153,32 @@ export default function ProductsPage() {
                 </Button>
               </div>
 
-              {/* Search and Filters */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Buscar productos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+              {/* Search and Filters - Solo mostrar si no es productor */}
+              {!shouldHideFilters && (
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1 relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar productos..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+
+                  <select
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full sm:w-[200px] border rounded px-3 py-2 bg-white"
+                  >
+                    <option value="all">Todas las categorías</option>
+                    <option value="verduras">Verduras</option>
+                    <option value="frutas">Frutas</option>
+                    <option value="tuberculos">Tubérculos</option>
+                    <option value="hierbas">Hierbas</option>
+                  </select>
                 </div>
-                
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full sm:w-[200px] border rounded px-3 py-2 bg-white"
-                >
-                  <option value="all">Todas las categorías</option>
-                  <option value="verduras">Verduras</option>
-                  <option value="frutas">Frutas</option>
-                  <option value="tuberculos">Tubérculos</option>
-                  <option value="hierbas">Hierbas</option>
-                </select>
-              </div>
+              )}
             </div>
           </div>
 
@@ -231,7 +238,7 @@ export default function ProductsPage() {
                       </div>
                     </div>
 
-                    <Button 
+                    <Button
                       onClick={() => handleAddToCart(product.id)}
                       className="w-full bg-green-600 hover:bg-green-700 text-white gap-2"
                     >

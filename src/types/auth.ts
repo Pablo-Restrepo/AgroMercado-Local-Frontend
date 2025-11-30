@@ -7,7 +7,7 @@ export interface LoginResponse {
     u_id: number;
     u_nombre_usuario: string;
     u_email: string;
-    u_rol: 'cliente' | 'productor' | 'admin';
+    u_rol: 'cliente' | 'productor' | 'admin' | 'productor-admin';
     access_token: string;
     refresh_token: string;
     token_type: string;
@@ -18,7 +18,7 @@ export interface User {
     u_id: number;
     u_nombre_usuario: string;
     u_email: string;
-    u_rol: 'cliente' | 'productor' | 'admin';
+    u_rol: 'cliente' | 'productor' | 'admin' | 'productor-admin';
 }
 
 export interface AuthState {

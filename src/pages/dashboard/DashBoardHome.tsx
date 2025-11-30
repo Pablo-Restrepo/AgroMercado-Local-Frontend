@@ -13,8 +13,8 @@ export default function DashboardHome() {
     }
 
     // Redirigir según el rol del usuario
-    if (user.u_rol === "productor" || user.u_rol === "admin") {
-      // Los productores van a ver sus propios productos
+    if (user.u_rol === "productor" || user.u_rol === "admin" || user.u_rol === "productor-admin") {
+      // Los productores y admins van a ver sus propios productos
       navigate("/dashboard/mis-productos", { replace: true })
     } else {
       // Los clientes van a ver productos disponibles para comprar

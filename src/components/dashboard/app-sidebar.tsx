@@ -97,7 +97,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
   const [priceRange, setPriceRange] = React.useState([0])
   const [categorias, setCategorias] = React.useState<Category[]>([])
   const [loadingCategorias, setLoadingCategorias] = React.useState(true)
-  
+
   const { isAuthenticated, user: authUser, isLoading } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
   const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
@@ -289,16 +289,16 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
   // Preparar opciones de categorías para los filtros
   const categoryOptions = React.useMemo(() => {
     const baseOptions = [{ id: "todo", label: "Todo" }]
-    
+
     if (loadingCategorias) {
       return [...baseOptions, { id: "loading", label: "Cargando..." }]
     }
-    
+
     const dynamicOptions = categorias.map(categoria => ({
       id: categoria.cat_nombre.toLowerCase().replace(/\s+/g, '_'),
       label: categoria.cat_nombre
     }))
-    
+
     return [...baseOptions, ...dynamicOptions]
   }, [categorias, loadingCategorias])
 
@@ -355,7 +355,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
               <Separator className="my-4" />
 
               {/* Filters Section - ACTUALIZADA PARA USAR CATEGORÍAS DINÁMICAS */}
-              {!hideFilters && (
+              {!hideFilters && effectiveRole !== "productor" && effectiveRole !== "admin" && (
                 <div className="space-y-4 group-data-[collapsible=icon]:hidden">
                   <div className="px-2">
                     <div className="flex items-center gap-2 mb-3">
@@ -369,17 +369,16 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
                       <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
                         {categoryOptions.map((category) => (
                           <div key={category.id} className="flex items-center space-x-2">
-                            <RadioGroupItem 
-                              value={category.id} 
-                              id={category.id} 
+                            <RadioGroupItem
+                              value={category.id}
+                              id={category.id}
                               className="size-4"
                               disabled={category.id === "loading"}
                             />
-                            <Label 
-                              htmlFor={category.id} 
-                              className={`text-sm cursor-pointer ${
-                                category.id === "loading" ? "text-gray-400" : ""
-                              }`}
+                            <Label
+                              htmlFor={category.id}
+                              className={`text-sm cursor-pointer ${category.id === "loading" ? "text-gray-400" : ""
+                                }`}
                             >
                               {category.label}
                               {category.id === "loading" && (

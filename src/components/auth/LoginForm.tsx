@@ -9,7 +9,7 @@ import {
   FieldLabel,
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -20,6 +20,7 @@ export function LoginForm({
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const { login, isLoading, error } = useAuth()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -29,6 +30,8 @@ export function LoginForm({
         u_email: email,
         u_contrasenia: password,
       })
+      // Redirigir al dashboard después del login exitoso
+      navigate("/dashboard")
     } catch (err) {
       console.error('Error en login:', err)
     }

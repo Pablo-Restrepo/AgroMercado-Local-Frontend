@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { 
-  MapPin, 
-  Star, 
-  Heart, 
-  ShoppingCart, 
+import {
+  MapPin,
+  Star,
+  Heart,
+  ShoppingCart,
   Search,
   ShoppingBag,
   ArrowLeft,
@@ -18,6 +18,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { AddToCartModal } from "@/components/cart/AddToCartModal"
 import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
+import { useAuth } from "@/hooks/auth/useAuth"
 import * as productoApi from "@/services/api/productoApi"
 import * as gremiosApi from "@/services/api/gremiosApi"
 import * as categoryApi from "@/services/api/categoryApi"
@@ -63,8 +64,8 @@ function resolveImageSrc(img?: string, fallback = PLACEHOLDER_URL) {
 
 // Mapear productos generales - ACTUALIZADO
 function mapGeneralProduct(
-  item: ProductSummary, 
-  index: number, 
+  item: ProductSummary,
+  index: number,
   categorias: Category[]
 ): ViewProduct {
   const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
@@ -86,8 +87,8 @@ function mapGeneralProduct(
 
 // Mapear productos de gremio - ACTUALIZADO
 function mapGremioProduct(
-  item: GremioProduct, 
-  index: number, 
+  item: GremioProduct,
+  index: number,
   categorias: Category[]
 ): ViewProduct {
   const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
@@ -125,8 +126,12 @@ export default function DashBoardShoppingPage() {
     selectedCategory: "todo",
     priceRange: [0]
   })
-  
+
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
+  const { user } = useAuth()
+
+  // Determinar si debe ocultar filtros basado en el rol del usuario
+  const shouldHideFilters = user?.u_rol === "productor" || user?.u_rol === "admin"
 
   // Cargar categorías al inicio
   useEffect(() => {
@@ -144,7 +149,7 @@ export default function DashBoardShoppingPage() {
 
     loadCategorias()
   }, [])
- 
+
   const handleFilterChange = useCallback((filters: { selectedCategory: string; priceRange: number[] }) => {
     setSidebarFilters(filters)
   }, [])
@@ -156,7 +161,7 @@ export default function DashBoardShoppingPage() {
       name: product.name,
       location: product.location
     })
-    
+
     addToCart({
       id: product.id,
       productId: product.productId || 0,
@@ -166,7 +171,7 @@ export default function DashBoardShoppingPage() {
       image: product.image,
       location: product.location
     }, quantity)
-    
+
     console.log("Cart after adding:", cart)
   }
 
@@ -250,23 +255,23 @@ export default function DashBoardShoppingPage() {
   const filteredProducts = products.filter(product => {
     try {
       const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-      
+
       // Mejorar el matching de categorías
       let matchesSidebarCategory = true
       if (sidebarFilters.selectedCategory !== "todo") {
         const selectedCategoryName = sidebarFilters.selectedCategory.replace(/_/g, ' ').toLowerCase()
         const productCategory = (product.category || "").toLowerCase()
-        
+
         matchesSidebarCategory = productCategory.includes(selectedCategoryName) ||
-                               selectedCategoryName.includes(productCategory) ||
-                               productCategory === selectedCategoryName
+          selectedCategoryName.includes(productCategory) ||
+          productCategory === selectedCategoryName
       }
-      
-      const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
-                                 (product.price !== undefined && product.price <= sidebarFilters.priceRange[0])
-      
+
+      const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 ||
+        (product.price !== undefined && product.price <= sidebarFilters.priceRange[0])
+
       const hasStock = product.stock === undefined || product.stock > 0
-      
+
       return matchesSearch && matchesSidebarCategory && matchesSidebarPrice && hasStock
     } catch (err) {
       console.warn("Error filtering product:", product, err)
@@ -302,13 +307,13 @@ export default function DashBoardShoppingPage() {
     // Mapeo de colores por tipo de categoría
     const getCategoryVariant = (catName: string) => {
       const name = catName.toLowerCase()
-      
+
       if (name.includes('fruta')) return "default"
-      if (name.includes('verdura') || name.includes('hortaliza')) return "secondary" 
+      if (name.includes('verdura') || name.includes('hortaliza')) return "secondary"
       if (name.includes('tubérculo') || name.includes('tuberculo')) return "outline"
       if (name.includes('hierba') || name.includes('aromática')) return "default"
       if (name.includes('medicinal')) return "destructive"
-      
+
       return "outline"
     }
 
@@ -321,9 +326,10 @@ export default function DashBoardShoppingPage() {
 
   return (
     <>
-      <DashboardLayout 
+      <DashboardLayout
         title={getTitle()}
         onFilterChange={handleFilterChange}
+        hideFilters={shouldHideFilters}
       >
         <div className="flex-1 bg-gray-50">
           {/* Header con controles de vista */}
@@ -339,8 +345,8 @@ export default function DashBoardShoppingPage() {
                     </Button>
                   )}
 
-                  {/* Filtros activos */}
-                  {viewMode !== "gremios" && (
+                  {/* Filtros activos - Solo mostrar si no es productor */}
+                  {viewMode !== "gremios" && !shouldHideFilters && (
                     <>
                       {sidebarFilters.selectedCategory !== "todo" && (
                         <Badge variant="outline" className="capitalize">
@@ -356,10 +362,10 @@ export default function DashBoardShoppingPage() {
                   )}
 
                   <span className="text-sm text-gray-600">
-                    {isLoading ? "Cargando..." : 
-                     viewMode === "gremios" ? 
-                       `${filteredGremios.length} gremio${filteredGremios.length !== 1 ? 's' : ''} encontrado${filteredGremios.length !== 1 ? 's' : ''}` :
-                       `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} encontrado${filteredProducts.length !== 1 ? 's' : ''}`
+                    {isLoading ? "Cargando..." :
+                      viewMode === "gremios" ?
+                        `${filteredGremios.length} gremio${filteredGremios.length !== 1 ? 's' : ''} encontrado${filteredGremios.length !== 1 ? 's' : ''}` :
+                        `${filteredProducts.length} producto${filteredProducts.length !== 1 ? 's' : ''} encontrado${filteredProducts.length !== 1 ? 's' : ''}`
                     }
                   </span>
                 </div>
@@ -367,8 +373,8 @@ export default function DashBoardShoppingPage() {
                 <div className="flex items-center gap-3">
                   {/* Botones de cambio de vista */}
                   {viewMode === "products" && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => setViewMode("gremios")}
                       className="gap-2"
                     >
@@ -390,25 +396,27 @@ export default function DashBoardShoppingPage() {
                 </div>
               </div>
 
-              {/* Search Bar */}
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                {viewMode === "gremios" ? (
-                  <Input
-                    placeholder="Buscar gremios por nombre, descripción o ubicación..."
-                    value={gremioSearchQuery}
-                    onChange={(e) => setGremioSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                ) : (
-                  <Input
-                    placeholder="Buscar productos..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
-                )}
-              </div>
+              {/* Search Bar - Solo mostrar si no es productor */}
+              {!shouldHideFilters && (
+                <div className="flex-1 relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  {viewMode === "gremios" ? (
+                    <Input
+                      placeholder="Buscar gremios por nombre, descripción o ubicación..."
+                      value={gremioSearchQuery}
+                      onChange={(e) => setGremioSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  ) : (
+                    <Input
+                      placeholder="Buscar productos..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-10"
+                    />
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -418,8 +426,8 @@ export default function DashBoardShoppingPage() {
               // Vista de Gremios
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredGremios.map((gremio) => (
-                  <Card 
-                    key={gremio.id} 
+                  <Card
+                    key={gremio.id}
                     className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                     onClick={() => handleSelectGremio(gremio)}
                   >
@@ -474,7 +482,7 @@ export default function DashBoardShoppingPage() {
                         <Heart className="h-4 w-4 text-gray-600" />
                       </Button>
                       {product.stock !== undefined && (
-                        <Badge 
+                        <Badge
                           variant={product.available ? "default" : "destructive"}
                           className="absolute bottom-2 left-2"
                         >
@@ -515,7 +523,7 @@ export default function DashBoardShoppingPage() {
                         </div>
                       </div>
 
-                      <Button 
+                      <Button
                         onClick={() => {
                           setSelectedProduct(product)
                           setIsModalOpen(true)
@@ -559,8 +567,8 @@ export default function DashBoardShoppingPage() {
                 <div className="text-red-500">
                   <h3 className="text-lg font-medium mb-2">Error al cargar datos</h3>
                   <p>{fetchError}</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-4"
                     onClick={() => {
                       if (viewMode === "products") loadGeneralProducts()
