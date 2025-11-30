@@ -18,7 +18,7 @@ import RegisterPage from '@/pages/auth/RegisterPage'
 import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
 import AyudaPage from '@/pages/dashboard/AyudaPage'
 import EditProductPage from '@/pages/dashboard/EditProductPage'
-import DashboardHome from '@/pages/dashboard/DashboardHome'
+import DashboardHome from '@/pages/dashboard/DashBoardHome'
 
 function App() {
   return (
