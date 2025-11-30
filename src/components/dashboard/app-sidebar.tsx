@@ -34,7 +34,9 @@ import { authStorage } from "@/services/storage/authStorage"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { useSessionHandler } from "@/hooks/auth/useSessionHandler"
 import { getProductorByUserId, type ProductorResponse } from "@/services/api/productoresApi"
+import * as categoryApi from "@/services/api/categoryApi"
 import type { User } from "@/types/auth"
+import type { Category } from "@/services/api/categoryApi"
 
 type SidebarUser = {
   name: string
@@ -71,14 +73,6 @@ const data = {
     url: "/dashboard/crear-gremio",
     icon: Users,
   },
-  categories: [
-    { id: "todo", label: "Todo" },
-    { id: "frutas", label: "Frutas" },
-    { id: "verduras", label: "Verduras" },
-    { id: "medicinales", label: "Medicinales" },
-    { id: "tuberculos", label: "Tubérculos" },
-    { id: "hierbas", label: "Hierbas" },
-  ],
   navSecondary: [
     {
       title: "Configuraciones",
@@ -101,10 +95,32 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: AppSidebarProps) {
   const [selectedCategory, setSelectedCategory] = React.useState("todo")
   const [priceRange, setPriceRange] = React.useState([0])
+  const [categorias, setCategorias] = React.useState<Category[]>([])
+  const [loadingCategorias, setLoadingCategorias] = React.useState(true)
+  
   const { isAuthenticated, user: authUser, isLoading } = useAuth()
   const { handleSessionExpired } = useSessionHandler()
   const [productorData, setProductorData] = React.useState<ProductorResponse | null>(null)
   const [currentUser, setCurrentUser] = React.useState<SidebarUser | null>(null)
+
+  // Cargar categorías dinámicamente
+  React.useEffect(() => {
+    const cargarCategorias = async () => {
+      try {
+        setLoadingCategorias(true)
+        const categoriasData = await categoryApi.listarCategorias()
+        setCategorias(categoriasData)
+      } catch (error) {
+        console.error("Error cargando categorías:", error)
+        // En caso de error, usar categorías por defecto
+        setCategorias([])
+      } finally {
+        setLoadingCategorias(false)
+      }
+    }
+
+    cargarCategorias()
+  }, [])
 
   // Determinar rol efectivo usando el currentUser actualizado
   const effectiveRole: User["u_rol"] = React.useMemo(() => {
@@ -137,7 +153,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
       return data.navMain
     }
 
-    // Si tiene gremio, mostrar todo; si no, reemplazar "Mi gremio" por "Crear gremio"
+    // Si tiene gremio, mostrar todo; si no, reemplazar "Mi gremio" por "Crear gremio"  
     if (productorData.id_gremio !== null) {
       return data.navMain
     } else {
@@ -244,22 +260,16 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
         }
 
         // Si el usuario es productor, obtener datos del productor para verificar si tiene gremio
-        console.log('Rol del usuario:', mapped.role)
-        console.log('User ID:', u.u_id)
         if (mapped.role === "productor" || mapped.role === "admin") {
-          console.log('Llamando a getProductorByUserId...')
           getProductorByUserId(u.u_id)
             .then((productor) => {
               if (!mounted) return
-              console.log('Datos del productor:', productor)
               setProductorData(productor)
             })
             .catch((error) => {
               console.error('Error al obtener productor:', error)
               // Si falla, no bloquear la UI
             })
-        } else {
-          console.log('El usuario no es productor ni admin, no se busca información de gremio')
         }
       })
       .catch((error) => {
@@ -267,17 +277,30 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
 
         // Si es un error de autenticación, manejar sesión expirada
         if (error instanceof AuthError) {
-          console.log("Token expirado, cerrando sesión...")
           handleSessionExpired()
         }
-
-        // Para otros errores, mantener usuario actual sin hacer nada drástico
       })
 
     return () => {
       mounted = false
     }
   }, [isAuthenticated, initialUser, handleSessionExpired])
+
+  // Preparar opciones de categorías para los filtros
+  const categoryOptions = React.useMemo(() => {
+    const baseOptions = [{ id: "todo", label: "Todo" }]
+    
+    if (loadingCategorias) {
+      return [...baseOptions, { id: "loading", label: "Cargando..." }]
+    }
+    
+    const dynamicOptions = categorias.map(categoria => ({
+      id: categoria.cat_nombre.toLowerCase().replace(/\s+/g, '_'),
+      label: categoria.cat_nombre
+    }))
+    
+    return [...baseOptions, ...dynamicOptions]
+  }, [categorias, loadingCategorias])
 
   // Componente para mostrar cuando no está autenticado
   const LoginPrompt = () => (
@@ -331,7 +354,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
 
               <Separator className="my-4" />
 
-              {/* Filters Section */}
+              {/* Filters Section - ACTUALIZADA PARA USAR CATEGORÍAS DINÁMICAS */}
               {!hideFilters && (
                 <div className="space-y-4 group-data-[collapsible=icon]:hidden">
                   <div className="px-2">
@@ -344,11 +367,24 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
                     <div className="space-y-3">
                       <Label className="text-xs font-medium text-muted-foreground">Categoría</Label>
                       <RadioGroup value={selectedCategory} onValueChange={setSelectedCategory} className="space-y-2">
-                        {data.categories.map((category) => (
+                        {categoryOptions.map((category) => (
                           <div key={category.id} className="flex items-center space-x-2">
-                            <RadioGroupItem value={category.id} id={category.id} className="size-4" />
-                            <Label htmlFor={category.id} className="text-sm cursor-pointer">
+                            <RadioGroupItem 
+                              value={category.id} 
+                              id={category.id} 
+                              className="size-4"
+                              disabled={category.id === "loading"}
+                            />
+                            <Label 
+                              htmlFor={category.id} 
+                              className={`text-sm cursor-pointer ${
+                                category.id === "loading" ? "text-gray-400" : ""
+                              }`}
+                            >
                               {category.label}
+                              {category.id === "loading" && (
+                                <Loader2 className="inline ml-1 h-3 w-3 animate-spin" />
+                              )}
                             </Label>
                           </div>
                         ))}

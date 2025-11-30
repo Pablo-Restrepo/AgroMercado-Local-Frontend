@@ -1,15 +1,19 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import * as productoApi from "@/services/api/productoApi"
+import * as categoryApi from "@/services/api/categoryApi"
 import type { ProductorProduct } from "@/services/api/productoApi"
+import type { Category } from "@/services/api/categoryApi"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { ProductManagementCard } from "@/components/products/ProductManagementCard"
 import { useNavigate } from "react-router-dom"
 import { DeleteConfirmDialog } from "@/components/modals/DeleteConfirmDialog"
 import { formatErrorMessage } from "@/utils/errorMessages"
+import { mapCategoryIdToName, FALLBACK_CATEGORIES, normalizeCategoryForFilter } from "@/utils/categoryMapper"
 
 export default function DashBoardProductsList() {
     const [products, setProducts] = useState<ProductorProduct[]>([])
+    const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [deleteDialog, setDeleteDialog] = useState<{
@@ -28,6 +32,32 @@ export default function DashBoardProductsList() {
         selectedCategory: "todo",
         priceRange: [0]
     })
+
+    // Función para mapear categorías para filtrado
+    const mapCategoryToFilterId = useCallback((product: ProductorProduct): string => {
+        const categoryName = mapCategoryIdToName(product.cat_id, product.p_tipo, categorias)
+        if (categoryName === "Sin categoría") return 'otros'
+        return normalizeCategoryForFilter(categoryName)
+    }, [categorias])
+
+    // Cargar categorías con fallback
+    useEffect(() => {
+        const loadCategorias = async () => {
+            try {
+                const categoriasData = await categoryApi.listarCategorias()
+                if (categoriasData && categoriasData.length > 0) {
+                    setCategorias(categoriasData)
+                } else {
+                    setCategorias(FALLBACK_CATEGORIES)
+                }
+            } catch (err) {
+                console.error("Error loading categories:", err)
+                setCategorias(FALLBACK_CATEGORIES)
+            }
+        }
+
+        loadCategorias()
+    }, [])
 
     // Cargar productos del backend
     useEffect(() => {
@@ -53,25 +83,20 @@ export default function DashBoardProductsList() {
         loadProducts()
     }, [user, isAuthenticated])
 
-    // Función para mapear categoría de backend a categorías del filtro
-    const mapCategoryToFilter = (p_tipo: string): string => {
-        const tipo = p_tipo.toLowerCase()
-        if (tipo.includes('fruta')) return 'frutas'
-        if (tipo.includes('verdura') || tipo.includes('hortaliza')) return 'verduras'
-        if (tipo.includes('medicinal') || tipo.includes('medicina')) return 'medicinales'
-        if (tipo.includes('tuberculo') || tipo.includes('tubérculo')) return 'tuberculos'
-        if (tipo.includes('hierba') || tipo.includes('aromática')) return 'hierbas'
-        return 'otros'
-    }
-
-    // Filtrar productos
+    // Filtrar productos - MEJORADO
     const filteredProducts = products.filter(product => {
-        const categoryMatch = filters.selectedCategory === "todo" || 
-                             mapCategoryToFilter(product.p_tipo) === filters.selectedCategory
-        const priceMatch = filters.priceRange[0] === 0 || 
-                          product.p_precio <= filters.priceRange[0]
-        
-        return categoryMatch && priceMatch
+        try {
+            const categoryMatch = filters.selectedCategory === "todo" || 
+                                 mapCategoryToFilterId(product) === filters.selectedCategory
+            
+            const priceMatch = filters.priceRange[0] === 0 || 
+                              (product.p_precio !== undefined && product.p_precio <= filters.priceRange[0])
+            
+            return categoryMatch && priceMatch
+        } catch (err) {
+            console.warn("Error filtering product:", product, err)
+            return true
+        }
     })
 
     // Función para manejar edición de producto
@@ -101,7 +126,6 @@ export default function DashBoardProductsList() {
         
         try {
             await productoApi.deleteProduct(deleteDialog.product.p_id)
-            // Actualizar lista después de eliminar
             setProducts(prev => prev.filter(p => p.p_id !== deleteDialog.product!.p_id))
             setDeleteDialog({ isOpen: false, product: null, isLoading: false })
         } catch (err) {
@@ -118,9 +142,18 @@ export default function DashBoardProductsList() {
         }
     }
 
+    // Manejar cambio de filtros
+    const handleFilterChange = useCallback((newFilters: { selectedCategory: string; priceRange: number[] }) => {
+        try {
+            setFilters(newFilters)
+        } catch (err) {
+            console.error("Error updating filters:", err)
+        }
+    }, [])
+
     if (!isAuthenticated) {
         return (
-            <DashboardLayout title="Mis Productos">
+            <DashboardLayout title="Mis Productos" hideFilters>
                 <div className="flex flex-1 flex-col items-center justify-center p-4">
                     <p className="text-muted-foreground">Debes iniciar sesión para ver tus productos</p>
                 </div>
@@ -131,7 +164,7 @@ export default function DashBoardProductsList() {
     return (
         <DashboardLayout 
             title="Mis Productos"
-            onFilterChange={setFilters}
+            onFilterChange={handleFilterChange}
         >
             <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
                 {/* Loading State */}
@@ -170,13 +203,18 @@ export default function DashBoardProductsList() {
                         <div className="flex justify-between items-center">
                             <p className="text-sm text-muted-foreground">
                                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
+                                {filters.selectedCategory !== "todo" && (
+                                    <span className="ml-2 text-xs text-gray-500 capitalize">
+                                        - Categoría: {filters.selectedCategory.replace(/_/g, ' ')}
+                                    </span>
+                                )}
                             </p>
                         </div>
 
                         <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
                             {filteredProducts.map((product, index) => (
                                 <ProductManagementCard 
-                                    key={`${product.p_nombre}-${index}`}
+                                    key={product.p_id ? `product-${product.p_id}` : `${product.p_nombre}-${index}`}
                                     product={product} 
                                     onEdit={handleEditProduct}
                                     onDelete={handleDeleteProduct}
@@ -199,6 +237,14 @@ export default function DashBoardProductsList() {
                                     >
                                         Crear mi primer producto
                                     </a>
+                                )}
+                                {products.length > 0 && filters.selectedCategory !== "todo" && (
+                                    <button 
+                                        onClick={() => setFilters(prev => ({ ...prev, selectedCategory: "todo" }))}
+                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                    >
+                                        Limpiar filtros
+                                    </button>
                                 )}
                             </div>
                         )}

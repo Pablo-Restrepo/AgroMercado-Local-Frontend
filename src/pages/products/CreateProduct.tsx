@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,13 +10,15 @@ import { X, ImagePlus, Loader2 } from "lucide-react"
 import Select from "@/components/ui/select"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import * as productoApi from "@/services/api/productoApi"
+import * as categoryApi from "@/services/api/categoryApi"
 import { useAuth } from "@/hooks/auth/useAuth"
+import type { Category } from "@/services/api/categoryApi"
 
 interface ProductForm {
   name: string
   description: string
   price: string
-  category: string
+  categoryId: string  // Cambiar de category a categoryId
   unit: string
   stock: string
   images: File[]
@@ -30,16 +32,36 @@ export default function CreateProduct() {
     name: "",
     description: "",
     price: "",
-    category: "",
+    categoryId: "",  // Cambiar de category a categoryId
     unit: "kg",
     stock: "0",
     images: []
   })
 
+  const [categorias, setCategorias] = useState<Category[]>([])
+  const [loadingCategorias, setLoadingCategorias] = useState(true)
   const [dragActive, setDragActive] = useState(false)
   const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Cargar categorías al montar el componente
+  useEffect(() => {
+    const cargarCategorias = async () => {
+      try {
+        setLoadingCategorias(true)
+        const categoriasData = await categoryApi.listarCategorias()
+        setCategorias(categoriasData)
+      } catch (err) {
+        console.error("Error cargando categorías:", err)
+        setError("Error al cargar las categorías")
+      } finally {
+        setLoadingCategorias(false)
+      }
+    }
+
+    cargarCategorias()
+  }, [])
 
   const handleInputChange = (field: keyof ProductForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }))
@@ -112,15 +134,6 @@ export default function CreateProduct() {
     }
   }
 
-  // Mapeo simple de categorías a cat_id (ajusta los ids según tu backend)
-  const categoryToCatId: Record<string, number> = {
-    frutas: 1,
-    verduras: 2,
-    tuberculos: 3,
-    hierbas: 4,
-    medicinales: 5,
-  }
-
   // Convierte File -> base64 (solo la parte después de la coma)
   const uploadImage = async (file: File): Promise<string> => {
     return await new Promise((resolve, reject) => {
@@ -166,7 +179,7 @@ export default function CreateProduct() {
       return
     }
 
-    if (!form.category) {
+    if (!form.categoryId) {
       setError("Selecciona una categoría")
       return
     }
@@ -198,20 +211,20 @@ export default function CreateProduct() {
         return
       }
 
-      // mapear categoría a cat_id y p_medicinal
-      const selectedCatId = categoryToCatId[form.category] ?? 0
-      const isMedicinal = form.category === "medicinales"
+      // Obtener categoría seleccionada para determinar si es medicinal
+      const selectedCategory = categorias.find(cat => cat.cat_id === parseInt(form.categoryId))
+      const isMedicinal = selectedCategory?.cat_nombre.toLowerCase().includes('medicinal') ?? false
 
       const productData = {
         p_nombre: form.name.trim(),
-        p_tipo: form.category,
+        p_tipo: selectedCategory?.cat_nombre || "otro",  // usar nombre de categoría
         p_unidad: form.unit,
         prod_id: producerId,
         img: imageBase64,          // base64 puro (sin data:)
         p_precio: parseFloat(form.price),
         p_stock: stockNum,
-        cat_id: selectedCatId,     // requerido por backend
-        p_medicinal: isMedicinal,  // requerido por backend
+        cat_id: parseInt(form.categoryId),     // usar cat_id real
+        p_medicinal: isMedicinal,  // determinar según categoría
       }
 
       // Llamada al API
@@ -254,7 +267,7 @@ export default function CreateProduct() {
       name: "",
       description: "",
       price: "",
-      category: "",
+      categoryId: "",  // Cambiar de category a categoryId
       unit: "kg",
       stock: "0",
       images: []
@@ -375,25 +388,32 @@ export default function CreateProduct() {
                     </div>
                 </div>
 
-                {/* Categoría */}
+                {/* Categoría - ACTUALIZADA PARA USAR API */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
                     Categoría <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={form.category}
-                    onValueChange={(value) => handleInputChange("category", value)}
-                    className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
-                    options={[
-                      { value: "", label: "Selecciona categoría" },
-                      { value: "frutas", label: "Frutas" },
-                      { value: "verduras", label: "Verduras" },
-                      { value: "tuberculos", label: "Tubérculos" },
-                      { value: "hierbas", label: "Hierbas aromáticas" },
-                      { value: "medicinales", label: "Plantas medicinales" },
-                    ]}
-                  />
+                  {loadingCategorias ? (
+                    <div className="flex items-center gap-2 p-2 text-sm text-gray-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Cargando categorías...
+                    </div>
+                  ) : (
+                    <Select
+                      value={form.categoryId}
+                      onValueChange={(value) => handleInputChange("categoryId", value)}
+                      className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
+                      options={[
+                        { value: "", label: "Selecciona categoría" },
+                        ...categorias.map(categoria => ({
+                          value: categoria.cat_id.toString(),
+                          label: categoria.cat_nombre
+                        }))
+                      ]}
+                    />
+                  )}
                 </div>
+
                 {/* Imágenes */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-gray-700">
@@ -472,7 +492,7 @@ export default function CreateProduct() {
                   <Button
                     type="submit"
                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || loadingCategorias}
                   >
                     {isSubmitting ? (
                       <>

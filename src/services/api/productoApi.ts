@@ -3,17 +3,29 @@ import { authFetch } from "@/services/api/authFetch"
 import { API_BASE_URL } from "@/services/api/config"
 
 export interface ProductorProduct {
-  p_id?: number           // añadir ID real del producto
+  p_id?: number
   p_nombre: string
-  p_tipo: string
+  cat_id?: number          // Cambio: usar cat_id en lugar de p_tipo
+  p_tipo?: string          // Mantener para compatibilidad hacia atrás
   p_unidad: string
-  gre_nombre: string
+  gre_nombre?: string
   p_precio: number
-  img: string
+  p_stock?: number
+  p_medicinal?: boolean
+  img?: string
 }
 
-export interface ProductSummary extends ProductorProduct {
+export interface ProductSummary {
+  p_id?: number
+  p_nombre: string
+  cat_id?: number          // Cambio: usar cat_id
+  p_tipo?: string          // Mantener para compatibilidad
+  p_unidad: string
+  gre_nombre?: string
+  p_precio: number
   p_stock: number
+  p_medicinal?: boolean
+  img?: string
 }
 
 /**
@@ -23,23 +35,26 @@ export interface ProductSummary extends ProductorProduct {
  */
 export interface CreateProductRequest {
   p_nombre: string
-  p_tipo: string
+  cat_id: number           // Cambio: usar cat_id
   p_unidad: string
   gre_nombre: string
   p_precio: number
   p_stock?: number
+  p_medicinal?: boolean
   img?: string
 }
 
 export interface GremioProduct {
-  p_id?: number           // añadir ID real del producto
+  p_id?: number
   p_nombre: string
-  p_tipo: string
+  cat_id?: number          // Cambio: usar cat_id
+  p_tipo?: string          // Mantener para compatibilidad
   p_unidad: string
-  gre_nombre: string
+  gre_nombre?: string
   p_precio: number
   p_stock: number
-  img: string
+  p_medicinal?: boolean
+  img?: string
 }
 
 export interface UpdateProductRequest {
@@ -242,4 +257,48 @@ export async function getProductById(p_id: number): Promise<ProductorProduct> {
 
   const body = await res.json()
   return body as ProductorProduct
+}
+
+
+// Actualizar la interfaz para que coincida con el schema del backend
+interface ProductById {
+  p_id?: number
+  p_nombre: string
+  cat_id?: number          // Usar cat_id del schema
+  p_tipo?: string          // Mantener para compatibilidad
+  p_unidad: string
+  gre_nombre?: string
+  p_precio: number
+  p_stock?: number
+  p_medicinal?: boolean
+  img?: string
+}
+
+/**
+ * Obtiene múltiples productos por sus IDs de forma optimizada
+ */
+export async function getProductsByIds(productIds: number[]): Promise<ProductById[]> {
+  if (productIds.length === 0) return []
+  
+  // Hacer llamadas individuales ya que no existe endpoint batch
+  const promises = productIds.map(async (id) => {
+    try {
+      return await getProductById(id)
+    } catch (error) {
+      console.warn(`Error obteniendo producto ${id}:`, error)
+      // Retornar un producto placeholder en caso de error
+      return {
+        p_id: id,
+        p_nombre: `Producto #${id} (No disponible)`,
+        p_tipo: "unknown",
+        p_unidad: "unidad",
+        gre_nombre: "Desconocido",
+        p_precio: 0,
+        img: ""
+      } as ProductorProduct
+    }
+  })
+  
+  const results = await Promise.all(promises)
+  return results
 }
