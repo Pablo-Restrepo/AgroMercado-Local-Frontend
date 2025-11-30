@@ -134,8 +134,8 @@ export default function EnviosPage() {
     if (loading) {
         return (
             <DashboardLayout title="Envíos" hideFilters>
-                <div className="flex-1 bg-gray-50 p-6 flex items-center justify-center">
-                    <p className="text-gray-600">Cargando envíos...</p>
+                <div className="flex-1 bg-background p-6 flex items-center justify-center">
+                    <p className="text-muted-foreground">Cargando envíos...</p>
                 </div>
             </DashboardLayout>
         )
@@ -143,7 +143,7 @@ export default function EnviosPage() {
 
     return (
         <DashboardLayout title="Envíos" hideFilters>
-            <div className="flex-1 bg-gray-50 p-6">
+            <div className="flex-1 bg-background p-6">
                 <div className="max-w-3xl mx-auto space-y-6">
                     {error && (
                         <Alert variant="destructive">
@@ -153,11 +153,11 @@ export default function EnviosPage() {
                     )}
 
                     {!envios || envios.length === 0 ? (
-                        <Card className="border-gray-200">
+                        <Card>
                             <CardContent className="pt-6">
-                                <div className="text-center py-12 text-gray-500">
+                                <div className="text-center py-12 text-muted-foreground">
                                     <Package className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                                    <p className="text-lg font-medium">No hay envíos registrados</p>
+                                    <p className="text-lg font-medium text-foreground">No hay envíos registrados</p>
                                     <p className="text-sm mt-1">
                                         Los envíos se generan automáticamente cuando se realiza una compra
                                     </p>
@@ -171,14 +171,14 @@ export default function EnviosPage() {
                                 const IconoEstado = estadoInfo.icon
 
                                 return (
-                                    <Card key={envio.id} className="py-1 border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+                                    <Card key={envio.id} className="py-1 hover:shadow-md transition-shadow overflow-hidden">
                                         <CardContent className="p-4 sm:p-6">
                                             <div className="space-y-4">
                                                 {/* Encabezado */}
                                                 <div className="space-y-3">
                                                     <div className="flex items-start justify-between gap-4">
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            <h3 className="text-base lg:text-lg font-semibold text-gray-900 whitespace-nowrap">
+                                                            <h3 className="text-base lg:text-lg font-semibold whitespace-nowrap">
                                                                 Envío #{envio.id}
                                                             </h3>
                                                             <span
@@ -189,10 +189,10 @@ export default function EnviosPage() {
                                                             </span>
                                                         </div>
                                                         <div className="text-right flex-shrink-0">
-                                                            <div className="text-lg lg:text-2xl font-bold text-gray-900">
+                                                            <div className="text-lg lg:text-2xl font-bold">
                                                                 {formatearMoneda(envio.compra.total)}
                                                             </div>
-                                                            <div className="text-xs text-gray-500 mt-1">
+                                                            <div className="text-xs text-muted-foreground mt-1">
                                                                 + {formatearMoneda(envio.valor)} envío
                                                             </div>
                                                         </div>
@@ -212,19 +212,19 @@ export default function EnviosPage() {
                                                 </div>
 
                                                 {/* Información de destino */}
-                                                <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                                    <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                                <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-100 dark:border-blue-800">
+                                                    <MapPin className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="text-sm font-medium text-blue-900">
+                                                        <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
                                                             Destino
                                                         </p>
-                                                        <p className="text-sm text-blue-700 break-words">{envio.destino}</p>
+                                                        <p className="text-sm text-blue-700 dark:text-blue-400 break-words">{envio.destino}</p>
                                                     </div>
                                                 </div>
 
                                                 {/* Productos */}
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900 mb-2">
+                                                    <p className="text-sm font-medium mb-2">
                                                         Productos ({envio.compra.productos.length})
                                                     </p>
                                                     <div className="space-y-2">
@@ -238,7 +238,7 @@ export default function EnviosPage() {
                                                             return (
                                                                 <div
                                                                     key={idx}
-                                                                    className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                                                                    className="flex items-center justify-between gap-3 p-3 bg-card border rounded-lg hover:bg-muted/50 transition-colors"
                                                                 >
                                                                     <div className="flex items-center gap-3 min-w-0 flex-1">
                                                                         {imageSrc ? (
@@ -248,20 +248,20 @@ export default function EnviosPage() {
                                                                                 className="h-12 w-12 rounded object-cover border border-gray-200 flex-shrink-0"
                                                                             />
                                                                         ) : (
-                                                                            <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200 flex-shrink-0">
-                                                                                <Package className="h-6 w-6 text-gray-400" />
+                                                                            <div className="h-12 w-12 rounded bg-muted flex items-center justify-center border flex-shrink-0">
+                                                                                <Package className="h-6 w-6 text-muted-foreground" />
                                                                             </div>
                                                                         )}
                                                                         <div className="min-w-0 flex-1">
-                                                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                                                            <p className="text-sm font-medium truncate">
                                                                                 {productoInfo?.p_nombre || `Producto #${producto.id_producto}`}
                                                                             </p>
-                                                                            <p className="text-xs text-gray-500 truncate">
+                                                                            <p className="text-xs text-muted-foreground truncate">
                                                                                 {producto.cantidad} {producto.unidad} × {formatearMoneda(producto.precio_unitario)}
                                                                             </p>
                                                                         </div>
                                                                     </div>
-                                                                    <span className="font-semibold text-gray-900 text-sm whitespace-nowrap">
+                                                                    <span className="font-semibold text-sm whitespace-nowrap">
                                                                         {formatearMoneda(
                                                                             producto.cantidad * producto.precio_unitario
                                                                         )}
@@ -275,7 +275,7 @@ export default function EnviosPage() {
                                                 {/* Acciones */}
                                                 {estadoInfo.nextStates.length > 0 && (
                                                     <div className="flex items-center gap-2 pt-2 flex-wrap">
-                                                        <span className="text-sm text-gray-600">
+                                                        <span className="text-sm text-muted-foreground">
                                                             Actualizar estado:
                                                         </span>
                                                         {estadoInfo.nextStates.map((estado) => {

@@ -215,7 +215,7 @@ export default function CreateProducer() {
 
     return (
         <DashboardLayout title="Mi gremio">
-            <div className="flex-1 bg-gray-50 p-6">
+            <div className="flex-1 bg-background p-6">
                 <div className="max-w-4xl mx-auto space-y-6">
                     {actionError && (
                         <Alert variant="destructive">
@@ -225,22 +225,22 @@ export default function CreateProducer() {
                     )}
 
                     {actionSuccess && (
-                        <Alert className="bg-green-50 border-green-200">
-                            <AlertDescription className="text-green-800">{actionSuccess}</AlertDescription>
+                        <Alert className="bg-green-500/10 border-green-500/20">
+                            <AlertDescription className="text-green-700 dark:text-green-400">{actionSuccess}</AlertDescription>
                         </Alert>
                     )}
 
-                    <Card className="border-gray-200">
+                    <Card>
                         <CardContent className="pt-6">
                             <div className="flex flex-col items-center text-center space-y-3">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                    <Users className="h-8 w-8 text-gray-600" />
+                                <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center">
+                                    <Users className="h-8 w-8 text-muted-foreground" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900">
+                                    <h2 className="text-2xl font-bold">
                                         {gremio?.nombre || "Cargando..."}
                                     </h2>
-                                    <p className="text-sm text-gray-600 mt-1">
+                                    <p className="text-sm text-muted-foreground mt-1">
                                         {gremio?.descripcion || "Información acerca del gremio que administras"}
                                     </p>
                                 </div>
@@ -250,9 +250,9 @@ export default function CreateProducer() {
 
                     {/* Card de productores asociados */}
                     {gremio && gremio.productores.length > 0 && (
-                        <Card className="border-gray-200">
+                        <Card>
                             <CardHeader>
-                                <CardTitle className="text-xl font-semibold text-gray-900">
+                                <CardTitle className="text-xl font-semibold">
                                     Productores asociados
                                 </CardTitle>
                             </CardHeader>
@@ -261,7 +261,7 @@ export default function CreateProducer() {
                                     {gremio.productores.map((productor) => (
                                         <div
                                             key={productor.id}
-                                            className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
@@ -272,10 +272,10 @@ export default function CreateProducer() {
                                                     />
                                                 </div>
                                                 <div>
-                                                    <h3 className="font-semibold text-gray-900">
+                                                    <h3 className="font-semibold">
                                                         {productor.nombres} {productor.apellidos}
                                                     </h3>
-                                                    <div className="flex items-center gap-3 text-sm text-gray-600 mt-1">
+                                                    <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
                                                         {productor.codigo && (
                                                             <span>Código: {productor.codigo}</span>
                                                         )}

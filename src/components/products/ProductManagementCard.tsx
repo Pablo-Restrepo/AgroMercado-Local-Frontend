@@ -66,7 +66,6 @@ function resolveImageSrc(img?: string, tipo?: string) {
 
 export function ProductManagementCard({ product, onEdit, onDelete }: ProductManagementCardProps) {
   const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
-  const [loadingCategorias, setLoadingCategorias] = useState(false)
 
   // Usar la nueva función para mapear la categoría
   const categoryName = mapCategoryIdToName(product.cat_id, product.p_tipo, categorias)
@@ -76,7 +75,6 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
   useEffect(() => {
     const loadCategorias = async () => {
       try {
-        setLoadingCategorias(true)
         const categoriasData = await categoryApi.listarCategorias()
         if (categoriasData && categoriasData.length > 0) {
           setCategorias(categoriasData)
@@ -85,8 +83,6 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
         console.error("Error cargando categorías:", error)
         // Mantener las categorías de fallback
         setCategorias(FALLBACK_CATEGORIES)
-      } finally {
-        setLoadingCategorias(false)
       }
     }
 
@@ -129,7 +125,7 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
   const categoryInfo = getCategoryInfo(categoryName)
 
   return (
-    <Card className="flex flex-col min-w-[235px] max-w-[313px] w-full h-auto p-5">
+    <Card className="flex flex-col min-w-[235px] max-w-[313px] w-full h-auto p-5 bg-card text-card-foreground">
       {/* Product Image */}
       <div className="w-full h-[273px] rounded-lg overflow-hidden flex-shrink-0 relative">
         <img
@@ -187,7 +183,7 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
       {/* Product Info */}
       <div className="space-y-3">
         <div className="flex items-start justify-between">
-          <h3 className="font-semibold text-lg text-gray-900 leading-tight">
+          <h3 className="font-semibold text-lg leading-tight">
             {product.p_nombre}
           </h3>
           <Badge
@@ -206,7 +202,7 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
         </div>
 
         {/* Gremio info */}
-        <div className="flex items-center gap-1 text-sm text-gray-600">
+        <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="h-4 w-4" />
           <span className="truncate">{product.gre_nombre || "Sin gremio"}</span>
         </div>
@@ -214,10 +210,10 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
         {/* Precio */}
         <div className="flex items-end justify-between">
           <div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold">
               ${product.p_precio?.toLocaleString() || "0"}
             </div>
-            <div className="text-sm text-gray-500">por {product.p_unidad || "unidad"}</div>
+            <div className="text-sm text-muted-foreground">por {product.p_unidad || "unidad"}</div>
           </div>
         </div>
       </div>

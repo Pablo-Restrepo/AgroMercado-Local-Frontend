@@ -27,7 +27,7 @@ export default function DashBoardProductsList() {
     })
     const { user, isAuthenticated } = useAuth()
     const navigate = useNavigate()
-    
+
     const [filters, setFilters] = useState({
         selectedCategory: "todo",
         priceRange: [0]
@@ -86,12 +86,12 @@ export default function DashBoardProductsList() {
     // Filtrar productos - MEJORADO
     const filteredProducts = products.filter(product => {
         try {
-            const categoryMatch = filters.selectedCategory === "todo" || 
-                                 mapCategoryToFilterId(product) === filters.selectedCategory
-            
-            const priceMatch = filters.priceRange[0] === 0 || 
-                              (product.p_precio !== undefined && product.p_precio <= filters.priceRange[0])
-            
+            const categoryMatch = filters.selectedCategory === "todo" ||
+                mapCategoryToFilterId(product) === filters.selectedCategory
+
+            const priceMatch = filters.priceRange[0] === 0 ||
+                (product.p_precio !== undefined && product.p_precio <= filters.priceRange[0])
+
             return categoryMatch && priceMatch
         } catch (err) {
             console.warn("Error filtering product:", product, err)
@@ -123,7 +123,7 @@ export default function DashBoardProductsList() {
         if (!deleteDialog.product?.p_id) return
 
         setDeleteDialog(prev => ({ ...prev, isLoading: true }))
-        
+
         try {
             await productoApi.deleteProduct(deleteDialog.product.p_id)
             setProducts(prev => prev.filter(p => p.p_id !== deleteDialog.product!.p_id))
@@ -162,7 +162,7 @@ export default function DashBoardProductsList() {
     }
 
     return (
-        <DashboardLayout 
+        <DashboardLayout
             title="Mis Productos"
             onFilterChange={handleFilterChange}
         >
@@ -180,15 +180,15 @@ export default function DashBoardProductsList() {
                 {/* Error State */}
                 {error && (
                     <div className="flex items-center justify-center py-8">
-                        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md w-full">
+                        <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 max-w-md w-full">
                             <div className="text-center">
-                                <p className="text-red-800 mb-4">{error}</p>
-                                <button 
+                                <p className="text-destructive mb-4">{error}</p>
+                                <button
                                     onClick={() => {
                                         setError(null)
                                         window.location.reload()
                                     }}
-                                    className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+                                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
                                 >
                                     Reintentar
                                 </button>
@@ -204,7 +204,7 @@ export default function DashBoardProductsList() {
                             <p className="text-sm text-muted-foreground">
                                 {filteredProducts.length} producto{filteredProducts.length !== 1 ? 's' : ''} encontrado{filteredProducts.length !== 1 ? 's' : ''}
                                 {filters.selectedCategory !== "todo" && (
-                                    <span className="ml-2 text-xs text-gray-500 capitalize">
+                                    <span className="ml-2 text-xs opacity-75 capitalize">
                                         - Categoría: {filters.selectedCategory.replace(/_/g, ' ')}
                                     </span>
                                 )}
@@ -213,9 +213,9 @@ export default function DashBoardProductsList() {
 
                         <div className="grid auto-rows-fr grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mx-auto w-full max-w-7xl place-items-center">
                             {filteredProducts.map((product, index) => (
-                                <ProductManagementCard 
+                                <ProductManagementCard
                                     key={product.p_id ? `product-${product.p_id}` : `${product.p_nombre}-${index}`}
-                                    product={product} 
+                                    product={product}
                                     onEdit={handleEditProduct}
                                     onDelete={handleDeleteProduct}
                                 />
@@ -225,13 +225,13 @@ export default function DashBoardProductsList() {
                         {filteredProducts.length === 0 && !loading && (
                             <div className="flex flex-col items-center justify-center py-12">
                                 <p className="text-muted-foreground mb-4">
-                                    {products.length === 0 
-                                        ? "No tienes productos registrados" 
+                                    {products.length === 0
+                                        ? "No tienes productos registrados"
                                         : "No se encontraron productos con los filtros seleccionados"
                                     }
                                 </p>
                                 {products.length === 0 && (
-                                    <a 
+                                    <a
                                         href="/dashboard/crear-producto"
                                         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
                                     >
@@ -239,9 +239,9 @@ export default function DashBoardProductsList() {
                                     </a>
                                 )}
                                 {products.length > 0 && filters.selectedCategory !== "todo" && (
-                                    <button 
+                                    <button
                                         onClick={() => setFilters(prev => ({ ...prev, selectedCategory: "todo" }))}
-                                        className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                                        className="px-4 py-2 bg-muted hover:bg-muted/80 rounded transition-colors"
                                     >
                                         Limpiar filtros
                                     </button>

@@ -27,7 +27,7 @@ interface ProductForm {
 export default function CreateProduct() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  
+
   const [form, setForm] = useState<ProductForm>({
     name: "",
     description: "",
@@ -77,13 +77,13 @@ export default function CreateProduct() {
         alert(`${file.name} no es una imagen válida`)
         return false
       }
-      
+
       // Validar tamaño (5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert(`${file.name} es muy grande (máximo 5MB)`)
         return false
       }
-      
+
       return true
     })
 
@@ -91,12 +91,12 @@ export default function CreateProduct() {
 
     // Crear URLs de preview
     const newUrls = newFiles.map(file => URL.createObjectURL(file))
-    
-    setForm(prev => ({ 
-      ...prev, 
-      images: [...prev.images, ...newFiles] 
+
+    setForm(prev => ({
+      ...prev,
+      images: [...prev.images, ...newFiles]
     }))
-    
+
     setPreviewUrls(prev => [...prev, ...newUrls])
   }
 
@@ -105,12 +105,12 @@ export default function CreateProduct() {
     if (previewUrls[index]) {
       URL.revokeObjectURL(previewUrls[index])
     }
-    
+
     setForm(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }))
-    
+
     setPreviewUrls(prev => prev.filter((_, i) => i !== index))
   }
 
@@ -128,7 +128,7 @@ export default function CreateProduct() {
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    
+
     if (e.dataTransfer.files) {
       handleFileSelect(e.dataTransfer.files)
     }
@@ -156,23 +156,23 @@ export default function CreateProduct() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    
+
     // Validaciones
     if (!form.name.trim()) {
       setError("El nombre del producto es requerido")
       return
     }
-    
+
     if (!form.description.trim()) {
       setError("La descripción es requerida")
       return
     }
-    
+
     if (!form.price || parseFloat(form.price) <= 0) {
       setError("El precio debe ser mayor a 0")
       return
     }
-    
+
     const stockNum = Number.parseInt(form.stock, 10)
     if (Number.isNaN(stockNum) || stockNum < 0) {
       setError("El stock debe ser 0 o un número entero positivo")
@@ -235,16 +235,16 @@ export default function CreateProduct() {
 
       const productId = await createFn(productData)
       console.log("Producto creado con ID:", productId)
-      
+
       // Limpiar formulario
       previewUrls.forEach(url => URL.revokeObjectURL(url))
-      
+
       // Redirigir a la lista de productos
-      navigate("/dashboard/mis-productos", { 
+      navigate("/dashboard/mis-productos", {
         replace: true,
         state: { message: "Producto creado exitosamente" }
       })
-      
+
     } catch (err) {
       console.error("Error creando producto:", err)
       // Detectar violación de FK (mensaje del backend / código 1452) y mostrar mensaje útil
@@ -254,15 +254,15 @@ export default function CreateProduct() {
       } else {
         setError(msg || "Error al crear el producto")
       }
-     } finally {
-       setIsSubmitting(false)
-     }
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleCancel = () => {
     // Limpiar URLs de preview
     previewUrls.forEach(url => URL.revokeObjectURL(url))
-    
+
     setForm({
       name: "",
       description: "",
@@ -273,25 +273,25 @@ export default function CreateProduct() {
       images: []
     })
     setPreviewUrls([])
-    
+
     // Navegar hacia atrás
     navigate(-1)
   }
 
   return (
     <DashboardLayout title="Crear Producto">
-      <div className="flex-1 bg-gray-50 p-6">
+      <div className="flex-1 bg-background p-6">
         <div className="max-w-2xl mx-auto">
           <Card>
             <CardHeader>
-              <CardTitle className="text-xl font-semibold text-gray-900">
+              <CardTitle className="text-xl font-semibold">
                 Crear producto
               </CardTitle>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Comparte tus productos frescos con la comunidad local
               </p>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-3">
@@ -302,7 +302,7 @@ export default function CreateProduct() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Nombre del producto */}
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                  <Label htmlFor="name" className="text-sm font-medium">
                     Nombre del producto <span className="text-red-500">*</span>
                   </Label>
                   <Input
@@ -318,7 +318,7 @@ export default function CreateProduct() {
 
                 {/* Descripción */}
                 <div className="space-y-2">
-                  <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+                  <Label htmlFor="description" className="text-sm font-medium">
                     Descripción <span className="text-red-500">*</span>
                   </Label>
                   <Textarea
@@ -335,7 +335,7 @@ export default function CreateProduct() {
                 {/* Precio y Unidad */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="price" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="price" className="text-sm font-medium">
                       Precio <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -352,7 +352,7 @@ export default function CreateProduct() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="stock" className="text-sm font-medium text-gray-700">
+                    <Label htmlFor="stock" className="text-sm font-medium">
                       Stock (cantidad) <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -369,28 +369,28 @@ export default function CreateProduct() {
                   </div>
 
                   <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700">
-                        Unidad <span className="text-red-500">*</span>
-                      </Label>
-                      <Select
-                        value={form.unit}
-                        onValueChange={(value) => handleInputChange("unit", value)}
-                        className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
-                        options={[
-                          { value: "kg", label: "Kilogramo (kg)" },
-                          { value: "g", label: "Gramo (g)" },
-                          { value: "lb", label: "Libra (lb)" },
-                          { value: "unidad", label: "Unidad" },
-                          { value: "manojo", label: "Manojo" },
-                          { value: "docena", label: "Docena" },
-                        ]}
-                      />
-                    </div>
+                    <Label className="text-sm font-medium">
+                      Unidad <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      value={form.unit}
+                      onValueChange={(value) => handleInputChange("unit", value)}
+                      className={`w-full ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
+                      options={[
+                        { value: "kg", label: "Kilogramo (kg)" },
+                        { value: "g", label: "Gramo (g)" },
+                        { value: "lb", label: "Libra (lb)" },
+                        { value: "unidad", label: "Unidad" },
+                        { value: "manojo", label: "Manojo" },
+                        { value: "docena", label: "Docena" },
+                      ]}
+                    />
+                  </div>
                 </div>
 
                 {/* Categoría - ACTUALIZADA PARA USAR API */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium">
                     Categoría <span className="text-red-500">*</span>
                   </Label>
                   {loadingCategorias ? (
@@ -416,17 +416,16 @@ export default function CreateProduct() {
 
                 {/* Imágenes */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">
+                  <Label className="text-sm font-medium">
                     Imágenes del producto
                   </Label>
-                  
+
                   {/* Zona de carga */}
                   <div
-                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-                      dragActive
-                        ? "border-green-500 bg-green-50"
-                        : "border-gray-300 hover:border-gray-400"
-                    } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${dragActive
+                        ? "border-green-500 bg-green-500/10"
+                        : "border-border hover:border-green-400"
+                      } ${isSubmitting ? "opacity-50 pointer-events-none" : ""}`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
                     onDragOver={handleDrag}
@@ -440,14 +439,14 @@ export default function CreateProduct() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                       disabled={isSubmitting}
                     />
-                    
+
                     <div className="flex flex-col items-center gap-2">
-                      <ImagePlus className="h-8 w-8 text-gray-400" />
-                      <p className="text-sm text-gray-600">
+                      <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm">
                         Arrastra imágenes aquí o{" "}
-                        <span className="text-green-600 font-medium">haz clic para seleccionar</span>
+                        <span className="text-green-600 dark:text-green-400 font-medium">haz clic para seleccionar</span>
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         PNG, JPG, JPEG hasta 5MB cada una
                       </p>
                     </div>

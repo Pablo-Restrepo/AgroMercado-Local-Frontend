@@ -1,4 +1,4 @@
-import { ReactNode } from "react"
+import type { ReactNode } from "react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import {
   SidebarInset,
@@ -9,8 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-import { NavLink } from "react-router-dom"
-import { useAuth } from "@/hooks/auth/useAuth"
+import { ModeToggle } from "@/components/mode-toggle"
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -27,10 +26,8 @@ export function DashboardLayout({
   showBackButton = false,
   backUrl,
   onFilterChange,
-  hideFilters = false
 }: DashboardLayoutProps) {
   const navigate = useNavigate()
-  const { user } = useAuth()
 
   const handleBack = () => {
     if (backUrl) {
@@ -46,7 +43,7 @@ export function DashboardLayout({
         <AppSidebar onFilterChange={onFilterChange} />
         <SidebarInset>
           <header className="flex h-16 shrink-0 items-center gap-2 border-b">
-            <div className="flex items-center gap-2 px-4">
+            <div className="flex items-center gap-2 px-4 flex-1">
               <SidebarTrigger className="-ml-1" />
               <Separator
                 orientation="vertical"
@@ -74,6 +71,9 @@ export function DashboardLayout({
               {title && (
                 <h1 className="text-xl font-semibold">{title}</h1>
               )}
+            </div>
+            <div className="px-4">
+              <ModeToggle />
             </div>
           </header>
           <div className="flex flex-1 flex-col">

@@ -8,8 +8,8 @@ export default function AyudaPage() {
     <DashboardLayout title="Ayuda">
       <div className="container mx-auto px-4 py-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-2">Ayuda & Soporte</h2>
-          <p className="text-sm text-gray-600 mb-4">
+          <h2 className="text-lg font-semibold mb-2">Ayuda</h2>
+          <p className="text-sm text-muted-foreground mb-4">
             Aquí puedes colocar preguntas frecuentes, contacto o guías rápidas.
           </p>
           <div className="space-y-3">

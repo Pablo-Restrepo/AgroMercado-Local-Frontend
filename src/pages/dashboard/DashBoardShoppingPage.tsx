@@ -434,10 +434,10 @@ export default function DashBoardShoppingPage() {
                     <div className="p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="font-semibold text-xl text-gray-900 mb-2">
+                          <h3 className="font-semibold text-xl mb-2">
                             {gremio.nombre}
                           </h3>
-                          <p className="text-sm text-gray-600 leading-relaxed">
+                          <p className="text-sm text-muted-foreground leading-relaxed">
                             {gremio.descripcion}
                           </p>
                         </div>
@@ -447,7 +447,7 @@ export default function DashBoardShoppingPage() {
                         </Badge>
                       </div>
 
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         <span>{gremio.ubicacion}</span>
                       </div>
@@ -477,9 +477,9 @@ export default function DashBoardShoppingPage() {
                       <Button
                         size="icon"
                         variant="ghost"
-                        className="absolute top-2 right-2 bg-white/80 hover:bg-white"
+                        className="absolute top-2 right-2 bg-white/80 hover:bg-white dark:bg-black/80 dark:hover:bg-black"
                       >
-                        <Heart className="h-4 w-4 text-gray-600" />
+                        <Heart className="h-4 w-4 text-muted-foreground" />
                       </Button>
                       {product.stock !== undefined && (
                         <Badge
@@ -493,13 +493,13 @@ export default function DashBoardShoppingPage() {
 
                     <div className="p-4 space-y-3">
                       <div className="flex items-start justify-between">
-                        <h3 className="font-semibold text-lg text-gray-900 leading-tight">
+                        <h3 className="font-semibold text-lg leading-tight">
                           {product.name}
                         </h3>
                         {getCategoryBadge(product.category)}
                       </div>
 
-                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <MapPin className="h-4 w-4" />
                         <span className="truncate">{product.location}</span>
                       </div>
@@ -542,7 +542,7 @@ export default function DashBoardShoppingPage() {
 
             {/* Empty States */}
             {isLoading ? (
-              <div className="text-center py-12">Cargando...</div>
+              <div className="text-center py-12 text-muted-foreground">Cargando...</div>
             ) : viewMode === "gremios" && filteredGremios.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-500">
