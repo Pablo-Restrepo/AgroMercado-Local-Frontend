@@ -144,7 +144,7 @@ export default function EnviosPage() {
     return (
         <DashboardLayout title="Envíos" hideFilters>
             <div className="flex-1 bg-gray-50 p-6">
-                <div className="max-w-7xl mx-auto space-y-6">
+                <div className="max-w-3xl mx-auto space-y-6">
                     {error && (
                         <Alert variant="destructive">
                             <AlertCircle className="h-4 w-4" />
@@ -171,39 +171,25 @@ export default function EnviosPage() {
                                 const IconoEstado = estadoInfo.icon
 
                                 return (
-                                    <Card key={envio.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                                        <CardContent>
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1 space-y-4">
-                                                    {/* Encabezado */}
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <div className="flex items-center gap-2 mb-2">
-                                                                <h3 className="text-lg font-semibold text-gray-900">
-                                                                    Envío #{envio.id}
-                                                                </h3>
-                                                                <span
-                                                                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${estadoInfo.color}`}
-                                                                >
-                                                                    <IconoEstado className="h-3.5 w-3.5" />
-                                                                    {estadoInfo.label}
-                                                                </span>
-                                                            </div>
-                                                            <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                                <span className="flex items-center gap-1.5">
-                                                                    <Calendar className="scale-125 mr-2" />
-                                                                    Compra: {formatearFecha(envio.compra.fecha)}
-                                                                </span>
-                                                                {envio.fecha_envio && (
-                                                                    <span className="flex items-center gap-1.5">
-                                                                        <Truck className="scale-125 mr-2" />
-                                                                        Despachado: {formatearFecha(envio.fecha_envio)}
-                                                                    </span>
-                                                                )}
-                                                            </div>
+                                    <Card key={envio.id} className="py-1 border-gray-200 hover:shadow-md transition-shadow overflow-hidden">
+                                        <CardContent className="p-4 sm:p-6">
+                                            <div className="space-y-4">
+                                                {/* Encabezado */}
+                                                <div className="space-y-3">
+                                                    <div className="flex items-start justify-between gap-4">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <h3 className="text-base lg:text-lg font-semibold text-gray-900 whitespace-nowrap">
+                                                                Envío #{envio.id}
+                                                            </h3>
+                                                            <span
+                                                                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium border ${estadoInfo.color}`}
+                                                            >
+                                                                <IconoEstado className="h-3.5 w-3.5" />
+                                                                {estadoInfo.label}
+                                                            </span>
                                                         </div>
-                                                        <div className="text-right">
-                                                            <div className="text-2xl font-bold text-gray-900">
+                                                        <div className="text-right flex-shrink-0">
+                                                            <div className="text-lg lg:text-2xl font-bold text-gray-900">
                                                                 {formatearMoneda(envio.compra.total)}
                                                             </div>
                                                             <div className="text-xs text-gray-500 mt-1">
@@ -211,98 +197,110 @@ export default function EnviosPage() {
                                                             </div>
                                                         </div>
                                                     </div>
-
-                                                    {/* Información de destino */}
-                                                    <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                                        <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                                        <div>
-                                                            <p className="text-sm font-medium text-blue-900">
-                                                                Destino
-                                                            </p>
-                                                            <p className="text-sm text-blue-700">{envio.destino}</p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Productos */}
-                                                    <div>
-                                                        <p className="text-sm font-medium text-gray-900 mb-2">
-                                                            Productos ({envio.compra.productos.length})
-                                                        </p>
-                                                        <div className="space-y-2">
-                                                            {envio.compra.productos.map((producto, idx) => {
-                                                                const productoInfo = productosMap.get(producto.id_producto)
-                                                                const imageSrc = productoInfo?.img
-                                                                    ? productoInfo.img.startsWith('data:')
-                                                                        ? productoInfo.img
-                                                                        : `data:image/png;base64,${productoInfo.img}`
-                                                                    : null
-                                                                return (
-                                                                    <div
-                                                                        key={idx}
-                                                                        className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
-                                                                    >
-                                                                        <div className="flex items-center gap-3">
-                                                                            {imageSrc ? (
-                                                                                <img
-                                                                                    src={imageSrc}
-                                                                                    alt={productoInfo?.p_nombre || 'Producto'}
-                                                                                    className="h-12 w-12 rounded object-cover border border-gray-200"
-                                                                                />
-                                                                            ) : (
-                                                                                <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200">
-                                                                                    <Package className="h-6 w-6 text-gray-400" />
-                                                                                </div>
-                                                                            )}
-                                                                            <div>
-                                                                                <p className="text-sm font-medium text-gray-900">
-                                                                                    {productoInfo?.p_nombre || `Producto #${producto.id_producto}`}
-                                                                                </p>
-                                                                                <p className="text-xs text-gray-500">
-                                                                                    {producto.cantidad} {producto.unidad} × {formatearMoneda(producto.precio_unitario)}
-                                                                                </p>
-                                                                            </div>
-                                                                        </div>
-                                                                        <span className="font-semibold text-gray-900">
-                                                                            {formatearMoneda(
-                                                                                producto.cantidad * producto.precio_unitario
-                                                                            )}
-                                                                        </span>
-                                                                    </div>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Acciones */}
-                                                    {estadoInfo.nextStates.length > 0 && (
-                                                        <div className="flex items-center gap-2 pt-2 flex-wrap">
-                                                            <span className="text-sm text-gray-600 mr-2">
-                                                                Actualizar estado:
+                                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs lg:text-sm text-gray-600">
+                                                        <span className="flex items-center gap-1.5">
+                                                            <Calendar className="h-4 w-4 flex-shrink-0" />
+                                                            <span>Compra: {formatearFecha(envio.compra.fecha)}</span>
+                                                        </span>
+                                                        {envio.fecha_envio && (
+                                                            <span className="flex items-center gap-1.5">
+                                                                <Truck className="h-4 w-4 flex-shrink-0" />
+                                                                <span>Despachado: {formatearFecha(envio.fecha_envio)}</span>
                                                             </span>
-                                                            {estadoInfo.nextStates.map((estado) => {
-                                                                const EstadoIcon = estadoConfig[estado].icon
-                                                                return (
-                                                                    <Button
-                                                                        key={estado}
-                                                                        variant="outline"
-                                                                        size="sm"
-                                                                        onClick={() => {
-                                                                            setUpdateDialog({
-                                                                                open: true,
-                                                                                envio,
-                                                                                nuevoEstado: estado,
-                                                                            })
-                                                                        }}
-                                                                        className="gap-2"
-                                                                    >
-                                                                        <EstadoIcon className="h-4 w-4" />
-                                                                        {estadoConfig[estado].label}
-                                                                    </Button>
-                                                                )
-                                                            })}
-                                                        </div>
-                                                    )}
+                                                        )}
+                                                    </div>
                                                 </div>
+
+                                                {/* Información de destino */}
+                                                <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                                    <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-sm font-medium text-blue-900">
+                                                            Destino
+                                                        </p>
+                                                        <p className="text-sm text-blue-700 break-words">{envio.destino}</p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Productos */}
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900 mb-2">
+                                                        Productos ({envio.compra.productos.length})
+                                                    </p>
+                                                    <div className="space-y-2">
+                                                        {envio.compra.productos.map((producto, idx) => {
+                                                            const productoInfo = productosMap.get(producto.id_producto)
+                                                            const imageSrc = productoInfo?.img
+                                                                ? productoInfo.img.startsWith('data:')
+                                                                    ? productoInfo.img
+                                                                    : `data:image/png;base64,${productoInfo.img}`
+                                                                : null
+                                                            return (
+                                                                <div
+                                                                    key={idx}
+                                                                    className="flex items-center justify-between gap-3 p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                                                                >
+                                                                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                                        {imageSrc ? (
+                                                                            <img
+                                                                                src={imageSrc}
+                                                                                alt={productoInfo?.p_nombre || 'Producto'}
+                                                                                className="h-12 w-12 rounded object-cover border border-gray-200 flex-shrink-0"
+                                                                            />
+                                                                        ) : (
+                                                                            <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200 flex-shrink-0">
+                                                                                <Package className="h-6 w-6 text-gray-400" />
+                                                                            </div>
+                                                                        )}
+                                                                        <div className="min-w-0 flex-1">
+                                                                            <p className="text-sm font-medium text-gray-900 truncate">
+                                                                                {productoInfo?.p_nombre || `Producto #${producto.id_producto}`}
+                                                                            </p>
+                                                                            <p className="text-xs text-gray-500 truncate">
+                                                                                {producto.cantidad} {producto.unidad} × {formatearMoneda(producto.precio_unitario)}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <span className="font-semibold text-gray-900 text-sm whitespace-nowrap">
+                                                                        {formatearMoneda(
+                                                                            producto.cantidad * producto.precio_unitario
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                </div>
+
+                                                {/* Acciones */}
+                                                {estadoInfo.nextStates.length > 0 && (
+                                                    <div className="flex items-center gap-2 pt-2 flex-wrap">
+                                                        <span className="text-sm text-gray-600">
+                                                            Actualizar estado:
+                                                        </span>
+                                                        {estadoInfo.nextStates.map((estado) => {
+                                                            const EstadoIcon = estadoConfig[estado].icon
+                                                            return (
+                                                                <Button
+                                                                    key={estado}
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setUpdateDialog({
+                                                                            open: true,
+                                                                            envio,
+                                                                            nuevoEstado: estado,
+                                                                        })
+                                                                    }}
+                                                                    className="gap-2"
+                                                                >
+                                                                    <EstadoIcon className="h-4 w-4" />
+                                                                    {estadoConfig[estado].label}
+                                                                </Button>
+                                                            )
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         </CardContent>
                                     </Card>
