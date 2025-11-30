@@ -52,13 +52,13 @@ export function CartDrawer({
 
     try {
       const result = await checkoutService.processCheckout(
-        cart, 
-        user.u_id, 
+        cart,
+        user.u_id,
         destino
       )
-      
+
       setCheckoutResult(result)
-      
+
       if (result.success) {
         // Éxito: limpiar carrito después de un breve delay
         setTimeout(() => {
@@ -82,8 +82,8 @@ export function CartDrawer({
   return (
     <>
       <Sheet open={isOpen} onOpenChange={onClose}>
-        <SheetContent className="w-[400px] sm:w-[500px]">
-          <SheetHeader>
+        <SheetContent className="w-[400px] sm:w-[500px] flex flex-col h-full">
+          <SheetHeader className="flex-shrink-0">
             <SheetTitle className="flex items-center gap-2">
               <ShoppingBag className="h-5 w-5" />
               Tu carrito
@@ -94,7 +94,7 @@ export function CartDrawer({
             </SheetDescription>
           </SheetHeader>
 
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
             {/* Resultado del checkout mejorado */}
             {checkoutResult && (
               <div className="py-4 space-y-3">
@@ -124,16 +124,15 @@ export function CartDrawer({
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 {/* Detalle de compras mejorado */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-gray-700">Detalle por gremio:</p>
                   {checkoutResult.compras.map((compra, idx) => (
-                    <div key={idx} className={`p-3 border rounded-lg text-sm ${
-                      compra.status === 'paid' ? 'bg-green-50 border-green-200' : 
-                      compra.status === 'error' ? 'bg-red-50 border-red-200' : 
-                      'bg-yellow-50 border-yellow-200'
-                    }`}>
+                    <div key={idx} className={`p-3 border rounded-lg text-sm ${compra.status === 'paid' ? 'bg-green-50 border-green-200' :
+                        compra.status === 'error' ? 'bg-red-50 border-red-200' :
+                          'bg-yellow-50 border-yellow-200'
+                      }`}>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
                           <p className="font-medium">{compra.gremio}</p>
@@ -141,14 +140,13 @@ export function CartDrawer({
                             {compra.productos.length} producto(s) - ${compra.total.toLocaleString()}
                           </p>
                         </div>
-                        <span className={`text-xs px-2 py-1 rounded capitalize ${
-                          compra.status === 'paid' ? 'bg-green-100 text-green-700' : 
-                          compra.status === 'error' ? 'bg-red-100 text-red-700' : 
-                          'bg-yellow-100 text-yellow-700'
-                        }`}>
-                          {compra.status === 'paid' ? 'Completado' : 
-                           compra.status === 'error' ? 'Error' : 
-                           compra.status}
+                        <span className={`text-xs px-2 py-1 rounded capitalize ${compra.status === 'paid' ? 'bg-green-100 text-green-700' :
+                            compra.status === 'error' ? 'bg-red-100 text-red-700' :
+                              'bg-yellow-100 text-yellow-700'
+                          }`}>
+                          {compra.status === 'paid' ? 'Completado' :
+                            compra.status === 'error' ? 'Error' :
+                              compra.status}
                         </span>
                       </div>
                       {compra.error && (
@@ -161,7 +159,7 @@ export function CartDrawer({
             )}
 
             {/* Lista de productos */}
-            <div className="flex-1 overflow-auto py-4">
+            <div className="flex-1 overflow-y-auto py-4 min-h-0">
               {cart.items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-500">
                   <ShoppingBag className="h-12 w-12 mb-4" />
@@ -180,14 +178,14 @@ export function CartDrawer({
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      
+
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-sm truncate">{item.name}</h4>
                         <p className="text-xs text-gray-600 truncate">{item.location}</p>
                         <p className="text-sm font-semibold text-green-600">
                           ${item.price.toLocaleString()} / {item.unit}
                         </p>
-                        
+
                         <div className="flex items-center gap-2 mt-2">
                           <Button
                             type="button"
@@ -198,7 +196,7 @@ export function CartDrawer({
                           >
                             <Minus className="h-3 w-3" />
                           </Button>
-                          
+
                           <Input
                             type="number"
                             value={item.quantity}
@@ -206,7 +204,7 @@ export function CartDrawer({
                             className="w-16 h-8 text-center text-sm"
                             min={1}
                           />
-                          
+
                           <Button
                             type="button"
                             variant="outline"
@@ -215,7 +213,7 @@ export function CartDrawer({
                           >
                             <Plus className="h-3 w-3" />
                           </Button>
-                          
+
                           <Button
                             type="button"
                             variant="outline"
@@ -227,7 +225,7 @@ export function CartDrawer({
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="text-right">
                         <p className="font-semibold text-sm">
                           ${(item.price * item.quantity).toLocaleString()}
@@ -239,18 +237,17 @@ export function CartDrawer({
               )}
             </div>
 
-            {/* Footer con total y acciones */}
+            {/* Footer con total y acciones - FIJO EN LA PARTE INFERIOR */}
             {cart.items.length > 0 && (
-              <>
-                <Separator />
-                <SheetFooter className="flex-col space-y-4 pt-4">
+              <div className="flex-shrink-0 border-t bg-background pt-4 pb-2">
+                <SheetFooter className="flex-col space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold">Total:</span>
                     <span className="text-xl font-bold text-green-600">
                       ${cart.total.toLocaleString()}
                     </span>
                   </div>
-                  
+
                   <div className="grid gap-2 w-full">
                     <Button
                       onClick={() => setShowDeliveryModal(true)}
@@ -270,7 +267,7 @@ export function CartDrawer({
                         </>
                       )}
                     </Button>
-                    
+
                     <Button
                       onClick={onClearCart}
                       variant="outline"
@@ -281,7 +278,7 @@ export function CartDrawer({
                     </Button>
                   </div>
                 </SheetFooter>
-              </>
+              </div>
             )}
           </div>
         </SheetContent>
