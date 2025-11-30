@@ -137,7 +137,7 @@ export function AppSidebar({ onFilterChange, hideFilters = false, ...props }: Ap
       return data.navMain
     }
 
-    // Si tiene gremio, mostrar todo; si no, reemplazar "Mi gremio" por "Crear gremio"
+    // Si tiene gremio, mostrar todo; si no, reemplazar "Mi gremio" por "Crear gremio"  
     if (productorData.id_gremio !== null) {
       return data.navMain
     } else {

@@ -13,6 +13,7 @@ import CreateProducer from '@/pages/dashboard/CreateProducer'
 import CreateGremio from '@/pages/gremios/CreateGremio'
 import ProducerManagement from '@/pages/dashboard/ProducerManagement'
 import EnviosPage from '@/pages/dashboard/EnviosPage'
+import MisPedidosPage from '@/pages/dashboard/MisPedidosPage'
 import { RequireAuth } from "./components/auth/RequireAuth"
 import RegisterPage from '@/pages/auth/RegisterPage'
 import ConfiguracionesPage from '@/pages/dashboard/ConfiguracionesPage'
@@ -31,9 +32,6 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registro" element={<RegisterPage />} />
             
-
-            {/* Páginas públicas con sidebar */}
-
             {/* Páginas con sidebar (públicas) */}
             <Route path="/productos" element={<ProductsPage />} />
 
@@ -42,7 +40,7 @@ function App() {
               {/* Dashboard principal - redirige según rol */}
               <Route path="" element={<DashboardHome />} />
               <Route path="compras" element={<DashBoardShoppingPage />} />
-              <Route path="mis-pedidos" element={<EnviosPage />} />
+              <Route path="mis-pedidos" element={<MisPedidosPage />} />
               <Route path="configuraciones" element={<ConfiguracionesPage />} />
               <Route path="ayuda" element={<AyudaPage />} />
               <Route path="mis-productos" element={<DashBoardProductsList />} />
