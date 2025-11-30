@@ -20,8 +20,11 @@ import { FloatingCart } from "@/components/cart/FloatingCart"
 import { useCart } from "@/hooks/useCart"
 import * as productoApi from "@/services/api/productoApi"
 import * as gremiosApi from "@/services/api/gremiosApi"
+import * as categoryApi from "@/services/api/categoryApi"
 import type { ProductSummary, GremioProduct } from "@/services/api/productoApi"
 import type { GremioListBody } from "@/services/api/gremiosApi"
+import type { Category } from "@/services/api/categoryApi"
+import { mapCategoryIdToName, FALLBACK_CATEGORIES } from "@/utils/categoryMapper"
 
 // Modo de vista
 type ViewMode = "products" | "gremios" | "gremio-products"
@@ -29,7 +32,7 @@ type ViewMode = "products" | "gremios" | "gremio-products"
 // Producto unificado para visualización
 type ViewProduct = {
   id: string
-  productId: number       // Agregar productId numérico
+  productId: number
   name: string
   price: number
   unit: string
@@ -58,8 +61,12 @@ function resolveImageSrc(img?: string, fallback = PLACEHOLDER_URL) {
   return fallback
 }
 
-// Mapear productos generales
-function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
+// Mapear productos generales - ACTUALIZADO
+function mapGeneralProduct(
+  item: ProductSummary, 
+  index: number, 
+  categorias: Category[]
+): ViewProduct {
   const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
   return {
     id: item.p_id ? `product-${item.p_id}` : `general-${index}`,
@@ -70,15 +77,19 @@ function mapGeneralProduct(item: ProductSummary, index: number): ViewProduct {
     location: item.gre_nombre ?? "Gremio",
     rating: 4.6,
     reviews: 0,
-    category: (item.p_tipo ?? "otro").toLowerCase(),
+    category: mapCategoryIdToName(item.cat_id, item.p_tipo, categorias), // Usar mapper
     image: resolveImageSrc(item.img, PLACEHOLDER_URL),
-    available: stock === undefined || stock > 0, // Solo disponible si hay stock
+    available: stock === undefined || stock > 0,
     stock: stock
   }
 }
 
-// Mapear productos de gremio
-function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
+// Mapear productos de gremio - ACTUALIZADO
+function mapGremioProduct(
+  item: GremioProduct, 
+  index: number, 
+  categorias: Category[]
+): ViewProduct {
   const stock = typeof item.p_stock === "number" ? item.p_stock : undefined
   return {
     id: item.p_id ? `product-${item.p_id}` : `gremio-${index}`,
@@ -89,9 +100,9 @@ function mapGremioProduct(item: GremioProduct, index: number): ViewProduct {
     location: item.gre_nombre ?? "Gremio",
     rating: 4.6,
     reviews: 0,
-    category: (item.p_tipo ?? "otro").toLowerCase(),
+    category: mapCategoryIdToName(item.cat_id, item.p_tipo, categorias), // Usar mapper
     image: resolveImageSrc(item.img, PLACEHOLDER_URL),
-    available: stock === undefined || stock > 0, // Solo disponible si hay stock
+    available: stock === undefined || stock > 0,
     stock: stock
   }
 }
@@ -107,6 +118,7 @@ export default function DashBoardShoppingPage() {
   const [gremios, setGremios] = useState<GremioListBody[]>([])
   const [selectedGremio, setSelectedGremio] = useState<GremioListBody | null>(null)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
 
   // Estado para filtros de sidebar
   const [sidebarFilters, setSidebarFilters] = useState({
@@ -115,6 +127,23 @@ export default function DashBoardShoppingPage() {
   })
   
   const { cart, addToCart, updateQuantity, removeFromCart, clearCart } = useCart()
+
+  // Cargar categorías al inicio
+  useEffect(() => {
+    const loadCategorias = async () => {
+      try {
+        const categoriasData = await categoryApi.listarCategorias()
+        if (categoriasData && categoriasData.length > 0) {
+          setCategorias(categoriasData)
+        }
+      } catch (error) {
+        console.error("Error loading categories:", error)
+        setCategorias(FALLBACK_CATEGORIES)
+      }
+    }
+
+    loadCategorias()
+  }, [])
  
   const handleFilterChange = useCallback((filters: { selectedCategory: string; priceRange: number[] }) => {
     setSidebarFilters(filters)
@@ -141,13 +170,13 @@ export default function DashBoardShoppingPage() {
     console.log("Cart after adding:", cart)
   }
 
-  // Cargar productos generales
+  // Cargar productos generales - ACTUALIZADO
   const loadGeneralProducts = useCallback(async () => {
     setIsLoading(true)
     setFetchError(null)
     try {
       const items = await productoApi.getAllProducts()
-      const mapped = items.map((it, idx) => mapGeneralProduct(it, idx))
+      const mapped = items.map((it, idx) => mapGeneralProduct(it, idx, categorias))
       setProducts(mapped)
     } catch (err) {
       console.error("Error fetching products:", err)
@@ -155,7 +184,7 @@ export default function DashBoardShoppingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [categorias])
 
   // Cargar gremios
   const loadGremios = useCallback(async () => {
@@ -172,13 +201,13 @@ export default function DashBoardShoppingPage() {
     }
   }, [])
 
-  // Cargar productos por gremio
+  // Cargar productos por gremio - ACTUALIZADO
   const loadGremioProducts = useCallback(async (gremioId: number) => {
     setIsLoading(true)
     setFetchError(null)
     try {
       const items = await productoApi.listarProductosPorGremio(gremioId.toString())
-      const mapped = items.map((it, idx) => mapGremioProduct(it, idx))
+      const mapped = items.map((it, idx) => mapGremioProduct(it, idx, categorias))
       setProducts(mapped)
     } catch (err) {
       console.error("Error fetching gremio products:", err)
@@ -186,7 +215,7 @@ export default function DashBoardShoppingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [categorias])
 
   // Efecto inicial
   useEffect(() => {
@@ -217,16 +246,32 @@ export default function DashBoardShoppingPage() {
     setSearchQuery("")
   }
 
-  // Filtrar productos
+  // Filtrar productos - MEJORADO
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesSidebarCategory = sidebarFilters.selectedCategory === "todo" || 
-                                   product.category.toLowerCase() === sidebarFilters.selectedCategory.toLowerCase()
-    const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
-                               product.price <= sidebarFilters.priceRange[0]
-    const hasStock = product.stock === undefined || product.stock > 0 // Ocultar productos sin stock
-    
-    return matchesSearch && matchesSidebarCategory && matchesSidebarPrice && hasStock
+    try {
+      const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      // Mejorar el matching de categorías
+      let matchesSidebarCategory = true
+      if (sidebarFilters.selectedCategory !== "todo") {
+        const selectedCategoryName = sidebarFilters.selectedCategory.replace(/_/g, ' ').toLowerCase()
+        const productCategory = (product.category || "").toLowerCase()
+        
+        matchesSidebarCategory = productCategory.includes(selectedCategoryName) ||
+                               selectedCategoryName.includes(productCategory) ||
+                               productCategory === selectedCategoryName
+      }
+      
+      const matchesSidebarPrice = sidebarFilters.priceRange[0] === 0 || 
+                                 (product.price !== undefined && product.price <= sidebarFilters.priceRange[0])
+      
+      const hasStock = product.stock === undefined || product.stock > 0
+      
+      return matchesSearch && matchesSidebarCategory && matchesSidebarPrice && hasStock
+    } catch (err) {
+      console.warn("Error filtering product:", product, err)
+      return true
+    }
   })
 
   // Filtrar gremios
@@ -242,6 +287,36 @@ export default function DashBoardShoppingPage() {
       case "gremio-products": return `Productos de ${selectedGremio?.nombre || "Gremio"}`
       default: return "Productos Disponibles"
     }
+  }
+
+  // Función mejorada para obtener badge de categoría
+  const getCategoryBadge = (category: string) => {
+    if (!category || category === "otros" || category === "Sin categoría") {
+      return (
+        <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
+          Sin categoría
+        </Badge>
+      )
+    }
+
+    // Mapeo de colores por tipo de categoría
+    const getCategoryVariant = (catName: string) => {
+      const name = catName.toLowerCase()
+      
+      if (name.includes('fruta')) return "default"
+      if (name.includes('verdura') || name.includes('hortaliza')) return "secondary" 
+      if (name.includes('tubérculo') || name.includes('tuberculo')) return "outline"
+      if (name.includes('hierba') || name.includes('aromática')) return "default"
+      if (name.includes('medicinal')) return "destructive"
+      
+      return "outline"
+    }
+
+    return (
+      <Badge variant={getCategoryVariant(category)} className="ml-2 flex-shrink-0 capitalize">
+        {category}
+      </Badge>
+    )
   }
 
   return (
@@ -269,7 +344,7 @@ export default function DashBoardShoppingPage() {
                     <>
                       {sidebarFilters.selectedCategory !== "todo" && (
                         <Badge variant="outline" className="capitalize">
-                          {sidebarFilters.selectedCategory}
+                          {sidebarFilters.selectedCategory.replace(/_/g, ' ')}
                         </Badge>
                       )}
                       {sidebarFilters.priceRange[0] > 0 && (
@@ -413,9 +488,7 @@ export default function DashBoardShoppingPage() {
                         <h3 className="font-semibold text-lg text-gray-900 leading-tight">
                           {product.name}
                         </h3>
-                        <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
-                          {product.category}
-                        </Badge>
+                        {getCategoryBadge(product.category)}
                       </div>
 
                       <div className="flex items-center gap-1 text-sm text-gray-600">

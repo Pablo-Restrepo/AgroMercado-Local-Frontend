@@ -1,8 +1,12 @@
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Edit, Trash2, MapPin } from "lucide-react"
+import { Edit, Trash2, MapPin, Leaf, Package } from "lucide-react"
+import * as categoryApi from "@/services/api/categoryApi"
 import type { ProductorProduct } from "@/services/api/productoApi"
+import type { Category } from "@/services/api/categoryApi"
+import { mapCategoryIdToName, FALLBACK_CATEGORIES } from "@/utils/categoryMapper"
 
 interface ProductManagementCardProps {
   product: ProductorProduct
@@ -17,7 +21,7 @@ const PLACEHOLDER = "https://images.unsplash.com/photo-1542838132-92c53300491e?i
  * - si viene con data: -> usar tal cual
  * - si es URL http(s) -> usar tal cual
  * - si parece base64 (solo chars base64 y longitud suficiente) -> convertir a data URI (jpeg por defecto)
- * - fallback -> PLACEHOLDER
+ * - fallback -> PLACEHOLDER por tipo o genérico
  */
 function resolveImageSrc(img?: string, tipo?: string) {
   if (!img || !img.trim()) {
@@ -29,6 +33,15 @@ function resolveImageSrc(img?: string, tipo?: string) {
       }
       if (tt.includes('verdura') || tt.includes('hortaliza')) {
         return "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      }
+      if (tt.includes('tubérculo') || tt.includes('tuberculo')) {
+        return "https://images.unsplash.com/photo-1518977676601-b53f82aba655?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      }
+      if (tt.includes('hierba') || tt.includes('aromática')) {
+        return "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+      }
+      if (tt.includes('medicinal')) {
+        return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
       }
     }
     return PLACEHOLDER
@@ -48,11 +61,72 @@ function resolveImageSrc(img?: string, tipo?: string) {
   }
 
   // fallback por tipo o placeholder
-  return PLACEHOLDER
+  return resolveImageSrc(undefined, tipo)
 }
 
 export function ProductManagementCard({ product, onEdit, onDelete }: ProductManagementCardProps) {
-  const imgSrc = resolveImageSrc(product.img, product.p_tipo)
+  const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
+  const [loadingCategorias, setLoadingCategorias] = useState(false)
+  
+  // Usar la nueva función para mapear la categoría
+  const categoryName = mapCategoryIdToName(product.cat_id, product.p_tipo, categorias)
+  const imgSrc = resolveImageSrc(product.img, categoryName)
+
+  // Cargar categorías dinámicamente con fallback
+  useEffect(() => {
+    const loadCategorias = async () => {
+      try {
+        setLoadingCategorias(true)
+        const categoriasData = await categoryApi.listarCategorias()
+        if (categoriasData && categoriasData.length > 0) {
+          setCategorias(categoriasData)
+        }
+      } catch (error) {
+        console.error("Error cargando categorías:", error)
+        // Mantener las categorías de fallback
+        setCategorias(FALLBACK_CATEGORIES)
+      } finally {
+        setLoadingCategorias(false)
+      }
+    }
+
+    loadCategorias()
+  }, [])
+
+  // Función para obtener información de categoría enriquecida
+  const getCategoryInfo = (categoryName: string) => {
+    const isValidCategory = categoryName !== "Sin categoría"
+
+    // Determinar variante de badge y color basado en el nombre
+    const getVariantAndColor = (catName: string) => {
+      const name = catName.toLowerCase()
+      
+      if (name.includes('fruta')) 
+        return { variant: "default" as const, color: "text-blue-700 bg-blue-50 border-blue-200" }
+      
+      if (name.includes('verdura') || name.includes('hortaliza')) 
+        return { variant: "secondary" as const, color: "text-green-700 bg-green-50 border-green-200" }
+      
+      if (name.includes('tubérculo') || name.includes('tuberculo')) 
+        return { variant: "outline" as const, color: "text-orange-700 bg-orange-50 border-orange-200" }
+      
+      if (name.includes('hierba') || name.includes('aromática')) 
+        return { variant: "default" as const, color: "text-purple-700 bg-purple-50 border-purple-200" }
+      
+      if (name.includes('medicinal')) 
+        return { variant: "destructive" as const, color: "text-red-700 bg-red-50 border-red-200" }
+      
+      return { variant: "outline" as const, color: "text-gray-700 bg-gray-50 border-gray-200" }
+    }
+
+    return {
+      displayName: categoryName,
+      isValidCategory,
+      ...getVariantAndColor(categoryName)
+    }
+  }
+
+  const categoryInfo = getCategoryInfo(categoryName)
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow w-full max-w-sm">
@@ -67,6 +141,27 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
             target.src = PLACEHOLDER
           }}
         />
+        
+        {/* Stock Badge */}
+        {product.p_stock !== undefined && (
+          <Badge 
+            variant={product.p_stock > 0 ? "default" : "destructive"}
+            className="absolute bottom-2 left-2"
+          >
+            {product.p_stock > 0 ? `Stock: ${product.p_stock}` : "Agotado"}
+          </Badge>
+        )}
+
+        {/* Medicinal Badge */}
+        {product.p_medicinal && (
+          <Badge 
+            variant="outline" 
+            className="absolute top-2 left-2 bg-green-50 text-green-700 border-green-200"
+          >
+            <Leaf className="h-3 w-3 mr-1" />
+            Medicinal
+          </Badge>
+        )}
         
         {/* Action Buttons */}
         <div className="absolute top-2 right-2 flex gap-2">
@@ -95,22 +190,34 @@ export function ProductManagementCard({ product, onEdit, onDelete }: ProductMana
           <h3 className="font-semibold text-lg text-gray-900 leading-tight">
             {product.p_nombre}
           </h3>
-          <Badge variant="outline" className="ml-2 flex-shrink-0 capitalize">
-            {product.p_tipo}
+          <Badge 
+            variant={categoryInfo.variant}
+            className={`ml-2 flex-shrink-0 capitalize ${categoryInfo.color}`}
+          >
+            {categoryInfo.isValidCategory ? (
+              categoryInfo.displayName
+            ) : (
+              <>
+                <Package className="h-3 w-3 mr-1" />
+                {categoryInfo.displayName}
+              </>
+            )}
           </Badge>
         </div>
 
+        {/* Gremio info */}
         <div className="flex items-center gap-1 text-sm text-gray-600">
           <MapPin className="h-4 w-4" />
-          <span className="truncate">{product.gre_nombre}</span>
+          <span className="truncate">{product.gre_nombre || "Sin gremio"}</span>
         </div>
 
+        {/* Precio */}
         <div className="flex items-end justify-between">
           <div>
             <div className="text-2xl font-bold text-gray-900">
-              ${product.p_precio.toLocaleString()}
+              ${product.p_precio?.toLocaleString() || "0"}
             </div>
-            <div className="text-sm text-gray-500">por {product.p_unidad}</div>
+            <div className="text-sm text-gray-500">por {product.p_unidad || "unidad"}</div>
           </div>
         </div>
 
