@@ -50,7 +50,7 @@ function App() {
               <Route path="editar-producto/:id" element={<EditProductPage />} />
               <Route path="crear-productor" element={<CreateProducer />} />
               <Route path="crear-gremio" element={<CreateGremio />} />
-              <Route path="gremio" element={<ProducerManagement />} />
+              <Route path="mi-gremio" element={<ProducerManagement />} />
               <Route path="envios" element={<EnviosPage />} />
             </Route>
 
