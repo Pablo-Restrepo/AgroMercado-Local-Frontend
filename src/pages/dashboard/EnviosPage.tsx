@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Package, Truck, CheckCircle2, AlertCircle, MapPin, Calendar } from "lucide-react"
 import { obtenerEnviosPorGremio, actualizarEstadoEnvio, type Envio } from "@/services/api/enviosApi"
 import { getProductsByIds, type ProductorProduct } from "@/services/api/productoApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
+import { useAuth } from "@/hooks/auth/useAuth"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -49,6 +51,7 @@ export default function EnviosPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [productosMap, setProductosMap] = useState<Map<number, ProductorProduct>>(new Map())
+    const [idGremio, setIdGremio] = useState<number | null>(null)
     const [updateDialog, setUpdateDialog] = useState<{
         open: boolean
         envio: Envio | null
@@ -59,13 +62,45 @@ export default function EnviosPage() {
         nuevoEstado: null,
     })
 
-    const idGremio = 1 // Por ahora hardcodeado, debería venir del contexto del usuario
+    const { user } = useAuth()
 
+    // Obtener el id_gremio del productor al cargar el componente
     useEffect(() => {
-        cargarEnvios()
-    }, [])
+        const obtenerIdGremio = async () => {
+            if (!user?.u_id) {
+                setError("Usuario no autenticado")
+                setLoading(false)
+                return
+            }
+
+            try {
+                const productor = await getProductorByUserId(user.u_id)
+                if (!productor.id_gremio) {
+                    setError("El usuario no pertenece a ningún gremio")
+                    setLoading(false)
+                    return
+                }
+                setIdGremio(productor.id_gremio)
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Error al obtener información del productor")
+                console.error("Error al obtener id_gremio:", err)
+                setLoading(false)
+            }
+        }
+
+        obtenerIdGremio()
+    }, [user])
+
+    // Cargar envíos cuando se tenga el id_gremio
+    useEffect(() => {
+        if (idGremio !== null) {
+            cargarEnvios()
+        }
+    }, [idGremio])
 
     const cargarEnvios = async () => {
+        if (idGremio === null) return
+
         try {
             setLoading(true)
             setError(null)

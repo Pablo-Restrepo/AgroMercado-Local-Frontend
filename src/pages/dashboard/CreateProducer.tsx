@@ -6,6 +6,8 @@ import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card"
 import { Users, Trash2, UserMinus } from "lucide-react"
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { crearProductor, obtenerGremio, removerProductorDeGremio, eliminarProductor, type Gremio, type Productor } from "@/services/api/gremioApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
+import { authStorage } from "@/services/storage/authStorage"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import {
@@ -65,16 +67,39 @@ export default function CreateProducer() {
         open: false,
         productor: null
     })
-
-    const idGremio = 1 // Por ahora hardcodeado, debería venir del contexto del usuario
+    const [idGremio, setIdGremio] = useState<number | null>(null)
 
     useEffect(() => {
-        cargarGremio()
+        obtenerIdGremio()
     }, [])
 
-    const cargarGremio = async () => {
+    const obtenerIdGremio = async () => {
         try {
-            const data = await obtenerGremio(idGremio)
+            const token = authStorage.getAccessToken()
+            if (!token) return
+
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            const userId = parseInt(payload.sub)
+
+            if (!userId) return
+
+            const productor = await getProductorByUserId(userId)
+
+            if (productor?.id_gremio) {
+                setIdGremio(productor.id_gremio)
+                await cargarGremio(productor.id_gremio)
+            }
+        } catch (err) {
+            console.error("Error al obtener el gremio del productor:", err)
+        }
+    }
+
+    const cargarGremio = async (gremioId?: number) => {
+        try {
+            const id = gremioId || idGremio
+            if (!id) return
+
+            const data = await obtenerGremio(id)
             setGremio(data)
         } catch (err) {
             console.error("Error al cargar gremio:", err)
@@ -132,6 +157,11 @@ export default function CreateProducer() {
             return
         }
 
+        if (!idGremio) {
+            setError("No se encontró el gremio asociado")
+            return
+        }
+
         const payload = {
             codigo: form.codigo,
             id_gremio: idGremio,
@@ -182,7 +212,7 @@ export default function CreateProducer() {
     }
 
     const handleRemoverProductor = async () => {
-        if (!removeDialog.productor) return
+        if (!removeDialog.productor || !idGremio) return
 
         try {
             setActionError(null)
@@ -322,9 +352,9 @@ export default function CreateProducer() {
                         </Card>
                     )}
 
-                    <Card className="border-gray-200">
+                    <Card>
                         <CardHeader>
-                            <CardTitle className="text-xl font-semibold text-gray-900">
+                            <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                                 Crear productor
                             </CardTitle>
                         </CardHeader>
@@ -346,7 +376,7 @@ export default function CreateProducer() {
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="codigo" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="codigo" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Código
                                         </Label>
                                         <Input
@@ -362,7 +392,7 @@ export default function CreateProducer() {
                                         )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="nombreUsuario" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="nombreUsuario" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Nombre de Usuario
                                         </Label>
                                         <Input
@@ -378,7 +408,7 @@ export default function CreateProducer() {
                                         )}
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="cedula" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="cedula" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Cédula
                                         </Label>
                                         <Input
@@ -397,7 +427,7 @@ export default function CreateProducer() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="nombre" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="nombre" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Nombre
                                         </Label>
                                         <Input
@@ -414,7 +444,7 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="apellidos" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="apellidos" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Apellidos
                                         </Label>
                                         <Input
@@ -433,7 +463,7 @@ export default function CreateProducer() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="direccion" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="direccion" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Dirección
                                         </Label>
                                         <Input
@@ -450,7 +480,7 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="telefono" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="telefono" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Teléfono
                                         </Label>
                                         <Input
@@ -467,7 +497,7 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="fechaNacimiento" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="fechaNacimiento" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Fecha de nacimiento
                                         </Label>
                                         <Input
@@ -485,7 +515,7 @@ export default function CreateProducer() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="contrasena" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="contrasena" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Contraseña
                                         </Label>
                                         <Input
@@ -502,7 +532,7 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="correo" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="correo" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Correo
                                         </Label>
                                         <Input
@@ -521,7 +551,7 @@ export default function CreateProducer() {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmarContrasena" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="confirmarContrasena" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Confirmar contraseña
                                         </Label>
                                         <Input
@@ -538,7 +568,7 @@ export default function CreateProducer() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="confirmarCorreo" className="text-sm font-medium text-gray-700">
+                                        <Label htmlFor="confirmarCorreo" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                                             Confirmar correo
                                         </Label>
                                         <Input

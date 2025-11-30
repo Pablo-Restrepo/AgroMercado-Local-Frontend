@@ -5,6 +5,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { GremioForm, type GremioFormData } from "@/components/gremios/GremioForm"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { createGremio } from "@/services/api/gremiosApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
 import { authStorage } from "@/services/storage/authStorage"
 
 export default function CreateGremio() {
@@ -25,7 +26,7 @@ export default function CreateGremio() {
                 return
             }
 
-            // Decodificar el token para obtener el user ID
+            // Decodificar el token para obtener el user ID (u_id)
             const payload = JSON.parse(atob(token.split('.')[1]))
             const userId = parseInt(payload.sub)
 
@@ -34,8 +35,16 @@ export default function CreateGremio() {
                 return
             }
 
-            // Crear el gremio
-            await createGremio(userId, data)
+            // Obtener el productor por u_id para conseguir el id interno
+            const productor = await getProductorByUserId(userId)
+
+            if (!productor || !productor.id) {
+                setError("No se encontró el productor asociado a este usuario")
+                return
+            }
+
+            // Crear el gremio usando el id del productor (no el u_id)
+            await createGremio(productor.id, data)
 
             // Navegar al dashboard o a la página de gremios
             navigate("/dashboard")
@@ -53,7 +62,7 @@ export default function CreateGremio() {
 
     return (
         <DashboardLayout title="Crear Gremio" showBackButton hideFilters>
-            <div className="flex-1 bg-gray-50 p-6">
+            <div className="flex-1 bg-gray-50 dark:bg-gray-900 p-6">
                 <div className="max-w-2xl mx-auto">
                     {error && (
                         <Alert variant="destructive" className="mb-6">
@@ -67,7 +76,7 @@ export default function CreateGremio() {
                         <div className="flex items-center justify-center p-12">
                             <div className="text-center">
                                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-                                <p className="mt-4 text-gray-600">Creando gremio...</p>
+                                <p className="mt-4 text-gray-600 dark:text-gray-300">Creando gremio...</p>
                             </div>
                         </div>
                     ) : (

@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Users, UserPlus, Trash2, UserMinus, AlertCircle } from "lucide-react"
 import { obtenerGremio, removerProductorDeGremio, eliminarProductor, type Gremio, type Productor } from "@/services/api/gremioApi"
+import { getProductorByUserId } from "@/services/api/productoresApi"
+import { authStorage } from "@/services/storage/authStorage"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -30,18 +32,58 @@ export default function ProducerManagement() {
         open: false,
         productor: null
     })
-
-    const idGremio = 1 // Por ahora hardcodeado, debería venir del contexto del usuario
+    const [idGremio, setIdGremio] = useState<number | null>(null)
 
     useEffect(() => {
-        cargarGremio()
+        obtenerIdGremio()
     }, [])
 
-    const cargarGremio = async () => {
+    const obtenerIdGremio = async () => {
         try {
             setLoading(true)
             setError(null)
-            const data = await obtenerGremio(idGremio)
+
+            const token = authStorage.getAccessToken()
+            if (!token) {
+                setError("No se encontró token de autenticación")
+                return
+            }
+
+            const payload = JSON.parse(atob(token.split('.')[1]))
+            const userId = parseInt(payload.sub)
+
+            if (!userId) {
+                setError("No se pudo obtener el ID del usuario")
+                return
+            }
+
+            const productor = await getProductorByUserId(userId)
+
+            if (!productor?.id_gremio) {
+                setError("No se encontró el gremio asociado al productor")
+                return
+            }
+
+            setIdGremio(productor.id_gremio)
+            await cargarGremio(productor.id_gremio)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : "Error al obtener información del gremio")
+            console.error("Error al obtener el gremio del productor:", err)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    const cargarGremio = async (gremioId?: number) => {
+        try {
+            setLoading(true)
+            setError(null)
+            const id = gremioId || idGremio
+            if (!id) {
+                setError("No se encontró el ID del gremio")
+                return
+            }
+            const data = await obtenerGremio(id)
             setGremio(data)
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error al cargar el gremio")
@@ -52,7 +94,7 @@ export default function ProducerManagement() {
     }
 
     const handleRemoverProductor = async () => {
-        if (!removeDialog.productor) return
+        if (!removeDialog.productor || !idGremio) return
 
         try {
             await removerProductorDeGremio(removeDialog.productor.id, idGremio)

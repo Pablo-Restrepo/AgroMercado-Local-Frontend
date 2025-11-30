@@ -78,10 +78,10 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="text-xl font-semibold text-gray-900">
+                <CardTitle className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                     Crear Gremio
                 </CardTitle>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
                     Crea un nuevo gremio para organizar y conectar a los productores de tu comunidad
                 </p>
             </CardHeader>
@@ -90,7 +90,7 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Nombre del gremio */}
                     <div className="space-y-2">
-                        <Label htmlFor="gremio-name" className="text-sm font-medium text-gray-700">
+                        <Label htmlFor="gremio-name" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                             Nombre del Gremio <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -105,14 +105,14 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
                         {errors.nombre && (
                             <p className="text-sm text-red-500 mt-1">{errors.nombre}</p>
                         )}
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                             El nombre debe ser descriptivo y único para tu gremio
                         </p>
                     </div>
 
                     {/* Descripción */}
                     <div className="space-y-2">
-                        <Label htmlFor="gremio-descripcion" className="text-sm font-medium text-gray-700">
+                        <Label htmlFor="gremio-descripcion" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                             Descripción <span className="text-red-500">*</span>
                         </Label>
                         <Textarea
@@ -126,14 +126,14 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
                         {errors.descripcion && (
                             <p className="text-sm text-red-500 mt-1">{errors.descripcion}</p>
                         )}
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                             Describe el propósito y objetivos del gremio
                         </p>
                     </div>
 
                     {/* Ubicación */}
                     <div className="space-y-2">
-                        <Label htmlFor="gremio-ubicacion" className="text-sm font-medium text-gray-700">
+                        <Label htmlFor="gremio-ubicacion" className="text-sm font-medium text-gray-700 dark:text-gray-200">
                             Ubicación <span className="text-red-500">*</span>
                         </Label>
                         <Input
@@ -147,7 +147,7 @@ export function GremioForm({ onSubmit, onCancel }: GremioFormProps) {
                         {errors.ubicacion && (
                             <p className="text-sm text-red-500 mt-1">{errors.ubicacion}</p>
                         )}
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                             Indica la ubicación geográfica del gremio
                         </p>
                     </div>
