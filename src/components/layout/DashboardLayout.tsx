@@ -52,11 +52,11 @@ export function DashboardLayout({
                 orientation="vertical"
                 className="mr-2 data-[orientation=vertical]:h-4"
               />
-              
+
               {showBackButton && (
                 <>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
                     onClick={handleBack}
                     className="gap-2"
@@ -70,7 +70,7 @@ export function DashboardLayout({
                   />
                 </>
               )}
-              
+
               {title && (
                 <h1 className="text-xl font-semibold">{title}</h1>
               )}
@@ -81,18 +81,6 @@ export function DashboardLayout({
           </div>
         </SidebarInset>
       </SidebarProvider>
-      <nav className="px-2 py-4">
-        {user?.u_rol === "cliente" && (
-          <NavLink
-            to="/dashboard/envios"
-            className={({ isActive }) =>
-              `flex items-center gap-2 p-2 rounded-md ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "hover:bg-sidebar-accent"}`
-            }
-          >
-            <span>Mis envíos</span>
-          </NavLink>
-        )}
-      </nav>
     </div>
   )
 }

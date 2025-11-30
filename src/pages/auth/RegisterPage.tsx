@@ -149,53 +149,53 @@ export default function RegisterPage() {
               {error && <div className="text-sm text-red-600 bg-red-50 border border-red-100 px-3 py-2 rounded">{error}</div>}
 
               <div className="space-y-2">
-                <Label htmlFor="nombre">Nombre</Label>
+                <Label htmlFor="nombre">Nombre <span className="text-red-600">*</span></Label>
                 <Input id="nombre" value={form.nombre} onChange={(e) => handleChange("nombre", e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="apellidos">Apellidos</Label>
+                <Label htmlFor="apellidos">Apellidos <span className="text-red-600">*</span></Label>
                 <Input id="apellidos" value={form.apellidos} onChange={(e) => handleChange("apellidos", e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
+                <Label htmlFor="email">Correo electrónico <span className="text-red-600">*</span></Label>
                 <Input id="email" type="email" value={form.email} onChange={(e) => handleChange("email", e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cedula">Cédula</Label>
+                  <Label htmlFor="cedula">Cédula <span className="text-red-600">*</span></Label>
                   <Input id="cedula" value={form.cedula} onChange={(e) => handleChange("cedula", e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fechaNacimiento">Fecha de nacimiento</Label>
+                  <Label htmlFor="fechaNacimiento">Fecha de nacimiento <span className="text-red-600">*</span></Label>
                   <Input id="fechaNacimiento" type="date" value={form.fechaNacimiento} onChange={(e) => handleChange("fechaNacimiento", e.target.value)} />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="direccion">Dirección</Label>
+                <Label htmlFor="direccion">Dirección <span className="text-red-600">*</span></Label>
                 <Input id="direccion" value={form.direccion} onChange={(e) => handleChange("direccion", e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="telefono">Teléfono</Label>
+                <Label htmlFor="telefono">Teléfono <span className="text-red-600">*</span></Label>
                 <Input id="telefono" value={form.telefono} onChange={(e) => handleChange("telefono", e.target.value)} />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="nombreUsuario">Nombre de usuario</Label>
+                <Label htmlFor="nombreUsuario">Nombre de usuario <span className="text-red-600">*</span></Label>
                 <Input id="nombreUsuario" value={form.nombreUsuario} onChange={(e) => handleChange("nombreUsuario", e.target.value)} />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="contrasenia">Contraseña</Label>
+                  <Label htmlFor="contrasenia">Contraseña <span className="text-red-600">*</span></Label>
                   <Input id="contrasenia" type="password" value={form.contrasenia} onChange={(e) => handleChange("contrasenia", e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmarContrasenia">Confirmar contraseña</Label>
+                  <Label htmlFor="confirmarContrasenia">Confirmar contraseña <span className="text-red-600">*</span></Label>
                   <Input id="confirmarContrasenia" type="password" value={form.confirmarContrasenia} onChange={(e) => handleChange("confirmarContrasenia", e.target.value)} />
                 </div>
               </div>

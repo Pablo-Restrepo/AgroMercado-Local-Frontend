@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Package, Truck, CheckCircle2, AlertCircle, MapPin, Calendar } from "lucide-react"
 import { obtenerEnviosPorGremio, actualizarEstadoEnvio, type Envio } from "@/services/api/enviosApi"
+import { getProductsByIds, type ProductorProduct } from "@/services/api/productoApi"
 import {
     AlertDialog,
     AlertDialogAction,
@@ -47,6 +48,7 @@ export default function EnviosPage() {
     const [envios, setEnvios] = useState<Envio[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [productosMap, setProductosMap] = useState<Map<number, ProductorProduct>>(new Map())
     const [updateDialog, setUpdateDialog] = useState<{
         open: boolean
         envio: Envio | null
@@ -69,6 +71,26 @@ export default function EnviosPage() {
             setError(null)
             const data = await obtenerEnviosPorGremio(idGremio)
             setEnvios(data)
+
+            // Extraer IDs únicos de productos
+            const productIds = new Set<number>()
+            data.forEach(envio => {
+                envio.compra.productos.forEach(prod => {
+                    productIds.add(prod.id_producto)
+                })
+            })
+
+            // Cargar información de productos
+            if (productIds.size > 0) {
+                const productos = await getProductsByIds(Array.from(productIds))
+                const map = new Map<number, ProductorProduct>()
+                productos.forEach(prod => {
+                    if (prod.p_id) {
+                        map.set(prod.p_id, prod)
+                    }
+                })
+                setProductosMap(map)
+            }
         } catch (err) {
             setError(err instanceof Error ? err.message : "Error al cargar envíos")
             console.error("Error al cargar envíos:", err)
@@ -150,7 +172,7 @@ export default function EnviosPage() {
 
                                 return (
                                     <Card key={envio.id} className="border-gray-200 hover:shadow-md transition-shadow">
-                                        <CardContent className="p-6">
+                                        <CardContent>
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1 space-y-4">
                                                     {/* Encabezado */}
@@ -169,12 +191,12 @@ export default function EnviosPage() {
                                                             </div>
                                                             <div className="flex items-center gap-4 text-sm text-gray-600">
                                                                 <span className="flex items-center gap-1.5">
-                                                                    <Calendar className="h-4 w-4" />
+                                                                    <Calendar className="scale-125 mr-2" />
                                                                     Compra: {formatearFecha(envio.compra.fecha)}
                                                                 </span>
                                                                 {envio.fecha_envio && (
                                                                     <span className="flex items-center gap-1.5">
-                                                                        <Truck className="h-4 w-4" />
+                                                                        <Truck className="scale-125 mr-2" />
                                                                         Despachado: {formatearFecha(envio.fecha_envio)}
                                                                     </span>
                                                                 )}
@@ -191,13 +213,13 @@ export default function EnviosPage() {
                                                     </div>
 
                                                     {/* Información de destino */}
-                                                    <div className="flex items-start gap-2 p-3 bg-gray-50 rounded-lg">
-                                                        <MapPin className="h-5 w-5 text-gray-600 mt-0.5 flex-shrink-0" />
+                                                    <div className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                                        <MapPin className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
                                                         <div>
-                                                            <p className="text-sm font-medium text-gray-900">
+                                                            <p className="text-sm font-medium text-blue-900">
                                                                 Destino
                                                             </p>
-                                                            <p className="text-sm text-gray-600">{envio.destino}</p>
+                                                            <p className="text-sm text-blue-700">{envio.destino}</p>
                                                         </div>
                                                     </div>
 
@@ -207,29 +229,47 @@ export default function EnviosPage() {
                                                             Productos ({envio.compra.productos.length})
                                                         </p>
                                                         <div className="space-y-2">
-                                                            {envio.compra.productos.map((producto, idx) => (
-                                                                <div
-                                                                    key={idx}
-                                                                    className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded text-sm"
-                                                                >
-                                                                    <div className="flex items-center gap-2">
-                                                                        <Package className="h-4 w-4 text-gray-400" />
-                                                                        <span className="text-gray-700">
-                                                                            Producto #{producto.id_producto}
-                                                                        </span>
-                                                                    </div>
-                                                                    <div className="flex items-center gap-4">
-                                                                        <span className="text-gray-600">
-                                                                            {producto.cantidad} {producto.unidad}
-                                                                        </span>
-                                                                        <span className="font-medium text-gray-900">
+                                                            {envio.compra.productos.map((producto, idx) => {
+                                                                const productoInfo = productosMap.get(producto.id_producto)
+                                                                const imageSrc = productoInfo?.img
+                                                                    ? productoInfo.img.startsWith('data:')
+                                                                        ? productoInfo.img
+                                                                        : `data:image/png;base64,${productoInfo.img}`
+                                                                    : null
+                                                                return (
+                                                                    <div
+                                                                        key={idx}
+                                                                        className="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                                                                    >
+                                                                        <div className="flex items-center gap-3">
+                                                                            {imageSrc ? (
+                                                                                <img
+                                                                                    src={imageSrc}
+                                                                                    alt={productoInfo?.p_nombre || 'Producto'}
+                                                                                    className="h-12 w-12 rounded object-cover border border-gray-200"
+                                                                                />
+                                                                            ) : (
+                                                                                <div className="h-12 w-12 rounded bg-gray-100 flex items-center justify-center border border-gray-200">
+                                                                                    <Package className="h-6 w-6 text-gray-400" />
+                                                                                </div>
+                                                                            )}
+                                                                            <div>
+                                                                                <p className="text-sm font-medium text-gray-900">
+                                                                                    {productoInfo?.p_nombre || `Producto #${producto.id_producto}`}
+                                                                                </p>
+                                                                                <p className="text-xs text-gray-500">
+                                                                                    {producto.cantidad} {producto.unidad} × {formatearMoneda(producto.precio_unitario)}
+                                                                                </p>
+                                                                            </div>
+                                                                        </div>
+                                                                        <span className="font-semibold text-gray-900">
                                                                             {formatearMoneda(
                                                                                 producto.cantidad * producto.precio_unitario
                                                                             )}
                                                                         </span>
                                                                     </div>
-                                                                </div>
-                                                            ))}
+                                                                )
+                                                            })}
                                                         </div>
                                                     </div>
 
