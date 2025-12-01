@@ -8,7 +8,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import { Trash2, Minus, Plus, ShoppingBag, CreditCard } from "lucide-react"
 import type { Cart } from "@/types/cart"
@@ -130,8 +129,8 @@ export function CartDrawer({
                   <p className="text-sm font-medium text-gray-700">Detalle por gremio:</p>
                   {checkoutResult.compras.map((compra, idx) => (
                     <div key={idx} className={`p-3 border rounded-lg text-sm ${compra.status === 'paid' ? 'bg-green-50 border-green-200' :
-                        compra.status === 'error' ? 'bg-red-50 border-red-200' :
-                          'bg-yellow-50 border-yellow-200'
+                      compra.status === 'error' ? 'bg-red-50 border-red-200' :
+                        'bg-yellow-50 border-yellow-200'
                       }`}>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
@@ -141,8 +140,8 @@ export function CartDrawer({
                           </p>
                         </div>
                         <span className={`text-xs px-2 py-1 rounded capitalize ${compra.status === 'paid' ? 'bg-green-100 text-green-700' :
-                            compra.status === 'error' ? 'bg-red-100 text-red-700' :
-                              'bg-yellow-100 text-yellow-700'
+                          compra.status === 'error' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
                           }`}>
                           {compra.status === 'paid' ? 'Completado' :
                             compra.status === 'error' ? 'Error' :
