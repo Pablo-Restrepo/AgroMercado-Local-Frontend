@@ -15,7 +15,7 @@ import {
     SheetTrigger,
     SheetTitle,
 } from "@/components/ui/sheet"
-import { Menu, ShoppingBag, Users, Package, Home } from "lucide-react"
+import { Menu, Users, Package, Home } from "lucide-react"
 import { ModeToggle } from "@/components/mode-toggle"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { UserMenu } from "@/components/auth/UserMenu"
