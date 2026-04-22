@@ -38,6 +38,12 @@ export const authStorage = {
 
         try {
             const user = JSON.parse(userStr) as User;
+            // Validate expected shape; clear stale data from old schemas
+            if (!user.u_nombre_usuario || !user.u_email || !user.u_rol) {
+                console.warn('Usuario en localStorage tiene formato incorrecto, limpiando...');
+                localStorage.removeItem(STORAGE_KEYS.USER);
+                return null;
+            }
             console.log('Usuario obtenido del localStorage:', user);
             return user;
         } catch {
