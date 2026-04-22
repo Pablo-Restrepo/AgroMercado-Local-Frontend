@@ -1,6 +1,5 @@
 import { authFetch } from "@/services/api/authFetch";
-
-const API_BASE_URL = "http://localhost:8090";
+import { API_BASE_URL } from "@/services/api/config";
 
 export interface ProductorResponse {
     id: number;
@@ -18,7 +17,7 @@ export interface ProductorResponse {
  */
 export async function getProductorByUserId(userId: number): Promise<ProductorResponse> {
     console.log('getProductorByUserId llamado con userId:', userId);
-    const url = `${API_BASE_URL}/api/productores/user/${userId}`;
+    const url = `${API_BASE_URL}/productores/user/${userId}`;
     console.log('URL completa:', url);
 
     const res = await authFetch(url, {

@@ -1,6 +1,6 @@
 import { authFetch } from "@/services/api/authFetch";
 
-const API_BASE_URL = "http://localhost:8090";
+import { API_BASE_URL } from "@/services/api/config";
 
 export interface Productor {
     id: number;
@@ -42,7 +42,7 @@ export interface CreateProducerPayload {
 
 // Obtener información de un gremio específico
 export async function obtenerGremio(idGremio: number): Promise<Gremio> {
-    const response = await authFetch(`${API_BASE_URL}/api/gremios/${idGremio}`, {
+    const response = await authFetch(`${API_BASE_URL}/gremios/${idGremio}`, {
         method: "GET",
     });
 
@@ -56,7 +56,7 @@ export async function obtenerGremio(idGremio: number): Promise<Gremio> {
 
 // Listar todos los gremios
 export async function listarGremios(): Promise<Gremio[]> {
-    const response = await authFetch(`${API_BASE_URL}/api/gremios/`, {
+    const response = await authFetch(`${API_BASE_URL}/gremios/`, {
         method: "GET",
     });
 
@@ -70,7 +70,7 @@ export async function listarGremios(): Promise<Gremio[]> {
 
 // Crear productor
 export async function crearProductor(payload: CreateProducerPayload): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -98,7 +98,7 @@ export async function crearProductor(payload: CreateProducerPayload): Promise<Pr
 
 // Listar todos los productores
 export async function listarProductores(): Promise<Productor[]> {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/`, {
         method: "GET",
     });
 
@@ -112,7 +112,7 @@ export async function listarProductores(): Promise<Productor[]> {
 
 // Obtener un productor específico
 export async function obtenerProductor(id: number): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/${id}`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/${id}`, {
         method: "GET",
     });
 
@@ -126,7 +126,7 @@ export async function obtenerProductor(id: number): Promise<Productor> {
 
 // Obtener productor por user_id
 export async function obtenerProductorPorUserId(userId: number): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/user/${userId}`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/user/${userId}`, {
         method: "GET",
     });
 
@@ -140,7 +140,7 @@ export async function obtenerProductorPorUserId(userId: number): Promise<Product
 
 // Eliminar un productor
 export async function eliminarProductor(id: number): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/productores/${id}`, {
+    const response = await authFetch(`${API_BASE_URL}/productores/${id}`, {
         method: "DELETE",
     });
 
@@ -154,7 +154,7 @@ export async function eliminarProductor(id: number): Promise<Productor> {
 
 // Agregar productor a gremio
 export async function agregarProductorAGremio(idProductor: number, idGremio: number): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/gremios/${idGremio}/agregar/${idProductor}`, {
+    const response = await authFetch(`${API_BASE_URL}/gremios/${idGremio}/agregar/${idProductor}`, {
         method: "POST",
     });
 
@@ -168,7 +168,7 @@ export async function agregarProductorAGremio(idProductor: number, idGremio: num
 
 // Remover productor de gremio
 export async function removerProductorDeGremio(idProductor: number, idGremio: number): Promise<Productor> {
-    const response = await authFetch(`${API_BASE_URL}/api/gremios/${idGremio}/remover/${idProductor}`, {
+    const response = await authFetch(`${API_BASE_URL}/gremios/${idGremio}/remover/${idProductor}`, {
         method: "POST",
     });
 
