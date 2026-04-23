@@ -19,4 +19,12 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    proxy: {
+      "/api": {
+        target: "http://217.71.207.122:8090",
+        changeOrigin: true,
+      },
+    },
+  },
 })
