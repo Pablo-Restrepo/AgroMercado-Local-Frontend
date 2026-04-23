@@ -21,7 +21,7 @@ export function EnviosList({ usuarioId }: EnviosListProps) {
     setError(null)
     try {
       console.log("Fetching envíos for user:", id) // Debug log
-      const items = await enviosApi.getEnviosByUsuario(id)
+      const items = await enviosApi.obtenerEnviosPorUsuario(id)
       console.log("Envíos received:", items) // Debug log
       setEnvios(items)
     } catch (err) {
@@ -90,28 +90,25 @@ export function EnviosList({ usuarioId }: EnviosListProps) {
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-medium truncate">Compra: {String(e.compra_id ?? "—")}</p>
+                  <p className="font-medium truncate">Compra: {String(e.compra?.id ?? "—")}</p>
                   <Badge variant={e.estado && e.estado.toLowerCase().includes("entregado") ? "secondary" : "default"}>
                     {e.estado ?? "Sin estado"}
                   </Badge>
                 </div>
                 {e.destino && <p className="text-sm text-gray-600 truncate">Destino: {e.destino}</p>}
-                {e.fecha_creacion && <p className="text-xs text-muted-foreground mt-1">Fecha: {new Date(e.fecha_creacion).toLocaleString()}</p>}
+                {e.compra?.fecha && <p className="text-xs text-muted-foreground mt-1">Fecha: {new Date(e.compra.fecha).toLocaleString()}</p>}
               </div>
 
               <div className="text-right">
-                <p className="text-sm font-medium">${(e?.total ?? 0).toLocaleString?.() ?? ""}</p>
+                <p className="text-sm font-medium">${(e.compra?.total ?? 0).toLocaleString?.() ?? ""}</p>
               </div>
             </div>
 
-            {e.seguimiento && (
+            {e.fecha_envio && (
               <>
                 <Separator className="my-2" />
                 <div className="text-xs text-gray-700 space-y-1">
-                  {Array.isArray(e.seguimiento)
-                    ? e.seguimiento.map((s: any, i: number) => <div key={i}>• {typeof s === "string" ? s : JSON.stringify(s)}</div>)
-                    : <div>{typeof e.seguimiento === "string" ? e.seguimiento : JSON.stringify(e.seguimiento)}</div>
-                  }
+                  <div>Fecha de envío: {new Date(e.fecha_envio).toLocaleString()}</div>
                 </div>
               </>
             )}

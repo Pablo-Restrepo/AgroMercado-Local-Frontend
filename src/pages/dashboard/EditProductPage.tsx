@@ -25,7 +25,7 @@ export default function EditProductPage() {
   const [categorias, setCategorias] = useState<Category[]>(FALLBACK_CATEGORIES)
   const [loadingCategorias, setLoadingCategorias] = useState(true)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [_imageFile, setImageFile] = useState<File | null>(null)
   const [loadingImage, setLoadingImage] = useState(false)
 
   const [formData, setFormData] = useState<UpdateProductRequest>({
@@ -74,19 +74,19 @@ export default function EditProductPage() {
   const resolveImageSrc = (img?: string) => {
     if (!img || !img.trim()) return null
     const trimmed = img.trim()
-    
+
     // Si ya es data URI, usar tal cual
     if (trimmed.startsWith("data:")) return trimmed
-    
+
     // Si es URL http(s), usar tal cual
     if (/^https?:\/\//i.test(trimmed)) return trimmed
-    
+
     // Asumir que es base64 puro y convertir
     const cleaned = trimmed.replace(/\s+/g, "")
     if (/^[A-Za-z0-9+/=]+$/.test(cleaned) && cleaned.length > 100) {
       return `data:image/jpeg;base64,${cleaned}`
     }
-    
+
     return null
   }
 
@@ -99,11 +99,11 @@ export default function EditProductPage() {
 
     // Si no, intentar mapear desde p_tipo
     if (product.p_tipo) {
-      const categoria = categorias.find(cat => 
+      const categoria = categorias.find(cat =>
         cat.cat_nombre.toLowerCase().includes(product.p_tipo!.toLowerCase()) ||
         product.p_tipo!.toLowerCase().includes(cat.cat_nombre.toLowerCase())
       )
-      
+
       if (categoria) return categoria.cat_id
     }
 
@@ -124,14 +124,14 @@ export default function EditProductPage() {
         setLoading(true)
         const productData = await productoApi.getProductById(Number(id))
         setProduct(productData)
-        
+
         // Resolver imagen existente
         const existingImage = resolveImageSrc(productData.img)
         setImagePreview(existingImage)
-        
+
         // Llenar formulario con datos existentes
         const mappedCategoryId = mapProductCategoryId(productData)
-        
+
         setFormData({
           p_nombre: productData.p_nombre || "",
           cat_id: mappedCategoryId,
@@ -193,15 +193,15 @@ export default function EditProductPage() {
     try {
       setLoadingImage(true)
       setImageFile(file)
-      
+
       // Crear preview con blob URL
       const previewUrl = URL.createObjectURL(file)
       setImagePreview(previewUrl)
-      
+
       // Convertir a base64 PURO para el formulario (sin prefijo data:)
       const base64Pure = await convertFileToBase64(file)
       handleInputChange("img", base64Pure)
-      
+
     } catch (err) {
       console.error("Error procesando imagen:", err)
       setError("Error al procesar la imagen")
@@ -215,7 +215,7 @@ export default function EditProductPage() {
     setImageFile(null)
     setImagePreview(null)
     handleInputChange("img", "") // Enviar string vacío al backend
-    
+
     // Limpiar el input file
     const fileInput = document.getElementById("image-upload") as HTMLInputElement
     if (fileInput) fileInput.value = ""
@@ -223,7 +223,7 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!id || !product?.p_id) {
       setError("No se puede guardar el producto. Información de identificación faltante.")
       return
