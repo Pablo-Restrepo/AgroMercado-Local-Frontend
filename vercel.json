@@ -1,12 +1,13 @@
 {
-    "rewrites": [
+    "routes": [
         {
-            "source": "/api/:path*",
-            "destination": "http://217.71.207.122:8090/api/:path*"
+            "src": "/api/(.*)",
+            "dest": "http://217.71.207.122:8090/api/$1"
         },
         {
-            "source": "/(.*)",
-            "destination": "/index.html"
+            "src": "/[^.]+",
+            "dest": "/",
+            "status": 200
         }
     ]
 }
