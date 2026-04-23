@@ -354,12 +354,6 @@ export default function CreateProduct() {
                     >
                       Crear un gremio
                     </a>
-                    <a
-                      href="/dashboard/mi-gremio"
-                      className="text-sm font-medium text-amber-900 underline underline-offset-2 hover:text-amber-700"
-                    >
-                      Ver gremios disponibles
-                    </a>
                   </div>
                 </div>
               )}
