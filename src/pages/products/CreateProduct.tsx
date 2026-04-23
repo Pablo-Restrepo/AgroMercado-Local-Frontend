@@ -46,6 +46,7 @@ export default function CreateProduct() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [producerId, setProductorId] = useState<number | null>(null)
+  const [gremioId, setGremioId] = useState<number | null | undefined>(undefined)
   const [loadingProducer, setLoadingProducer] = useState(true)
 
   // Cargar categorías y datos del productor al montar el componente
@@ -69,6 +70,7 @@ export default function CreateProduct() {
           setLoadingProducer(true)
           const productorData = await getProductorByUserId(user.u_id)
           setProductorId(productorData.id)
+          setGremioId(productorData.id_gremio)
         } catch (err) {
           console.error("Error cargando datos del productor:", err)
           setError("Error al cargar los datos del productor. Asegúrate de tener un perfil de productor completado.")
@@ -219,6 +221,11 @@ export default function CreateProduct() {
       return
     }
 
+    if (!gremioId) {
+      setError("Debes asociarte a un gremio antes de registrar productos.")
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -329,6 +336,31 @@ export default function CreateProduct() {
                     No se encontró información de productor asociada a tu cuenta.
                     Asegúrate de tener un perfil de productor completado antes de crear productos.
                   </p>
+                </div>
+              )}
+
+              {!loadingProducer && producerId && gremioId === null && (
+                <div className="bg-amber-50 border border-amber-300 rounded-md p-4 space-y-2">
+                  <p className="text-sm font-semibold text-amber-800">
+                    Necesitas un gremio para registrar productos
+                  </p>
+                  <p className="text-sm text-amber-700">
+                    Para publicar productos debes estar asociado a un gremio. Puedes unirte a uno existente o crear el tuyo.
+                  </p>
+                  <div className="flex gap-3 pt-1">
+                    <a
+                      href="/dashboard/crear-gremio"
+                      className="text-sm font-medium text-amber-900 underline underline-offset-2 hover:text-amber-700"
+                    >
+                      Crear un gremio
+                    </a>
+                    <a
+                      href="/dashboard/mi-gremio"
+                      className="text-sm font-medium text-amber-900 underline underline-offset-2 hover:text-amber-700"
+                    >
+                      Ver gremios disponibles
+                    </a>
+                  </div>
                 </div>
               )}
 
@@ -524,7 +556,7 @@ export default function CreateProduct() {
                   <Button
                     type="submit"
                     className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
-                    disabled={isSubmitting || loadingCategorias || loadingProducer}
+                    disabled={isSubmitting || loadingCategorias || loadingProducer || gremioId === null}
                   >
                     {isSubmitting ? (
                       <>
