@@ -22,7 +22,7 @@ export interface CompraCreada {
  */
 function groupProductsByGremio(cartItems: CartItem[]): Map<string, CartItem[]> {
   const groups = new Map<string, CartItem[]>()
-  
+
   for (const item of cartItems) {
     const gremio = item.location || "Sin Gremio"
     if (!groups.has(gremio)) {
@@ -30,37 +30,16 @@ function groupProductsByGremio(cartItems: CartItem[]): Map<string, CartItem[]> {
     }
     groups.get(gremio)!.push(item)
   }
-  
-  return groups
-}
 
-/**
- * Convierte el ID string del producto a número
- * Asume formato como "general-tomate-1" o "gremio-lechuga-2"
- */
-function extractProductId(productStringId: string): number {
-  // Intenta extraer número del final del ID
-  const match = productStringId.match(/-(\d+)$/)
-  if (match) {
-    return parseInt(match[1], 10)
-  }
-  
-  // Fallback: hash del nombre como ID temporal
-  let hash = 0
-  for (let i = 0; i < productStringId.length; i++) {
-    const char = productStringId.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convertir a 32bit integer
-  }
-  return Math.abs(hash) % 10000 // Limitar a 4 dígitos
+  return groups
 }
 
 /**
  * Procesa el checkout completo: crea compras por gremio, las confirma y procesa pagos
  */
 export async function processCheckout(
-  cart: Cart, 
-  userId: number, 
+  cart: Cart,
+  userId: number,
   destino: string // Cambiar de paymentMethod a destino
 ): Promise<CheckoutResult> {
   const result: CheckoutResult = {
@@ -72,7 +51,7 @@ export async function processCheckout(
   try {
     // 1. Agrupar productos por gremio
     const productGroups = groupProductsByGremio(cart.items)
-    
+
     // 2. Crear una compra por cada gremio
     for (const [gremio, productos] of productGroups) {
       const compraData: CompraCreada = {
@@ -92,25 +71,25 @@ export async function processCheckout(
             cantidad: p.quantity
           }))
         }
-        
+
         const compraId = await comprasApi.createCompra(createRequest)
         compraData.compraId = compraId
         compraData.status = 'created'
-        
+
         // Confirmar compra
         await comprasApi.confirmarCompra(parseInt(compraId))
         compraData.status = 'confirmed'
-        
+
         // Procesar pago con destino
         await comprasApi.pagarCompra(parseInt(compraId), destino)
         compraData.status = 'paid'
-        
+
       } catch (error) {
         compraData.status = 'error'
         compraData.error = error instanceof Error ? error.message : 'Error desconocido'
         result.errors.push(`Error en compra de ${gremio}: ${compraData.error}`)
       }
-      
+
       result.compras.push(compraData)
     }
 

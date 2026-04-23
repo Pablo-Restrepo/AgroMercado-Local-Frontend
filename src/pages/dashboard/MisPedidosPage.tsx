@@ -8,7 +8,6 @@ import {
   Package,
   MapPin,
   Calendar,
-  DollarSign,
   Clock,
   Truck,
   CheckCircle,
@@ -19,7 +18,7 @@ import {
 import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { useAuth } from "@/hooks/auth/useAuth"
 import { obtenerEnviosPorUsuario, type Envio } from "@/services/api/enviosApi"
-import { getProductsByIds, type ProductorProduct } from "@/services/api/productoApi"
+import { getProductsByIds } from "@/services/api/productoApi"
 
 const PLACEHOLDER_URL = "https://images.unsplash.com/photo-1542838132-92c53300491e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
 
