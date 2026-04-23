@@ -345,7 +345,7 @@ export default function CreateProduct() {
                     Necesitas un gremio para registrar productos
                   </p>
                   <p className="text-sm text-amber-700">
-                    Para publicar productos debes estar asociado a un gremio. Puedes unirte a uno existente o crear el tuyo.
+                    Para publicar productos debes estar asociado a un gremio. Puedes crear el tuyo o contactar a un administrador que conozcas que te asocie.
                   </p>
                   <div className="flex gap-3 pt-1">
                     <a

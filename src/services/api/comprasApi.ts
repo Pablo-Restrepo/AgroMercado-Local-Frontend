@@ -81,10 +81,11 @@ export async function confirmarCompra(compra_id: number): Promise<string> {
  * destino se envía como query param (string).
  */
 export async function pagarCompra(compra_id: number, destino: string): Promise<string> {
-  const url = new URL(`${API_BASE_URL}/compras/${compra_id}/pagar`)
-  if (destino != null) url.searchParams.set("destino", destino)
+  const base = `${API_BASE_URL}/compras/${compra_id}/pagar`
+  const queryString = destino != null ? `?destino=${encodeURIComponent(destino)}` : ""
+  const finalUrl = `${base}${queryString}`
 
-  const res = await authFetch(url.toString(), {
+  const res = await authFetch(finalUrl, {
     method: "POST",
   })
 
